@@ -49,9 +49,7 @@ class Plugin
     }
     public static function boot()
     {
-    
         Rest_Controller::register();
         Woocommerce_Controller::register();
-        Shortcode_Controller::register();
     }
 }
