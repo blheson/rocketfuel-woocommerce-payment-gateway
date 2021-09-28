@@ -18,3 +18,7 @@ RocketFuel Payment Method 2.0.0 for WordPress 5.x
 * Click Save Settings.
 * Copy the Callbackurl on the Payment tab and paste in your merchant account under Store setup
 Ensure that your merchant account is verified before going live with the plugin. 
+
+
+## Installation Visual Aid
+Follow this [link](https://drive.google.com/file/d/1zX2h5WraDt9ZTRcykqY35tgwTVDmsllu/view?usp=sharing) for a more indepth guide on how to integrate the plugin to your store
