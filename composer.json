@@ -1,0 +1,10 @@
+{
+    "name": "user/rocketfuel",
+    "description": "Pay with Rocketfuel",
+    "autoload": {
+        "psr-4": {
+            "Rocketfuel_Gateway\\": "./"
+        }
+    },
+    "require": {}
+}
