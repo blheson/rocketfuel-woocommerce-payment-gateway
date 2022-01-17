@@ -1,6 +1,12 @@
 {
     "name": "user/rocketfuel",
     "description": "Pay with Rocketfuel",
+    "authors": [
+        {
+            "name": "Udor Blessing",
+            "role": "Developer"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "Rocketfuel_Gateway\\": "./"

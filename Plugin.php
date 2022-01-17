@@ -13,6 +13,7 @@ class Plugin
 
     /**
      * Get the plugin's absolute path
+     * Comes with trailing slash
      *
      * @return string
      *
@@ -33,7 +34,17 @@ class Plugin
     {
         return plugin_dir_url(__FILE__) . $url;
     }
-
+/**
+     * Get the plugin's version
+     *
+     * @return string
+     *
+     * @since 1.0.0
+     */
+    public static function get_ver()
+    {
+        return ROCKETFUEL_VER;
+    }
     public static function get_prefix()
     {
         return self::$prefix;
