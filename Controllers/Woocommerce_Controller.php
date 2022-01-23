@@ -209,7 +209,7 @@ class Woocommerce_Controller
              * Payment Engine object
              */
             const RocketfuelPaymentEngine = {
-               
+
                 order_id: document.querySelector('input[name=rocket_order_id]').value,
                 url: new URL(window.location.href),
                 watchIframeShow: false,
@@ -217,10 +217,19 @@ class Woocommerce_Controller
                 getUUID: function() {
                     return this.url.searchParams.get("uuid");
                 },
-                getEnvironment: function(){
-                  let testMode = this.url.searchParams.get("test");
-                  
-                   return testMode === 'yes' ? 'dev' : 'prod';
+                getEnvironment: function() {
+                    let testMode = this.url.searchParams.get("test");
+
+                    return testMode === 'yes' ? 'dev' : 'prod';
+                },
+                getUserData: function() {
+                    let user_data = this.url.searchParams.get("user_data");
+
+                    if (!user_data) return false;
+
+                    let user_json = atob(user_data);
+
+                    return JSON.parse(user_json);
                 },
                 updateOrder: function(result) {
 
@@ -265,7 +274,7 @@ class Woocommerce_Controller
                     }
                     document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
                     let checkIframe = setInterval(() => {
-
+               
                         if (RocketfuelPaymentEngine.rkfl.iframeInfo.iframe) {
                             RocketfuelPaymentEngine.rkfl.initPayment();
                             clearInterval(checkIframe);
@@ -282,7 +291,7 @@ class Woocommerce_Controller
                     //show retrigger button
                     document.getElementById('rocketfuel_retrigger_payment_button').disabled = false;
                     document.getElementById('rocketfuel_retrigger_payment').style.display = "block";
-                    // this.startPayment();
+                    this.startPayment();
                 },
                 prepareProgressMessage: function() {
 
@@ -316,19 +325,59 @@ class Woocommerce_Controller
 
                     })
                 },
-                initRocketFuel: function() {
+                initRocketFuel: async function() {
                     if (!RocketFuel) {
                         location.reload();
                         return;
                     }
-                    const response = await RocketfuelPaymentEngine.rkfl.rkflAutoSignUp(payload,RocketfuelPaymentEngine.environment)
-                    const rkflToken = res.result?.rkflToken;
-                    RocketfuelPaymentEngine.rkfl = new RocketFuel({
-                        token:rkflToken,
+                    let userData = RocketfuelPaymentEngine.getUserData();
+                    let payload, response, rkflToken;
+                    RocketfuelPaymentEngine.rkfl = new RocketFuel({ environment: RocketfuelPaymentEngine.getEnvironment()});
+                   
+                    if (userData.first_name) {
+                        payload = {
+                            firstName: userData.first_name,
+                            lastName: userData.last_name,
+                            email: userData.email,
+                            merchantAuth: userData.merchant_auth,
+                            kycType:'null',
+                            kycDetails:{'DOB':"01-01-1990"}
+                        }
+                        console.log("This is the merchant Auth: ", userData.merchant_auth);
+                        // payload = {
+                        //     firstName: 'Test',
+                        //     lastName: 'Joe',
+                        //     email: 'testjoe@gmail.com',
+                        //     merchantAuth: "hSuYw1yk9unQWdU6ne7BTY9axE01QiX/8yvHeo8y92E+r/bnG6FaVjyMZJSrqBpUSoWpnGkWQtH3aYSVpz3s2gSR60OwnHDqabLB2BnWqsOvFwveQWtBUewZ8LpiAseykNdu01tLzL4pyijRDJ84Y2r0AD+jRiK2HjQxoE7rK17m1WN6+EQi0Va6Lnhb3ibWQ9fty4N/NvMNjonEDV7+h7qjEKjNff3RG+P0CRhEhFoTIqLK9yqSQ7bjy7Ec6ul5YM/+4AJqgkWEbaE+PwZ/lt06kN58U92uuk76F6NHkQsrGiqswgUbC8a1mMNF6mVZEFN9rEz6Sib+Yer0R9Y5Hg=="
+                        // kycType:'null',
+                        //     kycDetails:{}
+                        // }
+                        // console.log('344',userData.merchant_auth);
+                        try {
+                            response = await RocketfuelPaymentEngine.rkfl.rkflAutoSignUp(payload, RocketfuelPaymentEngine.getEnvironment())
+                        } catch (error) {
+                            
+                        }
+                     
+                  
+                        console.log('346',response);
+                        if(response){
+                            rkflToken = response.result?.rkflToken;
+                        }
+                       
+                    }
+
+
+                    const rkflConfig = {
                         uuid: this.getUUID(),
                         callback: RocketfuelPaymentEngine.updateOrder,
-                        environment: RocketfuelPaymentEngine.environment
-                    });
+                        environment: RocketfuelPaymentEngine.getEnvironment()
+                    }
+                    if (rkflToken) {
+                        rkflConfig.token = rkflToken
+                    }
+                    console.log(rkflConfig);
+                    RocketfuelPaymentEngine.rkfl = new RocketFuel(rkflConfig);
                 },
 
                 init: function() {
@@ -340,15 +389,17 @@ class Woocommerce_Controller
                         document.getElementById('rocketfuel_retrigger_payment_button').addEventListener('click', () => {
                             RocketfuelPaymentEngine.startPayment(false);
                         })
-            
+                        console.log("Payment started");
                         engine.startPayment();
-                    
+
                     })
 
                 }
             }
-
-            RocketfuelPaymentEngine.init();
+           
+                RocketfuelPaymentEngine.init();
+           
+        
         </script>
 <?php
     }
@@ -365,6 +416,7 @@ class Woocommerce_Controller
         if (!class_exists('WC_Payment_Gateway')) {
             return;
         }
+        // $this->enqueue_action();
         require_once 'Rocketfuel_Gateway_Controller.php';
     }
     /**
