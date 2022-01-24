@@ -1,3 +1,7 @@
+
+
+
+
 // version: 1.0.1
 (function () {
   this.RocketFuel = function () {
@@ -126,11 +130,14 @@
     return purchaseResp;
   }
   this.RocketFuel.prototype.rkflAutoSignUp= async function(data,env){
-   const rkflToken= await autoSignUp(data,this.domain ,env)
-   setLocalStorage('access',rkflToken.result.access);
-   setLocalStorage('refresh',rkflToken.result.refresh);
-   setLocalStorage('rkfl_token',rkflToken.result.rkflToken);
-      this.rkflToken = rkflToken
+    const rkflToken= await autoSignUp(data,this.domain ,env)
+    setLocalStorage('access',rkflToken.result.access);
+    setLocalStorage('refresh',rkflToken.result.refresh);
+    setLocalStorage('rkfl_token',rkflToken.result.rkflToken);
+    this.rkflToken = rkflToken
+    if(data && data.merchantAuth) {
+      setLocalStorage('merchant_auth', data.merchantAuth);
+    }
    return  rkflToken 
   } 
   
@@ -252,6 +259,8 @@ async function autoSignUp(rocketFuelDefaultOptions,domainInfo,env) {
 
   function sendCartToIframe(iframe,iframeInfo) {
     if (iframe) {
+      iframeInfo.iframeData.token = localStorage.getItem('rkfl_token') || null;
+      iframeInfo.iframeData.merchantAuth = localStorage.getItem('merchant_auth') || null;
       iframe.contentWindow.postMessage(
         {
           type: "rocketfuel_send_cart",
@@ -260,13 +269,14 @@ async function autoSignUp(rocketFuelDefaultOptions,domainInfo,env) {
         "*"
       );
     }
+
   }
 
   function createIFrame(iframeInfo, rocketFuelDefaultOptions) {
     let iframe = document.createElement("iframe");
     iframe.title = iframeInfo.iFrameId;
     iframe.id = iframeInfo.iFrameId;
-    iframe.style.display = "none";
+    // iframe.style.display = "none";
     iframe.style.border = 0;
     iframe.style.width = "365px";
     iframe.src = iframeInfo.iframeUrl[rocketFuelDefaultOptions.environment];
@@ -278,10 +288,10 @@ async function autoSignUp(rocketFuelDefaultOptions,domainInfo,env) {
     return iframe;
   }
 
-  document.addEventListener('DOMContentLoaded',dragElement)
-    // //Make the DIV element draggagle:
+    //Make the DIV element draggagle:
     // dragElement();
-    
+    document.addEventListener('DOMContentLoaded',dragElement);
+
     function dragElement() {
       var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
       let iframeWrapper = document.createElement("div");

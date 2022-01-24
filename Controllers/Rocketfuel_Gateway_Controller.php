@@ -188,7 +188,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		}
 
 		$result = json_decode($payment_response);
-		var_dump($result->result);wp_die();
+ 
 		if (!isset($result->result) && !isset($result->result->url)) {
 			wc_add_notice(__('Failed to place order', 'rocketfuel-payment-gateway'), 'error');
 			return false;
@@ -201,7 +201,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		// Return thankyou redirect
 		// $pay_link = get_permalink(get_option(Plugin::$prefix . 'process_payment_page_id' ));
 		// $order_key = explode( 'order-received', $this->get_return_url($order))[1];
-		var_dump($uuid );
+		
 	
 		return array(
 			'result' => 'success',
