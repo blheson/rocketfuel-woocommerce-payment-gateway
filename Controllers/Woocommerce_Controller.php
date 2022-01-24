@@ -268,11 +268,15 @@ class Woocommerce_Controller
                     document.getElementById('rocket_fuel_payment_overlay_gateway').remove();
                 },
                 startPayment: function(autoTriggerState = true) {
+                   
                     if (!autoTriggerState) {
                         document.getElementById('rocketfuel_retrigger_payment_button').innerText = "Preparing Payment window...";
                         this.watchIframeShow = true;
                     }
+       
+
                     document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
+
                     let checkIframe = setInterval(() => {
 
                         if (RocketfuelPaymentEngine.rkfl.iframeInfo.iframe) {
@@ -349,8 +353,8 @@ class Woocommerce_Controller
                                     'DOB': "01-01-1990"
                                 }
                             }
-      
-                            
+
+
                             try {
 
                                 rkflToken = localStorage.getItem('rkfl_token');
@@ -393,7 +397,7 @@ class Woocommerce_Controller
 
                     let engine = this;
                     console.log('Start initiating RKFL');
-                  
+
                     try {
                         let b = await engine.initRocketFuel();
 
@@ -404,17 +408,16 @@ class Woocommerce_Controller
                     console.log('Done initiating RKFL');
 
                     engine.windowListener();
-                    
-                    document.addEventListener('DOMContentLoaded', () => {
-                       
+
+                    if (document.getElementById('rocketfuel_retrigger_payment_button')) {
                         document.getElementById('rocketfuel_retrigger_payment_button').addEventListener('click', () => {
                             RocketfuelPaymentEngine.startPayment(false);
                         });
+                    }
 
-                        console.log("Payment started");
-                        engine.startPayment();
 
-                    })
+              
+                    engine.startPayment();
 
                 }
             }
