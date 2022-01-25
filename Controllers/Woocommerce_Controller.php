@@ -139,7 +139,7 @@ class Woocommerce_Controller
                 text-align: center;
                 justify-content: center;
                 align-items: center;
-                margin-top: 5px;
+                margin-top: 30px;
             }
 
             .rocketfuel_exit_plan_wrapper figure {
@@ -149,24 +149,36 @@ class Woocommerce_Controller
                 right: 0px;
                 position: relative;
                 transition: right 700ms;
+                display: inline-block;
 
             }
 
-            .rocketfuel_exit_plan_wrapper:hover figure {
-                right: -21px;
+            /* .proceed-forward-rkfl:hover figure {
+                right: -6px;
                 transition: right 200ms;
+            } */
+
+            /* .rocketfuel_exit_plan_wrapper:hover a {
+                color: #ddd;
+            } */
+
+            .rocketfuel_exit_plan_wrapper a.completed-button-rkfl {
+                border: 1px solid #ffffff4d;
+                border-radius: 4px;
+                padding: 2px 10px;
+
             }
 
-            .rocketfuel_exit_plan_wrapper:hover a {
-                color: #ddd;
+            .rocketfuel_exit_plan_wrapper a.proceed-forward-rkfl {
+                padding-right: 10px;
             }
 
             .rocketfuel_exit_plan_wrapper a {
-                padding-left: 10px;
-                padding-right: 10px;
+
                 text-decoration: none;
                 color: #fff;
                 font-size: 12px;
+
             }
 
             .rocketfuel_exit_plan_wrapper a:focus {
@@ -194,10 +206,14 @@ class Woocommerce_Controller
                     </button>
                     <div class="rocketfuel_exit_plan_wrapper">
 
-                        <a onClick="RocketfuelPaymentEngine.showFinalOrderDetails()">Proceed without payment</a>
-                        <figure>
+
+                        <a onClick="RocketfuelPaymentEngine.showFinalOrderDetails()" class="proceed-forward-rkfl" style="display: flex;align-items: center;opacity:0.4">Proceed without payment
+                            <!-- &nbsp; <figure style="display: flex;">
                             <img src="<?php echo esc_url(Plugin::get_url('assets/img/forward.svg')); ?>" alt="">
-                        </figure>
+                        </figure> -->
+                        </a>
+                        <a onClick="RocketfuelPaymentEngine.showFinalOrderDetails()" class="completed-button-rkfl" style="display: flex;align-items: center;">Completed Payment ? </a>
+
                     </div>
                 </div>
             </div>
@@ -232,35 +248,43 @@ class Woocommerce_Controller
                     return JSON.parse(user_json);
                 },
                 updateOrder: function(result) {
+                    try {
 
-                    let rest_url = document.querySelector("input[name=rest_url]").value
-                    console.log("Response from callback :", result);
-                    console.log("order_id :", RocketfuelPaymentEngine.order_id);
 
-                    let status = "wc-on-hold";
-                    let result_status = parseInt(result.status);
-                    if (result_status == 101) {
-                        status = "wc-partial-payment";
+
+                        let rest_url = document.querySelector("input[name=rest_url]").value;
+
+                        console.log("Response from callback :", result);
+
+                        console.log("order_id :", RocketfuelPaymentEngine.order_id);
+
+                        let status = "wc-on-hold";
+                        let result_status = parseInt(result.status);
+                        if (result_status == 101) {
+                            status = "wc-partial-payment";
+                        }
+                        if (result_status == 1 || result.status == "completed") {
+                            status = "admin_default"; //placeholder to get order status set by seller
+                        }
+                        if (result_status == -1) {
+                            status = "wc-failed";
+                        }
+                        let fd = new FormData();
+                        fd.append("order_id", RocketfuelPaymentEngine.order_id);
+                        fd.append("status", status);
+                        fetch(rest_url, {
+                            method: "POST",
+                            body: fd
+                        }).then(res => res.json()).then(result => {
+                            console.log(result)
+
+                        }).catch(e => {
+                            console.log(e)
+
+                        })
+                    } catch (error) {
+
                     }
-                    if (result_status == 1 || result.status == "completed") {
-                        status = "admin_default"; //placeholder to get order status set by seller
-                    }
-                    if (result_status == -1) {
-                        status = "wc-failed";
-                    }
-                    let fd = new FormData();
-                    fd.append("order_id", RocketfuelPaymentEngine.order_id);
-                    fd.append("status", status);
-                    fetch(rest_url, {
-                        method: "POST",
-                        body: fd
-                    }).then(res => res.json()).then(result => {
-                        console.log(result)
-
-                    }).catch(e => {
-                        console.log(e)
-
-                    })
                     RocketfuelPaymentEngine.showFinalOrderDetails();
 
                 },
@@ -294,7 +318,7 @@ class Woocommerce_Controller
                     //show retrigger button
                     document.getElementById('rocketfuel_retrigger_payment_button').disabled = false;
                     document.getElementById('rocketfuel_retrigger_payment').style.display = "block";
-                    this.startPayment();
+                    // this.startPayment();
                 },
                 prepareProgressMessage: function() {
 
@@ -310,6 +334,7 @@ class Woocommerce_Controller
                 windowListener: function() {
                     let engine = this;
                     window.addEventListener('message', (event) => {
+                        console.log(event.data.type);
                         switch (event.data.type) {
                             case 'rocketfuel_iframe_close':
                                 if (document.getElementById('rocketfuel_before_payment'))
@@ -356,8 +381,8 @@ class Woocommerce_Controller
 
                             try {
                                 if (RocketfuelPaymentEngine.getEnvironment() !== 'prod') { //remove signon details when testing
-                                   localStorage.removeItem('rkfl_token');
-                                   localStorage.removeItem('access');
+                                    localStorage.removeItem('rkfl_token');
+                                    localStorage.removeItem('access');
                                 }
 
                                 rkflToken = localStorage.getItem('rkfl_token');
@@ -417,6 +442,7 @@ class Woocommerce_Controller
                         document.getElementById('rocketfuel_retrigger_payment_button').addEventListener('click', () => {
                             RocketfuelPaymentEngine.startPayment(false);
                         });
+
                     }
 
                     engine.startPayment();
@@ -426,6 +452,7 @@ class Woocommerce_Controller
 
             RocketfuelPaymentEngine.init();
         </script>
+
 <?php
     }
     public static function add_gateway_class($methods)
