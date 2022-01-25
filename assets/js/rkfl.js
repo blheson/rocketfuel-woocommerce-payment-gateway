@@ -258,6 +258,7 @@ async function autoSignUp(rocketFuelDefaultOptions,domainInfo,env) {
   }
 
   function sendCartToIframe(iframe,iframeInfo) {
+   console.log(iframeInfo);
     if (iframe) {
       iframeInfo.iframeData.token = localStorage.getItem('rkfl_token') || null;
       iframeInfo.iframeData.merchantAuth = localStorage.getItem('merchant_auth') || null;

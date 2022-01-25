@@ -218,9 +218,9 @@ class Woocommerce_Controller
                     return this.url.searchParams.get("uuid");
                 },
                 getEnvironment: function() {
-                    let testMode = this.url.searchParams.get("test");
+                    let environment = this.url.searchParams.get("env");
 
-                    return testMode === 'yes' ? 'dev' : 'prod';
+                    return environment || 'prod';
                 },
                 getUserData: function() {
                     let user_data = this.url.searchParams.get("user_data");
@@ -355,7 +355,7 @@ class Woocommerce_Controller
 
 
                             try {
-
+                                if()
                                 rkflToken = localStorage.getItem('rkfl_token');
 
                                 if (!rkflToken) {
@@ -398,7 +398,8 @@ class Woocommerce_Controller
                     console.log('Start initiating RKFL');
 
                     try {
-                        let b = await engine.initRocketFuel();
+
+                        await engine.initRocketFuel();
 
                     } catch (error) {
                         console.log('error from promise', error)
@@ -414,12 +415,11 @@ class Woocommerce_Controller
                         });
                     }
 
-
-              
                     engine.startPayment();
 
                 }
             }
+          
             RocketfuelPaymentEngine.init();
         </script>
 <?php

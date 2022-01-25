@@ -9,26 +9,52 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	public function __construct()
 	{
 		$this->id = 'rocketfuel_gateway';
+
 		// $this->icon = 'rkfl.png';
+
 		$this->has_fields = false;
+
 		$this->method_title = 'Rocketfuel';
+
 		$this->method_description = 'Pay with Crypto using Rocketfuel';
+
 		$this->init_form_fields();
+
 		$this->init_settings();
+
 		$this->title = $this->get_option('title');
-		$this->test = $this->get_option('test');
-		$this->endpoint = $this->test === 'no' ? 'https://app.rocketfuelblockchain.com/api' : 'https://dev-app.rocketdemo.net/api';
-		//  = 'https://app.rocketfuelblockchain.com/api';
+
+
+		$this->environment = $this->get_option('environment');
+
+		$this->endpoint = $this->get_endpoint($this->environment);
+
 		$this->public_key = $this->get_option('public_key');
+
 		$this->description = $this->get_option('description');
+
 		$this->password = $this->get_option('password');
+
 		$this->email = $this->get_option('email');
+
 		$this->payment_complete_order_status = $this->get_option('payment_complete_order_status') ? $this->get_option('payment_complete_order_status') : 'completed';
 
 		$this->supports = array('products');
 
 		$this->merchant_id = $this->get_option('merchant_id');
+
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+	}
+	public function get_endpoint($environment)
+	{
+		$environment_data = array(
+			'prod' => 'https://app.rocketfuelblockchain.com/api',
+			'dev' => 'https://dev-app.rocketdemo.net/api',
+			'qa' => 'https://preprod-app.rocketdemo.net/api',
+			'preprod' => 'https://preprod-app.rocketdemo.net/api',
+		);
+
+		return $environment_data[$environment] || 'https://app.rocketfuelblockchain.com/api';
 	}
 	public function init_form_fields()
 	{
@@ -48,11 +74,17 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'default' => __('Rocketfuel', 'rocketfuel-payment-gateway'),
 				'desc_tip'      => true,
 			),
-			'test' => array(
-				'title' => __('Test mode on/off', 'rocketfuel-payment-gateway'),
-				'type' => 'checkbox',
-				'label' => __('Enable Test mode', 'rocketfuel-payment-gateway'),
-				'default' => 'no'
+
+			'environment' => array(
+				'title' => __('Working environment', 'rocketfuel-payment-gateway'),
+				'type' => 'select',
+				'default' => 'prod',
+				'options' =>  array(
+					'prod' => 'Production',
+					'dev' => 'Development',
+					'qa' => 'QA',
+					'preprod' => 'Pre-Production'
+				)
 			),
 			'description' => array(
 				'title' => __('Customer Message', 'rocketfuel-payment-gateway'),
@@ -164,7 +196,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'email' => $order->get_billing_email(),
 			'merchant_auth' => 	$this->merchant_auth()
 		)));
-		$merchant_cred = $this->test === 'yes'? array("email"=>"mdevrocketfuel@gmail.com","password"=>"Test@123") : array(
+		$merchant_cred = array(
 			'email' => $this->email,
 			'password' => $this->password
 		);
@@ -180,7 +212,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'redirectUrl' => ''
 			)
 		);
-		
+
 		$payment_response = Process_Payment_Controller::process_payment($data);
 
 		if (!$payment_response) {
@@ -188,7 +220,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		}
 
 		$result = json_decode($payment_response);
- 
+
 		if (!isset($result->result) && !isset($result->result->url)) {
 			wc_add_notice(__('Failed to place order', 'rocketfuel-payment-gateway'), 'error');
 			return false;
@@ -201,11 +233,16 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		// Return thankyou redirect
 		// $pay_link = get_permalink(get_option(Plugin::$prefix . 'process_payment_page_id' ));
 		// $order_key = explode( 'order-received', $this->get_return_url($order))[1];
+		$buildUrl = $this->get_return_url($order) . "&uuid=" . $uuid . "&user_data=" . $user_data;
+
+		if ($this->environment !== 'prod') {
+
+			$buildUrl .= '&env=' . $this->environment;
+		}
 		
-	
 		return array(
 			'result' => 'success',
-			'redirect' => $this->get_return_url($order) . "&uuid=" . $uuid . "&user_data=" . $user_data
+			'redirect' => $buildUrl
 		);
 	}
 	public function merchant_auth()
