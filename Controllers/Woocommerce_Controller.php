@@ -273,7 +273,6 @@ class Woocommerce_Controller
                         document.getElementById('rocketfuel_retrigger_payment_button').innerText = "Preparing Payment window...";
                         this.watchIframeShow = true;
                     }
-       
 
                     document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
 
