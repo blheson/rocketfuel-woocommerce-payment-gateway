@@ -54,7 +54,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'preprod' => 'https://preprod-app.rocketdemo.net/api',
 		);
 
-		return $environment_data[$environment] || 'https://app.rocketfuelblockchain.com/api';
+		return isset($environment_data[$environment]) ? $environment_data[$environment] : 'https://app.rocketfuelblockchain.com/api';
 	}
 	public function init_form_fields()
 	{
@@ -188,8 +188,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$order = wc_get_order($order_id);
 		$cart = $this->sortCart(WC()->cart->get_cart());
 
-
-
 		$user_data = base64_encode(json_encode(array(
 			'first_name' => $order->get_billing_first_name(),
 			'last_name' => $order->get_billing_first_name(),
@@ -229,7 +227,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$uuid = $urlArr[count($urlArr) - 1];
 
 		// Remove cart
-		// $woocommerce->cart->empty_cart();
+		$woocommerce->cart->empty_cart();
 		// Return thankyou redirect
 		// $pay_link = get_permalink(get_option(Plugin::$prefix . 'process_payment_page_id' ));
 		// $order_key = explode( 'order-received', $this->get_return_url($order))[1];
@@ -239,7 +237,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 			$buildUrl .= '&env=' . $this->environment;
 		}
-		
+
 		return array(
 			'result' => 'success',
 			'redirect' => $buildUrl

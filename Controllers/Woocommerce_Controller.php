@@ -268,7 +268,7 @@ class Woocommerce_Controller
                     document.getElementById('rocket_fuel_payment_overlay_gateway').remove();
                 },
                 startPayment: function(autoTriggerState = true) {
-                   
+
                     if (!autoTriggerState) {
                         document.getElementById('rocketfuel_retrigger_payment_button').innerText = "Preparing Payment window...";
                         this.watchIframeShow = true;
@@ -355,7 +355,11 @@ class Woocommerce_Controller
 
 
                             try {
-                                if()
+                                if (RocketfuelPaymentEngine.getEnvironment() !== 'prod') { //remove signon details when testing
+                                   localStorage.removeItem('rkfl_token');
+                                   localStorage.removeItem('access');
+                                }
+
                                 rkflToken = localStorage.getItem('rkfl_token');
 
                                 if (!rkflToken) {
@@ -419,7 +423,7 @@ class Woocommerce_Controller
 
                 }
             }
-          
+
             RocketfuelPaymentEngine.init();
         </script>
 <?php
