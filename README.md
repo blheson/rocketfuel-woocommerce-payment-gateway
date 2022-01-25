@@ -33,4 +33,4 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 2.0.4 Fixed woocommerce thankyou page overlay styling for consistent display across theme.
 2.0.5 Add transaction id to orders
 	  Thankyou page overlay allows users to see order summary
-2.0.5 Added testing environment and Single Sign on
+2.1.5 Added Single Sign on
