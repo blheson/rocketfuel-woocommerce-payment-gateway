@@ -11,13 +11,17 @@ class Process_Payment_Controller{
 	 * @param array $data - Data from plugin.
 	 */
 	public static function process_payment( $data ){
+
 		$response = self::auth( $data );
+
+
+
 		if ( is_wp_error( $response ) ) {
 			return rest_ensure_response( $response );
 		}
 		
 		$response_code = wp_remote_retrieve_response_code( $response );
-		$response_message = wp_remote_retrieve_response_message( $response );
+	
 		$response_body = wp_remote_retrieve_body( $response );
 
 		$result = json_decode( $response_body );
@@ -49,7 +53,7 @@ class Process_Payment_Controller{
 			'headers' => array('Content-Type' => 'application/json'),
 			'body' => $body
 		);
-		
+	
 	$response = wp_remote_post($data['endpoint'] . '/auth/login', $args);
 	return $response;
     }
