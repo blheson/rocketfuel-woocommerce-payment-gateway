@@ -34,6 +34,9 @@ class Woocommerce_Controller
     {
 ?>
         <style>
+            html{
+                overflow: hidden;
+            }
             .rocketfuel_process_payment {
                 text-align: center;
                 display: flex;
@@ -153,10 +156,10 @@ class Woocommerce_Controller
 
             }
 
-            /* .proceed-forward-rkfl:hover figure {
+            .proceed-forward-rkfl:hover figure {
                 right: -6px;
                 transition: right 200ms;
-            } */
+            }
 
             /* .rocketfuel_exit_plan_wrapper:hover a {
                 color: #ddd;
@@ -176,7 +179,7 @@ class Woocommerce_Controller
             .rocketfuel_exit_plan_wrapper a {
 
                 text-decoration: none;
-                color: #fff;
+                color: #fff !important;
                 font-size: 12px;
 
             }
@@ -188,9 +191,10 @@ class Woocommerce_Controller
             }
         </style>
 
-
         <input type="hidden" name="rocket_order_id" value="<?php echo esc_attr($order_id) ?>">
+       
         <input type="hidden" name="rest_url" value="<?php echo esc_attr(rest_url() . Plugin::get_api_route_namespace() . '/update_order') ?>">
+       
         <div id="rocket_fuel_payment_overlay_gateway">
             <div class="rocket_fuel_payment_overlay_wrapper_gateway">
                 <div id="rocketfuel_before_payment">
@@ -207,13 +211,12 @@ class Woocommerce_Controller
                     <div class="rocketfuel_exit_plan_wrapper">
 
 
-                        <a onClick="RocketfuelPaymentEngine.showFinalOrderDetails()" class="proceed-forward-rkfl" style="display: flex;align-items: center;opacity:0.4">Proceed without payment
-                            <!-- &nbsp; <figure style="display: flex;">
+                        <a onClick="RocketfuelPaymentEngine.showFinalOrderDetails()" class="proceed-forward-rkfl" style="display: flex;align-items: center;opacity:0.4">Go back
+                            &nbsp; <figure style="display: flex;">
                             <img src="<?php echo esc_url(Plugin::get_url('assets/img/forward.svg')); ?>" alt="">
-                        </figure> -->
+                        </figure>
                         </a>
-                        <a onClick="RocketfuelPaymentEngine.showFinalOrderDetails()" class="completed-button-rkfl" style="display: flex;align-items: center;">Completed Payment ? </a>
-
+                        <!-- <a onClick="RocketfuelPaymentEngine.showFinalOrderDetails()" class="completed-button-rkfl" style="display: flex;align-items: center;">Completed Payment ? </a> -->
                     </div>
                 </div>
             </div>
@@ -249,8 +252,6 @@ class Woocommerce_Controller
                 },
                 updateOrder: function(result) {
                     try {
-
-
 
                         let rest_url = document.querySelector("input[name=rest_url]").value;
 
@@ -290,6 +291,8 @@ class Woocommerce_Controller
                 },
                 showFinalOrderDetails: () => {
                     document.getElementById('rocket_fuel_payment_overlay_gateway').remove();
+                    document.getElementsByTagName('html').style.overflow = 'scroll';
+
                 },
                 startPayment: function(autoTriggerState = true) {
 
@@ -334,7 +337,7 @@ class Woocommerce_Controller
                 windowListener: function() {
                     let engine = this;
                     window.addEventListener('message', (event) => {
-                        console.log(event.data.type);
+                       
                         switch (event.data.type) {
                             case 'rocketfuel_iframe_close':
                                 if (document.getElementById('rocketfuel_before_payment'))
