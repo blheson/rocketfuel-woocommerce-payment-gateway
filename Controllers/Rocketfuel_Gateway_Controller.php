@@ -50,7 +50,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$environment_data = array(
 			'prod' => 'https://app.rocketfuelblockchain.com/api',
 			'dev' => 'https://dev-app.rocketdemo.net/api',
-			'qa' => 'https://preprod-app.rocketdemo.net/api',
+			'stage2' => 'https://qa-app.rocketdemo.net/api',
 			'preprod' => 'https://preprod-app.rocketdemo.net/api',
 		);
 
@@ -82,7 +82,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'options' =>  array(
 					'prod' => 'Production',
 					'dev' => 'Development',
-					'qa' => 'QA',
+					'stage2' => 'QA',
 					'preprod' => 'Pre-Production'
 				)
 			),
@@ -190,7 +190,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$user_data = base64_encode(json_encode(array(
 			'first_name' => $order->get_billing_first_name(),
-			'last_name' => $order->get_billing_first_name(),
+			'last_name' => $order->get_billing_last_name(),
 			'email' => $order->get_billing_email(),
 			'merchant_auth' => 	$this->merchant_auth()
 		)));
