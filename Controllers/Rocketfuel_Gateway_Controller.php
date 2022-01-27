@@ -190,7 +190,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$user_data = base64_encode(json_encode(array(
 			'first_name' => $order->get_billing_first_name(),
-			'last_name' => $order->get_billing_first_name(),
+			'last_name' => $order->get_billing_last_name(),
 			'email' => $order->get_billing_email(),
 			'merchant_auth' => 	$this->merchant_auth()
 		)));

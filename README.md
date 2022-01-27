@@ -2,7 +2,7 @@
 RocketFuel Payment Method 2.0.3 for Woocommerce
 Requires at least: 5.5
 Tested up to: 5.8.1
-Stable tag: 2.1.6
+Stable tag: 2.1.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -35,3 +35,4 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 	  Thankyou page overlay allows users to see order summary
 2.1.5 Added Single Sign on
 2.1.6 Added Test Environments
+2.1.7 Removed Dark Background from thank you page
