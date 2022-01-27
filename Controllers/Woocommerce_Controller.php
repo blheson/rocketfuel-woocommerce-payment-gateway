@@ -116,7 +116,7 @@ class Woocommerce_Controller
                 margin-top: 12px;
                 border-radius: 3px;
                 font-weight: 700;
-                color: #fff;
+                color: #000 !important;
                 cursor: pointer;
             }
 
