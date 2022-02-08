@@ -383,15 +383,11 @@ class Woocommerce_Controller
 
 
                             try {
-                                console.log(userData.email,localStorage.getItem('rkfl_email'), "EMail used by user");
-
+                            
                                 if (userData.email !== localStorage.getItem('rkfl_email')) { //remove signon details when email is different
                                     localStorage.removeItem('rkfl_token');
                                     localStorage.removeItem('access');
-                                    console.log("email is different");
-                                }else{
-                                    console.log("email is the same");
-
+                             
                                 }
 
                                 rkflToken = localStorage.getItem('rkfl_token');
