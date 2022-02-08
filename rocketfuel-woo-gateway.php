@@ -6,9 +6,9 @@
  * Description: Pay with crypto using Rocketfuel
  * Author: Rocketfuel Team
  * Author URI: https://rocketfuelblockchain.com/integrations
- * Version: 2.1.7
+ * Version: 2.1.6.3
  * WC requires at least: 3.0.0
- * WC tested up to: 5.8
+ * WC tested up to: 5.9
  * Text Domain: rocketfuel-payment-gateway
  * Licence: GPLv3
  * 

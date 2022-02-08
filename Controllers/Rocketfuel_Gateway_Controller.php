@@ -56,7 +56,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		return isset($environment_data[$environment]) ? $environment_data[$environment] : 'https://app.rocketfuelblockchain.com/api';
 	}
-	public function init_form_fields(){
+	public function init_form_fields()
+	{
 		$all_wc_order_status = wc_get_order_statuses();
 
 		$this->form_fields = apply_filters('rocketfuel_admin_fields', array(
@@ -193,12 +194,10 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'email' => $order->get_billing_email(),
 			'merchant_auth' => 	$this->merchant_auth()
 		)));
-		
 		$merchant_cred = array(
 			'email' => $this->email,
 			'password' => $this->password
 		);
-
 		$data = array(
 			'cred' => $merchant_cred,
 			'endpoint' => $this->endpoint,
@@ -206,7 +205,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'amount' => $order->get_total(),
 				'cart' => $cart,
 				'merchant_id' => $this->merchant_id,
-				'currency' => "USD",
+				'currency' =>$order->get_currency(),
 				'order' => (string) $order_id,
 				'redirectUrl' => ''
 			)

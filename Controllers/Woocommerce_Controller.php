@@ -17,9 +17,7 @@ class Woocommerce_Controller
         add_action('plugins_loaded', array(__CLASS__, 'init_rocketfuel_gateway_class'));
         add_filter('woocommerce_payment_gateways', array(__CLASS__, 'add_gateway_class'));
         add_action('init', array(__CLASS__, 'register_partial_payment_order_status'));
-        add_action('woocommerce_before_thankyou', array(__CLASS__, 'administer_thank_you_page'));
-        // add_action('woocommerce_thankyou', array(__CLASS__, 'administer_thank_you_page'));
-
+        add_action('woocommerce_thankyou', array(__CLASS__, 'administer_thank_you_page'));
         add_filter('wc_order_statuses', array(__CLASS__, 'add_partial_payment_to_order_status'));
         if (!is_admin()) {
             add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_action'));
@@ -53,6 +51,7 @@ class Woocommerce_Controller
                 margin: 0;
                 font-size: 32px;
                 margin-right: 10px;
+                color: #fff;
             }
 
             .loader_rocket {
@@ -88,7 +87,8 @@ class Woocommerce_Controller
                 right: 0;
                 height: 100%;
                 z-index: 100000 !important;
-
+                position: fixed;
+                background: rgb(0 0 0 / 97%);
                 display: flex;
             }
 
@@ -101,7 +101,7 @@ class Woocommerce_Controller
                 display: flex;
                 align-items: center;
                 align-content: center;
-                /* justify-content: center; */
+                justify-content: center;
             }
 
             #rocketfuel_retrigger_payment button {
@@ -115,11 +115,15 @@ class Woocommerce_Controller
                 font-size: 17px;
                 margin-top: 12px;
                 border-radius: 3px;
-                font-weight: 700;
-                color: #000 !important;
+                font-weight: 300;
+                color: #fff;
                 cursor: pointer;
             }
 
+
+            #rocketfuel_retrigger_payment {
+                display: none;
+            }
 
             #rocketfuel_retrigger_payment button:hover {
                 outline: none;
@@ -182,24 +186,35 @@ class Woocommerce_Controller
                 text-decoration: none !important;
                 background: transparent !important;
             }
-
-            button#rocketfuel_retrigger_payment_button:disabled {
-                opacity: 0.4;
-            }
         </style>
 
+
         <input type="hidden" name="rocket_order_id" value="<?php echo esc_attr($order_id) ?>">
-
         <input type="hidden" name="rest_url" value="<?php echo esc_attr(rest_url() . Plugin::get_api_route_namespace() . '/update_order') ?>">
-
         <div id="rocket_fuel_payment_overlay_gateway">
             <div class="rocket_fuel_payment_overlay_wrapper_gateway">
-
+                <div id="rocketfuel_before_payment">
+                    <div class="rocketfuel_process_payment">
+                        <h3 class="indicate_text">Processing Payment</h3> <span>
+                            <div class="loader_rocket"></div>
+                        </span>
+                    </div>
+                </div>
                 <div id="rocketfuel_retrigger_payment">
                     <button id="rocketfuel_retrigger_payment_button">
-                        Pay with Rocketfuel
+                        Resume
                     </button>
+                    <div class="rocketfuel_exit_plan_wrapper">
 
+
+                        <a onClick="RocketfuelPaymentEngine.showFinalOrderDetails()" class="proceed-forward-rkfl" style="display: flex;align-items: center;opacity:0.4">Go back
+                            &nbsp; <figure style="display: flex;">
+                            <img src="<?php echo esc_url(Plugin::get_url('assets/img/forward.svg')); ?>" alt="">
+                        </figure>
+                        </a>
+                        <!-- <a onClick="RocketfuelPaymentEngine.showFinalOrderDetails()" class="completed-button-rkfl" style="display: flex;align-items: center;">Completed Payment ? </a> -->
+
+                    </div>
                 </div>
             </div>
         </div>
@@ -234,6 +249,8 @@ class Woocommerce_Controller
                 },
                 updateOrder: function(result) {
                     try {
+
+
 
                         let rest_url = document.querySelector("input[name=rest_url]").value;
 
@@ -272,8 +289,7 @@ class Woocommerce_Controller
 
                 },
                 showFinalOrderDetails: () => {
-                    document.getElementById('rocketfuel_retrigger_payment_button').remove();
-    
+                    document.getElementById('rocket_fuel_payment_overlay_gateway').remove();
                 },
                 startPayment: function(autoTriggerState = true) {
 
@@ -296,28 +312,39 @@ class Woocommerce_Controller
                 },
                 prepareRetrigger: function() {
 
+                    //hide processing payment
+                    document.getElementById('rocketfuel_before_payment').style.cssText = "visibility:hidden;height:0;width:0";
+
                     //show retrigger button
                     document.getElementById('rocketfuel_retrigger_payment_button').disabled = false;
-
+                    document.getElementById('rocketfuel_retrigger_payment').style.display = "block";
+                    // this.startPayment();
                 },
                 prepareProgressMessage: function() {
 
+                    //show processing payment
+                    document.getElementById('rocketfuel_before_payment').style.cssText = "visibility:visible;height:auto;width:auto";
+
                     //hide retrigger button
-                    document.getElementById('rocketfuel_retrigger_payment_button').innerText = "Payment in progress"; //revert trigger button message
+                    document.getElementById('rocketfuel_retrigger_payment_button').innerText = "Resume"; //revert trigger button message
+
+                    document.getElementById('rocketfuel_retrigger_payment').style.display = "none";
                 },
 
                 windowListener: function() {
                     let engine = this;
                     window.addEventListener('message', (event) => {
-
+                       
                         switch (event.data.type) {
                             case 'rocketfuel_iframe_close':
+                                if (document.getElementById('rocketfuel_before_payment'))
                                     engine.prepareRetrigger();
                                 break;
                             case 'rocketfuel_new_height':
-                                if (engine.watchIframeShow) {
+                                if (engine.watchIframeShow && document.getElementById('rocketfuel_before_payment')) {
                                     engine.prepareProgressMessage();
                                     engine.watchIframeShow = false;
+
                                 }
                                 break;
                             default:
@@ -333,14 +360,13 @@ class Woocommerce_Controller
                             reject();
                         }
                         let userData = RocketfuelPaymentEngine.getUserData();
-                        console.log("This is the userdata: ", userData);
                         let payload, response, rkflToken;
-                        // RocketfuelPaymentEngine.getAutoLoginInfo();
+                       
                         RocketfuelPaymentEngine.rkfl = new RocketFuel({
                             environment: RocketfuelPaymentEngine.getEnvironment()
                         });
 
-                        if (userData.first_name) {
+                        if (userData.first_name && userData.email) {
                             payload = {
                                 firstName: userData.first_name,
                                 lastName: userData.last_name,
@@ -354,10 +380,10 @@ class Woocommerce_Controller
 
 
                             try {
-                                if (RocketfuelPaymentEngine.getEnvironment() !== 'prod') { //remove signon details when testing
+                                // if (RocketfuelPaymentEngine.getEnvironment() !== 'prod') { //remove signon details when testing
                                     localStorage.removeItem('rkfl_token');
                                     localStorage.removeItem('access');
-                                }
+                                // }
 
                                 rkflToken = localStorage.getItem('rkfl_token');
 
@@ -378,9 +404,11 @@ class Woocommerce_Controller
                                     environment: RocketfuelPaymentEngine.getEnvironment()
                                 }
                                 if (rkflToken) {
-                                    rkflConfig.token = rkflToken
+                                    rkflConfig.token = rkflToken;
                                 }
+
                                 console.log(rkflConfig);
+
                                 RocketfuelPaymentEngine.rkfl = new RocketFuel(rkflConfig);
                                 resolve(true);
                             } catch (error) {
@@ -392,9 +420,7 @@ class Woocommerce_Controller
                     })
 
                 },
-                getAutoLoginInfo: () => {
-                    console.log("Data from localstorage: ", localStorage.getItem('rkfl_token'));
-                },
+          
                 init: async function() {
 
                     let engine = this;
@@ -425,7 +451,6 @@ class Woocommerce_Controller
             }
 
             RocketfuelPaymentEngine.init();
-            
         </script>
 
 <?php

@@ -1,7 +1,3 @@
-
-
-
-
 // version: 1.0.1
 (function () {
   this.RocketFuel = function () {
@@ -269,14 +265,13 @@ async function autoSignUp(rocketFuelDefaultOptions,domainInfo,env) {
         "*"
       );
     }
-
   }
 
   function createIFrame(iframeInfo, rocketFuelDefaultOptions) {
     let iframe = document.createElement("iframe");
     iframe.title = iframeInfo.iFrameId;
     iframe.id = iframeInfo.iFrameId;
-    // iframe.style.display = "none";
+    iframe.style.display = "none";
     iframe.style.border = 0;
     iframe.style.width = "365px";
     iframe.src = iframeInfo.iframeUrl[rocketFuelDefaultOptions.environment];
@@ -289,9 +284,9 @@ async function autoSignUp(rocketFuelDefaultOptions,domainInfo,env) {
   }
 
     //Make the DIV element draggagle:
-    // dragElement();
     document.addEventListener('DOMContentLoaded',dragElement);
 
+    
     function dragElement() {
       var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
       let iframeWrapper = document.createElement("div");
@@ -300,7 +295,7 @@ async function autoSignUp(rocketFuelDefaultOptions,domainInfo,env) {
       iframeWrapperHeader.id = "iframeWrapperHeader"
       document.querySelector('body').appendChild(iframeWrapper).appendChild(iframeWrapperHeader);
 
-      document.getElementById("iframeWrapper").style.cssText = "width: 365px; position: fixed; z-index: 9; top: 10px; right: 10px; box-shadow: 0px 4px 7px rgb(0 0 0 / 30%);";
+      document.getElementById("iframeWrapper").style.cssText = "width: 365px; position: absolute; z-index: 9; top: 10px; right: 10px; box-shadow: 0px 4px 7px rgb(0 0 0 / 30%);";
       document.getElementById("iframeWrapperHeader").style.cssText = "padding: 10px; cursor: move; z-index: 10; position: absolute; width: 50%; height: 62px"
 
       document.getElementById("iframeWrapperHeader").onmousedown = dragMouseDown;
