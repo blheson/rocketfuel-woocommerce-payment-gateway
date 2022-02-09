@@ -205,7 +205,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'amount' => $order->get_total(),
 				'cart' => $cart,
 				'merchant_id' => $this->merchant_id,
-				'currency' => "USD",
+				'currency' =>$order->get_currency(),
 				'order' => (string) $order_id,
 				'redirectUrl' => ''
 			)
