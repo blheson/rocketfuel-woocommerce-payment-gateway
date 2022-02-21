@@ -19,9 +19,57 @@ class Woocommerce_Controller
         add_action('init', array(__CLASS__, 'register_partial_payment_order_status'));
         add_action('woocommerce_thankyou', array(__CLASS__, 'administer_thank_you_page'));
         add_filter('wc_order_statuses', array(__CLASS__, 'add_partial_payment_to_order_status'));
+        add_action('wp_ajax_nopriv_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
+        add_action('wp_ajax_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
         if (!is_admin()) {
             add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_action'));
         }
+    }
+
+    public static function process_user_data()
+    {
+
+
+        $gateway = new Rocketfuel_Gateway_Controller();
+        $response = new \stdClass();
+        file_put_contents(__DIR__ . '/count.json', '1');
+
+
+
+        $cart = $gateway->sortCart(WC()->cart->get_cart());
+        file_put_contents(__DIR__ . '/count.json', '2');
+
+        $merchant_cred = array(
+            'email' => $gateway->email,
+            'password' => $gateway->password
+        );
+
+        $data = array(
+            'cred' => $merchant_cred,
+            'endpoint' => $gateway->endpoint,
+            'body' => array(
+                'amount' => WC()->cart->get_cart_contents_total(),
+                'cart' => $cart,
+                'merchant_id' => $gateway->merchant_id,
+                'currency' => get_woocommerce_currency("USD"),
+                'order' => (string) microtime(),
+                'redirectUrl' => ''
+            )
+        );
+        unset($gateway);
+        // Get search params.
+        file_put_contents(__DIR__ . '/fram.json', json_encode($data));
+
+        $payment_response = Process_Payment_Controller::process_payment($data);
+
+        file_put_contents(__DIR__ . '/payment res.json', json_encode($payment_response));
+
+        if (!$payment_response) {
+            wp_send_json_error(array('error' => true, 'message' => 'Payment cannot be completed'));
+        }
+
+        $result = json_decode($payment_response);
+        wp_send_json_success($result);
     }
     public static function enqueue_action()
     {
@@ -209,8 +257,8 @@ class Woocommerce_Controller
 
                         <a onClick="RocketfuelPaymentEngine.showFinalOrderDetails()" class="proceed-forward-rkfl" style="display: flex;align-items: center;opacity:0.4">Go back
                             &nbsp; <figure style="display: flex;">
-                            <img src="<?php echo esc_url(Plugin::get_url('assets/img/forward.svg')); ?>" alt="">
-                        </figure>
+                                <img src="<?php echo esc_url(Plugin::get_url('assets/img/forward.svg')); ?>" alt="">
+                            </figure>
                         </a>
                         <!-- <a onClick="RocketfuelPaymentEngine.showFinalOrderDetails()" class="completed-button-rkfl" style="display: flex;align-items: center;">Completed Payment ? </a> -->
 
@@ -224,7 +272,7 @@ class Woocommerce_Controller
             /**
              * Payment Engine object
              */
-            const RocketfuelPaymentEngine = {
+            let RocketfuelPaymentEngine = {
 
                 order_id: document.querySelector('input[name=rocket_order_id]').value,
                 url: new URL(window.location.href),
@@ -334,7 +382,7 @@ class Woocommerce_Controller
                 windowListener: function() {
                     let engine = this;
                     window.addEventListener('message', (event) => {
-                       
+
                         switch (event.data.type) {
                             case 'rocketfuel_iframe_close':
                                 if (document.getElementById('rocketfuel_before_payment'))
@@ -353,8 +401,8 @@ class Woocommerce_Controller
 
                     })
                 },
-                setLocalStorage: function(key,value){
-                    localStorage.setItem(key,value);
+                setLocalStorage: function(key, value) {
+                    localStorage.setItem(key, value);
                 },
                 initRocketFuel: async function() {
                     return new Promise(async (resolve, reject) => {
@@ -364,7 +412,7 @@ class Woocommerce_Controller
                         }
                         let userData = RocketfuelPaymentEngine.getUserData();
                         let payload, response, rkflToken;
-                       
+
                         RocketfuelPaymentEngine.rkfl = new RocketFuel({
                             environment: RocketfuelPaymentEngine.getEnvironment()
                         });
@@ -383,11 +431,11 @@ class Woocommerce_Controller
 
 
                             try {
-                            
+
                                 if (userData.email !== localStorage.getItem('rkfl_email')) { //remove signon details when email is different
                                     localStorage.removeItem('rkfl_token');
                                     localStorage.removeItem('access');
-                             
+
                                 }
 
                                 rkflToken = localStorage.getItem('rkfl_token');
@@ -395,7 +443,7 @@ class Woocommerce_Controller
                                 if (!rkflToken) {
 
                                     response = await RocketfuelPaymentEngine.rkfl.rkflAutoSignUp(payload, RocketfuelPaymentEngine.getEnvironment());
-                                  
+
                                     // RocketfuelPaymentEngine.setLocalStorage('rkfl_first_name',userData.first_name);
                                     // RocketfuelPaymentEngine.setLocalStorage('rkfl_last_name',userData.last_name);
                                     RocketfuelPaymentEngine.setLocalStorage('rkfl_email', userData.email);
@@ -431,7 +479,7 @@ class Woocommerce_Controller
                     })
 
                 },
-          
+
                 init: async function() {
 
                     let engine = this;

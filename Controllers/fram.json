@@ -1,0 +1,1 @@
+{"cred":{"email":"mfvthaemhkr@canfga.org","password":"Test@123"},"endpoint":"https:\/\/qa-app.rocketdemo.net\/api","body":{"amount":"1","cart":[{"name":"Test 2","id":"22","price":"1","quantity":"1"}],"merchant_id":"2335689b-7a4d-420a-9cc0-f5d765a96967","currency":"NGN","order":"0.46513200 1645448526","redirectUrl":""}}
