@@ -367,28 +367,17 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 					return environment || 'prod';
 				},
 				getUserData: function() {
-					// let user_data = this.url.searchParams.get("user_data");
-
-					// admin_url_rocketfuel
-					// const request = new Request(url);
-
-					// const init = {
-					// 	method: 'GET',
-					// };
 
 
 					let user_data = {
-						first_name: document.getElementById('billing_first_name').value,
-						last_name: document.getElementById('billing_last_name').value,
-						email: document.getElementById('billing_email').value,
-						merchantAuth: document.querySelector('input[name=merchant_auth_rocketfuel]').value
+						first_name: document.getElementById('billing_first_name') ? document.getElementById('billing_first_name').value : null,
+						last_name: document.getElementById('billing_last_name') ? document.getElementById('billing_last_name').value : null,
+						email: document.getElementById('billing_email') ? document.getElementById('billing_email').value : null,
+						merchant_auth: document.querySelector('input[name=merchant_auth_rocketfuel]') ? document.querySelector('input[name=merchant_auth_rocketfuel]').value : null
 					}
 
 					if (!user_data) return false;
 
-					// let user_json = atob(user_data);
-
-					// return JSON.parse(user_json);
 					return user_data;
 				},
 				updateOrder: function(result) {
@@ -400,7 +389,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 						console.log("order_id :", RocketfuelPaymentEngine.order_id);
 
 						let status = "wc-on-hold";
-						
+
 						let result_status = parseInt(result.status);
 
 						if (result_status == 101) {
@@ -417,22 +406,9 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 						document.getElementById('order_status_rocketfuel').value = status;
 
-						// let fd = new FormData();
-						// fd.append("order_id", RocketfuelPaymentEngine.order_id);
-						// fd.append("status", status);
-						// fetch(rest_url, {
-						// 	method: "POST",
-						// 	body: fd
-						// }).then(res => res.json()).then(result => {
-						// 	console.log(result)
-
-						// }).catch(e => {
-						// 	console.log(e)
-
-						// })
 
 					} catch (error) {
-
+						console.error('Error from update order method', error);
 					}
 
 				},
@@ -463,9 +439,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 					//show retrigger button
 					document.getElementById('rocketfuel_retrigger_payment_button').disabled = false;
-					RocketfuelPaymentEngine.updateOrder({
-						status: '22'
-					});
+
 					document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = 'Pay with Rocketfuel';
 					// document.getElementById('rocketfuel_retrigger_payment').style.display = "block";
 
@@ -529,7 +503,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 
 							try {
-								console.log('details', userData.email, localStorage.getItem('rkfl_email'),payload)
+								console.log('details', userData.email, localStorage.getItem('rkfl_email'), payload)
 								if (userData.email !== localStorage.getItem('rkfl_email')) { //remove signon details when email is different
 									localStorage.removeItem('rkfl_token');
 									localStorage.removeItem('access');
