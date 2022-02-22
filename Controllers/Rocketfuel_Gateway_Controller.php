@@ -146,9 +146,12 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				align-content: center;
 				align-items: baseline;
 			}
+
 			#Rocketfuel {
 				display: block;
+				position:fixed
 			}
+
 			#rocketfuel_process_payment_button {
 				background-color: #229633;
 				border: #229633;
@@ -293,6 +296,13 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				text-decoration: none !important;
 				background: transparent !important;
 			}
+
+			.rocketfuel_retrigger_payment_button {
+				padding: 10px;
+				background: #983612;
+				color: #fff;
+				cursor: pointer;
+			}
 		</style>
 
 		<div>
@@ -314,11 +324,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				getUUID: async function() {
 					let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
 					let response = await fetch(url);
-					if(!response.ok){
+					if (!response.ok) {
 						return false;
 					}
 					let result = await response.json();
-					if(!result.data?.result?.uuid){
+					if (!result.data?.result?.uuid) {
 						return false;
 					}
 					// console.log("res", result.data.result.uuid);
