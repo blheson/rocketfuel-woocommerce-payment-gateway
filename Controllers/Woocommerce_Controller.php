@@ -17,24 +17,48 @@ class Woocommerce_Controller
         add_action('plugins_loaded', array(__CLASS__, 'init_rocketfuel_gateway_class'));
         add_filter('woocommerce_payment_gateways', array(__CLASS__, 'add_gateway_class'));
         add_action('init', array(__CLASS__, 'register_partial_payment_order_status'));
-        add_action('woocommerce_thankyou', array(__CLASS__, 'administer_thank_you_page'));
+        // add_action('woocommerce_thankyou', array(__CLASS__, 'administer_thank_you_page'));
         add_filter('wc_order_statuses', array(__CLASS__, 'add_partial_payment_to_order_status'));
         add_action('wp_ajax_nopriv_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
         add_action('wp_ajax_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
         if (!is_admin()) {
             add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_action'));
         }
+        add_action('woocommerce_after_order_notes', 'rkfl_custom_checkout_field');
     }
+    public function rkfl_custom_checkout_field($checkout)
+    {
+        echo '<div id="custom_checkout_field">';
+        woocommerce_form_field(
+            'rkfl-temp-order',
+            array(
 
+                'type' => 'text',
+
+                'class' => array(
+
+                    'rkfl-temp-order form-row-wide'
+
+                ),
+
+                'label' => __('s'),
+
+                'placeholder' => __('New Custom Field'),
+
+            ),
+
+            $checkout->get_value('custom_field_name')
+        );
+
+        echo '</div>';
+    }
     public static function process_user_data()
     {
 
 
         $gateway = new Rocketfuel_Gateway_Controller();
         $response = new \stdClass();
-        file_put_contents(__DIR__ . '/count.json',json_encode(WC()->cart->get_totals()));
-
-
+ 
 
         $cart = $gateway->sortCart(WC()->cart->get_cart());
         file_put_contents(__DIR__ . '/count.json', '2');
@@ -57,10 +81,10 @@ class Woocommerce_Controller
             )
         );
         unset($gateway);
-     
+
         $payment_response = Process_Payment_Controller::process_payment($data);
 
-  
+
 
         if (!$payment_response) {
             wp_send_json_error(array('error' => true, 'message' => 'Payment cannot be completed'));
