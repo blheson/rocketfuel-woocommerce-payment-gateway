@@ -32,7 +32,7 @@ class Woocommerce_Controller
 
         $gateway = new Rocketfuel_Gateway_Controller();
         $response = new \stdClass();
-        file_put_contents(__DIR__ . '/count.json', '1');
+        file_put_contents(__DIR__ . '/count.json',json_encode(WC()->cart->get_totals()));
 
 
 
@@ -48,7 +48,7 @@ class Woocommerce_Controller
             'cred' => $merchant_cred,
             'endpoint' => $gateway->endpoint,
             'body' => array(
-                'amount' => WC()->cart->get_cart_contents_total(),
+                'amount' => WC()->cart->total,
                 'cart' => $cart,
                 'merchant_id' => $gateway->merchant_id,
                 'currency' => get_woocommerce_currency("USD"),
@@ -57,12 +57,10 @@ class Woocommerce_Controller
             )
         );
         unset($gateway);
-        // Get search params.
-        file_put_contents(__DIR__ . '/fram.json', json_encode($data));
-
+     
         $payment_response = Process_Payment_Controller::process_payment($data);
 
-        file_put_contents(__DIR__ . '/payment res.json', json_encode($payment_response));
+  
 
         if (!$payment_response) {
             wp_send_json_error(array('error' => true, 'message' => 'Payment cannot be completed'));
@@ -236,10 +234,11 @@ class Woocommerce_Controller
             }
         </style>
 
-
         <input type="hidden" name="rocket_order_id" value="<?php echo esc_attr($order_id) ?>">
+
         <input type="hidden" name="rest_url" value="<?php echo esc_attr(rest_url() . Plugin::get_api_route_namespace() . '/update_order') ?>">
-        <div id="rocket_fuel_payment_overlay_gateway">
+
+        <div id="rocket_fuel_payment_overlay_gateway" style="display: none;">
             <div class="rocket_fuel_payment_overlay_wrapper_gateway">
                 <div id="rocketfuel_before_payment">
                     <div class="rocketfuel_process_payment">
