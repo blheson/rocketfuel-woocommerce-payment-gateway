@@ -24,8 +24,7 @@ class Woocommerce_Controller
         if (!is_admin()) {
             add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_action'));
         }
-        add_action('woocommerce_after_order_notes', array(__CLASS__, 'rkfl_custom_checkout_field'));
-
+    
         add_action('woocommerce_checkout_update_order_meta', array(__CLASS__, 'add_temp_id_to_order'));
     }
     public function add_temp_id_to_order($order_id)

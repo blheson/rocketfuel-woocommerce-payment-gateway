@@ -334,7 +334,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			 */
 			var RocketfuelPaymentEngine = {
 
-				order_id: document.querySelector('input[name=temp_order_rocketfuel]').value,
+				order_id: '',
 				url: new URL(window.location.href),
 				watchIframeShow: false,
 				// uuid: RocketfuelPaymentEngine.url.searchParams.get("uuid"),
@@ -529,7 +529,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 
 							try {
-								console.log('details', userData.email, localStorage.getItem('rkfl_email'))
+								console.log('details', userData.email, localStorage.getItem('rkfl_email'),payload)
 								if (userData.email !== localStorage.getItem('rkfl_email')) { //remove signon details when email is different
 									localStorage.removeItem('rkfl_token');
 									localStorage.removeItem('access');
