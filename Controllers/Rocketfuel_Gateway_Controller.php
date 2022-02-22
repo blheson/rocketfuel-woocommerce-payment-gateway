@@ -45,9 +45,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 	}
-
-	public function get_endpoint($environment)
-	{
+	public function get_endpoint($environment){
+		
 		$environment_data = array(
 			'prod' => 'https://app.rocketfuelblockchain.com/api',
 			'dev' => 'https://dev-app.rocketdemo.net/api',
@@ -604,6 +603,17 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			);
 		}
 
+		if((null !== WC()->cart->get_shipping_total()) && (!strpos(strtolower(WC()->cart->get_shipping_total()), 'free'))){
+
+			$data[] = array(
+				'name' => 'Shipping',
+				'id' => microtime(),
+				'price'=> WC()->cart->get_shipping_total(),
+				'quantity' => '1'
+			);
+
+		}
+		
 		return $data;
 	}
 	/**
@@ -611,12 +621,16 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 * @param WP_REST_REQUEST $request_data
 	 * @return void
 	 */
-	public function update_order($request_data)
-	{
+	public function update_order($request_data){
+
 		$data = $request_data->get_params();
+
 		if (!$data['order_id'] || !$data['status']) {
+
 			echo json_encode(array('status' => 'failed', 'message' => 'Order was not updated. Invalid parameter. You must pass in order_id and status'));
+
 			exit;
+
 		}
 
 		$order_id = $data['order_id'];
