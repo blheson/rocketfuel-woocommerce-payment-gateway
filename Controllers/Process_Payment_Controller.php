@@ -14,8 +14,6 @@ class Process_Payment_Controller{
 
 		$response = self::auth( $data );
 
-
-
 		if ( is_wp_error( $response ) ) {
 			return rest_ensure_response( $response );
 		}
