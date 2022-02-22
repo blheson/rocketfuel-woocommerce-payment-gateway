@@ -24,41 +24,45 @@ class Woocommerce_Controller
         if (!is_admin()) {
             add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_action'));
         }
-        add_action('woocommerce_after_order_notes', 'rkfl_custom_checkout_field');
+        add_action('woocommerce_after_order_notes', array(__CLASS__, 'rkfl_custom_checkout_field'));
+
+        add_action('woocommerce_checkout_update_order_meta', array(__CLASS__, 'add_temp_id_to_order'));
     }
-    public function rkfl_custom_checkout_field($checkout)
+    public function add_temp_id_to_order($order_id)
     {
-        echo '<div id="custom_checkout_field">';
-        woocommerce_form_field(
-            'rkfl-temp-order',
-            array(
 
-                'type' => 'text',
+        if (isset($_POST)) {
+            file_put_contents(__DIR__ . '/afterpost.json', "\n" .     json_encode($_POST) . "\n", FILE_APPEND);
+            update_post_meta($order_id, 'rocketfuel_temp_orderid', sanitize_text_field($_POST['uuid_rocketfuel']));
+            if (null !== $_POST['status'] && 'wc-on-hold' !==  $_POST['status']) {
+                try {
+                    $order = wc_get_order($order_id);
 
-                'class' => array(
+                    $order->update_status($_POST['status']);
+                } catch (\Throwable $th) {
+                    //throw $th;
+                }
+            }
+        }
 
-                    'rkfl-temp-order form-row-wide'
+        // file_put_contents(__DIR__ . '/afterdat.json', "\n" . 	json_encode($data) . "\n", FILE_APPEND);
 
-                ),
 
-                'label' => __('s'),
 
-                'placeholder' => __('New Custom Field'),
+        // if (!empty($_POST['rkfl-temp-order'])) {
 
-            ),
 
-            $checkout->get_value('custom_field_name')
-        );
 
-        echo '</div>';
+        //     }
     }
+
     public static function process_user_data()
     {
 
 
         $gateway = new Rocketfuel_Gateway_Controller();
         $response = new \stdClass();
- 
+
 
         $cart = $gateway->sortCart(WC()->cart->get_cart());
         file_put_contents(__DIR__ . '/count.json', '2');

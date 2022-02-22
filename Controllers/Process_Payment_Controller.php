@@ -24,7 +24,7 @@ class Process_Payment_Controller{
 
 		$result = json_decode( $response_body );
 		if( $response_code != '200'){
-			wc_add_notice( __( 'Authorization cannot be completed', 'rocketfuel-payment-gateway' ), 'error' );
+			// wc_add_notice( __( 'Authorization cannot be completed', 'rocketfuel-payment-gateway' ), 'error' );
 			return false; 
 		}
 	
@@ -38,7 +38,7 @@ class Process_Payment_Controller{
 	
 
 		if( $charge_response_code != '200' ){
-			wc_add_notice( __( 'Could not establish an order', 'rocketfuel-payment-gateway' ), 'error' );
+			// wc_add_notice( __( 'Could not establish an order', 'rocketfuel-payment-gateway' ), 'error' );
 			return false;
 		}
 
