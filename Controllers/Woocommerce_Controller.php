@@ -31,7 +31,7 @@ class Woocommerce_Controller
     {
 
         if (isset($_POST)) {
-            file_put_contents(__DIR__ . '/afterpost.json', "\n" .     json_encode($_POST) . "\n", FILE_APPEND);
+
             update_post_meta($order_id, 'rocketfuel_temp_orderid', sanitize_text_field($_POST['uuid_rocketfuel']));
             if (null !== $_POST['status'] && 'wc-on-hold' !==  $_POST['status']) {
                 try {
@@ -44,15 +44,7 @@ class Woocommerce_Controller
             }
         }
 
-        // file_put_contents(__DIR__ . '/afterdat.json', "\n" . 	json_encode($data) . "\n", FILE_APPEND);
-
-
-
-        // if (!empty($_POST['rkfl-temp-order'])) {
-
-
-
-        //     }
+ 
     }
 
     public static function process_user_data()
