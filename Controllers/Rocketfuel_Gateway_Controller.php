@@ -709,20 +709,47 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		global $woocommerce;
 
 		$order = wc_get_order($order_id);
-
+		$temporary_order_id = get_post_meta($order_id,'rocketfuel_temp_orderid');
+		$this->swap_order_id('s', $order_id);
 		// Remove cart
 		$woocommerce->cart->empty_cart();
 		// Return thankyou redirect
 		$buildUrl = $this->get_return_url($order);
 
-		return array(
-			'result' => 'success',
-			'redirect' => $buildUrl
-		);
+		// return array(
+		// 	'result' => 'success',
+		// 	'redirect' => $buildUrl
+		// );
 	}
 	public function merchant_auth()
 	{
 		return $this->get_encrypted($this->merchant_id);
+	}
+	public function swap_order_id($temp_order_id, $newOrderId)
+	{
+		$data = json_encode(array('tempOrderId' => $temp_order_id, 'newOrderId' => $newOrderId));
+
+		$order_payload = $this->get_encrypted($data, false);
+
+		$merchant_id = base64_encode($this->merchant_id);
+
+		$body = wp_json_encode(array('merchantAuth' => $order_payload, 'merchantId' => $merchant_id));
+
+		file_put_contents(__DIR__ . '/log.json', $body . "\n");
+
+		$args = array(
+			'timeout'	=> 45,
+			'headers' => array('Content-Type' => 'application/json'),
+			'body' => $body
+		);
+
+		$response = wp_remote_post($this->endpoint . '/update/orderId', $args);
+		$response_code = wp_remote_retrieve_response_code($response);
+
+		$response_body = wp_remote_retrieve_body($response);
+		file_put_contents(__DIR__ . '/response.json', $response_body . "\n");
+		file_put_contents(__DIR__ . '/responsecode.json', $response_code  . "\n");
+		return true;
 	}
 	/**
 	 * Encrypt Data
@@ -730,24 +757,30 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 * @param $to_crypt string to encrypt
 	 * @return string
 	 */
-	public function get_encrypted($to_crypt)
+	public function get_encrypted($to_crypt, $general_public_key = true)
 	{
 
 		$out = '';
 
-		$pub_key_path = dirname(__FILE__) . '/rf.pub';
+		if ($general_public_key) {
+			$pub_key_path = dirname(__FILE__) . '/rf.pub';
 
-		if (!file_exists($pub_key_path)) {
-			return false;
+			if (!file_exists($pub_key_path)) {
+				return false;
+			}
+			$cert =  file_get_contents($pub_key_path);
+		} else {
+			$cert = $this->public_key;
 		}
-		$cert = file_get_contents($pub_key_path);
+
 
 		$public_key = openssl_pkey_get_public($cert);
 
-		$key_lenght = openssl_pkey_get_details($public_key);
+		$key_length = openssl_pkey_get_details($public_key);
 
-		$part_len = $key_lenght['bits'] / 8 - 11;
+		$part_len = $key_length['bits'] / 8 - 11;
 		$parts = str_split($to_crypt, $part_len);
+
 		foreach ($parts as $part) {
 			$encrypted_temp = '';
 			openssl_public_encrypt($part, $encrypted_temp, $public_key, OPENSSL_PKCS1_OAEP_PADDING);
