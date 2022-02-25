@@ -136,10 +136,17 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			echo '<span style="color:red">' . __('Vendor should fill in the settings page to start using Rocketfuel', 'rocketfuel') . '</span>';
 			return;
 		}
-		$user_data = $this->process_user_data();
+		$result = $this->process_user_data();
+	 
+		file_put_contents(__DIR__ . '/log.json', "\n" . 'Response from rkfl for uuid' . "\n" . json_encode($result) . "\n", FILE_APPEND);
 
-		if (null !== $user_data->result) {
-			$uuid = $user_data->result->uuid;
+
+		if ($result && null !== $result['temporary_order_id']) {
+			$temp_orderid_rocketfuel = $result['temporary_order_id'];
+		}
+
+		if ($result &&  null !== $result['result']->result) {
+			$uuid = $result['result']->result->uuid;
 		}
 
 
@@ -317,6 +324,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		</style>
 
 		<div>
+			<p>Click to pay</p>
 			<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button">Pay with Rocketfuel</div>
 		</div>
 		<div id="rkfl_error"></div>
@@ -325,10 +333,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()) ?>">
 		<input type="hidden" name="uuid_rocketfuel" value="<?php echo esc_attr($uuid) ?>">
+		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel) ?>">
+
 		<input type="hidden" name="order_status_rocketfuel" value="wc-on-hold">
 
 		<script>
-			// (() => {
 			/**
 			 * Payment Engine object
 			 */
@@ -337,13 +346,15 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				order_id: '',
 				url: new URL(window.location.href),
 				watchIframeShow: false,
-				// uuid: RocketfuelPaymentEngine.url.searchParams.get("uuid"),
+				rkflConfig: null,
+
 				getUUID: async function() {
 					let uuid = document.querySelector('input[name=uuid_rocketfuel]').value;
 					if (uuid) {
 						return uuid;
 					}
 					let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
+
 					let response = await fetch(url);
 
 					if (!response.ok) {
@@ -356,9 +367,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 						return false;
 					}
 
-					RocketfuelPaymentEngine.order_id = result.data.result.uuid;
-					document.querySelector('input[name=uuid_rocketfuel]').value = result.data.result.uuid
-					// console.log("res", result.data.result.uuid);
+					RocketfuelPaymentEngine.order_id = result.data.temporary_order_id;
+
+					document.querySelector('input[name=temp_orderid_rocketfuel]').value = result.data.temporary_order_id;
+
+					console.log("res", result.data.result.uuid);
 					return result.data.result.uuid;
 				},
 				getEnvironment: function() {
@@ -434,22 +447,14 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				},
 				prepareRetrigger: function() {
 
-					//hide processing payment
-					// document.getElementById('rocketfuel_before_payment').style.cssText = "visibility:hidden;height:0;width:0";
-
 					//show retrigger button
 					document.getElementById('rocketfuel_retrigger_payment_button').disabled = false;
 
 					document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = 'Pay with Rocketfuel';
-					// document.getElementById('rocketfuel_retrigger_payment').style.display = "block";
 
 				},
 				prepareProgressMessage: function() {
 
-					//show processing payment
-					// document.getElementById('rocketfuel_before_payment').style.cssText = "visibility:visible;height:auto;width:auto";
-
-					//hide retrigger button
 					//revert trigger button message
 					document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
 					// document.getElementById('rocketfuel_retrigger_payment').style.display = "none";
@@ -489,6 +494,12 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 							environment: RocketfuelPaymentEngine.getEnvironment()
 						});
 
+						let uuid = await this.getUUID();
+						RocketfuelPaymentEngine.rkflConfig = {
+							uuid,
+							callback: RocketfuelPaymentEngine.updateOrder,
+							environment: RocketfuelPaymentEngine.getEnvironment()
+						}
 						if (userData.first_name && userData.email) {
 							payload = {
 								firstName: userData.first_name,
@@ -528,27 +539,33 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 								}
 
-								let uuid = await this.getUUID();
-								const rkflConfig = {
-									uuid,
-									callback: RocketfuelPaymentEngine.updateOrder,
-									environment: RocketfuelPaymentEngine.getEnvironment()
-								}
+								// const rkflConfig = {
+								// 	uuid,
+								// 	callback: RocketfuelPaymentEngine.updateOrder,
+								// 	environment: RocketfuelPaymentEngine.getEnvironment()
+								// }
 								if (rkflToken) {
-									rkflConfig.token = rkflToken;
+									RocketfuelPaymentEngine.rkflConfig.token = rkflToken;
 								}
 
-								console.log(rkflConfig);
 
-								RocketfuelPaymentEngine.rkfl = new RocketFuel(rkflConfig);
+
 
 								resolve(true);
 							} catch (error) {
-								reject();
+								reject(error?.message);
 							}
 
 						}
-						resolve('no auto');
+						if (RocketfuelPaymentEngine.rkflConfig) {
+
+							RocketfuelPaymentEngine.rkfl = new RocketFuel(RocketfuelPaymentEngine.rkflConfig);
+							resolve(true);
+
+						} else {
+							resolve(false);
+						}
+
 					})
 
 				},
@@ -589,7 +606,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				console.log('clicked');
 				RocketfuelPaymentEngine.init();
 			})
-			// })
 		</script>
 <?php
 	}
@@ -601,6 +617,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$cart = $this->sortCart(WC()->cart->get_cart());
 
+		$temporary_order_id = md5(microtime());
 
 		$merchant_cred = array(
 			'email' => $this->email,
@@ -615,23 +632,26 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'cart' => $cart,
 				'merchant_id' => $this->merchant_id,
 				'currency' => get_woocommerce_currency("USD"),
-				'order' => (string) microtime(),
+				'order' => (string)$temporary_order_id,
 				'redirectUrl' => ''
 			)
 		);
 
+	
 
 		$payment_response = Process_Payment_Controller::process_payment($data);
 
+		file_put_contents(__DIR__ . '/here.json',json_encode($payment_response));
 
-		if (!$payment_response) {
-			// wp_send_json_error(array('error' => true, 'message' => 'Payment cannot be completed'));
+		if (!$payment_response && !is_string($payment_response)) {
+
 			return false;
 		}
 
+	
 		$result = json_decode($payment_response);
 
-		return $result;
+		return array('result' => $result, 'temporary_order_id' => $temporary_order_id);
 	}
 	/**
 	 * Parse cart items and prepare for order
@@ -709,17 +729,21 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		global $woocommerce;
 
 		$order = wc_get_order($order_id);
-		$temporary_order_id = get_post_meta($order_id,'rocketfuel_temp_orderid');
-		$this->swap_order_id('s', $order_id);
+
+		$temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
+
+		file_put_contents(__DIR__ . '/log.json', "\n" . 'Temporary order id ' . "\n"  . $temporary_order_id . "\n", FILE_APPEND);
+
+		$this->swap_order_id($temporary_order_id, $order_id);
 		// Remove cart
-		$woocommerce->cart->empty_cart();
+		// $woocommerce->cart->empty_cart();
 		// Return thankyou redirect
 		$buildUrl = $this->get_return_url($order);
 
-		// return array(
-		// 	'result' => 'success',
-		// 	'redirect' => $buildUrl
-		// );
+		return array(
+			'result' => 'success',
+			'redirect' => $buildUrl
+		);
 	}
 	public function merchant_auth()
 	{
@@ -727,15 +751,23 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	}
 	public function swap_order_id($temp_order_id, $newOrderId)
 	{
-		$data = json_encode(array('tempOrderId' => $temp_order_id, 'newOrderId' => $newOrderId));
+		$data = json_encode(array('tempOrderId' =>
+		$temp_order_id, 'newOrderId' => $newOrderId));
+
+
+		file_put_contents(__DIR__ . '/encryteddata.json', "\n" . 'Encrypted order ids using public key' .  "\n" .	$data . "\n", FILE_APPEND);
+
 
 		$order_payload = $this->get_encrypted($data, false);
+
+		file_put_contents(__DIR__ . '/log.json', "\n" . 'Encrypted order ids using public key' .  "\n" . $order_payload . "\n", FILE_APPEND);
+
 
 		$merchant_id = base64_encode($this->merchant_id);
 
 		$body = wp_json_encode(array('merchantAuth' => $order_payload, 'merchantId' => $merchant_id));
 
-		file_put_contents(__DIR__ . '/log.json', $body . "\n");
+		file_put_contents(__DIR__ . '/log.json', "\n" . 'Encoded payload for update order Id' . "\n" . $body . "\n", FILE_APPEND);
 
 		$args = array(
 			'timeout'	=> 45,
@@ -743,12 +775,18 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'body' => $body
 		);
 
+
 		$response = wp_remote_post($this->endpoint . '/update/orderId', $args);
+
+
 		$response_code = wp_remote_retrieve_response_code($response);
 
 		$response_body = wp_remote_retrieve_body($response);
-		file_put_contents(__DIR__ . '/response.json', $response_body . "\n");
-		file_put_contents(__DIR__ . '/responsecode.json', $response_code  . "\n");
+
+		file_put_contents(__DIR__ . '/log.json', "\n" . 'Response from update order id' .  "\n" . json_encode($response_body) . "\n", FILE_APPEND);
+
+
+
 		return true;
 	}
 	/**

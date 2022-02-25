@@ -32,7 +32,7 @@ class Woocommerce_Controller
 
         if (isset($_POST)) {
 
-            update_post_meta($order_id, 'rocketfuel_temp_orderid', sanitize_text_field($_POST['uuid_rocketfuel']));
+            update_post_meta($order_id, 'rocketfuel_temp_orderid', sanitize_text_field($_POST['temp_orderid_rocketfuel']));
             
             if (null !== $_POST['status'] && 'wc-on-hold' !==  $_POST['status']) {
                 try {
