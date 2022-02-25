@@ -32,7 +32,8 @@ class Woocommerce_Controller
 
         if (isset($_POST)) {
 
-            update_post_meta($order_id, 'rocketfuel_temp_orderid', sanitize_text_field($_POST['uuid_rocketfuel']));
+            update_post_meta($order_id, 'rocketfuel_temp_orderid', sanitize_text_field($_POST['temp_orderid_rocketfuel']));
+            
             if (null !== $_POST['status'] && 'wc-on-hold' !==  $_POST['status']) {
                 try {
                     $order = wc_get_order($order_id);
@@ -56,8 +57,7 @@ class Woocommerce_Controller
 
 
         $cart = $gateway->sortCart(WC()->cart->get_cart());
-        file_put_contents(__DIR__ . '/count.json', '2');
-
+  
         $merchant_cred = array(
             'email' => $gateway->email,
             'password' => $gateway->password

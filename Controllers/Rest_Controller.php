@@ -22,6 +22,7 @@ class Rest_Controller
 
         // address for rocketfuel callback
         $gateway = new Rocketfuel_Gateway_Controller();
+        
         register_rest_route(
             Plugin::get_api_route_namespace(),
             'payment',
