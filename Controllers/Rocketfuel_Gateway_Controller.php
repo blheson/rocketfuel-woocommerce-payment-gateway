@@ -138,7 +138,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		}
 		$result = $this->process_user_data();
 	 
-		file_put_contents(__DIR__ . '/log.json', "\n" . 'Response from rkfl for uuid' . "\n" . json_encode($result) . "\n", FILE_APPEND);
 
 
 		if ($result && null !== $result['temporary_order_id']) {
@@ -641,8 +640,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$payment_response = Process_Payment_Controller::process_payment($data);
 
-		file_put_contents(__DIR__ . '/here.json',json_encode($payment_response));
-
 		if (!$payment_response && !is_string($payment_response)) {
 
 			return false;
@@ -731,9 +728,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$order = wc_get_order($order_id);
 
 		$temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
-
-		file_put_contents(__DIR__ . '/log.json', "\n" . 'Temporary order id ' . "\n"  . $temporary_order_id . "\n", FILE_APPEND);
-
+ 
 		$this->swap_order_id($temporary_order_id, $order_id);
 		// Remove cart
 		// $woocommerce->cart->empty_cart();
@@ -755,19 +750,14 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$temp_order_id, 'newOrderId' => $newOrderId));
 
 
-		file_put_contents(__DIR__ . '/encryteddata.json', "\n" . 'Encrypted order ids using public key' .  "\n" .	$data . "\n", FILE_APPEND);
-
 
 		$order_payload = $this->get_encrypted($data, false);
-
-		file_put_contents(__DIR__ . '/log.json', "\n" . 'Encrypted order ids using public key' .  "\n" . $order_payload . "\n", FILE_APPEND);
-
+ 
 
 		$merchant_id = base64_encode($this->merchant_id);
 
 		$body = wp_json_encode(array('merchantAuth' => $order_payload, 'merchantId' => $merchant_id));
-
-		file_put_contents(__DIR__ . '/log.json', "\n" . 'Encoded payload for update order Id' . "\n" . $body . "\n", FILE_APPEND);
+ 
 
 		$args = array(
 			'timeout'	=> 45,
@@ -782,10 +772,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$response_code = wp_remote_retrieve_response_code($response);
 
 		$response_body = wp_remote_retrieve_body($response);
-
-		file_put_contents(__DIR__ . '/log.json', "\n" . 'Response from update order id' .  "\n" . json_encode($response_body) . "\n", FILE_APPEND);
-
-
 
 		return true;
 	}
