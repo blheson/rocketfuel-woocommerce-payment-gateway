@@ -1,0 +1,21 @@
+
+Response from rkfl for uuid
+{"result":{"ok":true,"result":{"url":"https:\/\/dev-payment.rocketdemo.net\/hostedPage\/99e56408-9510-4969-ab1c-d1d2e8c8fb3b","uuid":"99e56408-9510-4969-ab1c-d1d2e8c8fb3b"}},"temporary_order_id":"ccfead360518ec772770f9818bbabf0b"}
+
+Response from rkfl for uuid
+{"result":{"ok":true,"result":{"url":"https:\/\/dev-payment.rocketdemo.net\/hostedPage\/80e09466-d318-470c-88ca-a7e7dac71112","uuid":"80e09466-d318-470c-88ca-a7e7dac71112"}},"temporary_order_id":"aa1352b755c9ee304317dd03fb6536ab"}
+
+Response from rkfl for uuid
+{"result":{"ok":true,"result":{"url":"https:\/\/dev-payment.rocketdemo.net\/hostedPage\/443c90c5-9831-4764-9cda-2e75bfa714f2","uuid":"443c90c5-9831-4764-9cda-2e75bfa714f2"}},"temporary_order_id":"51eb0d395b30c60aa74cc806524657d1"}
+
+Temporary order id 
+51eb0d395b30c60aa74cc806524657d1
+
+Encrypted order ids using public key
+f7GnuKdNBjlVJHjBSTdAodg1phoOmJ4ksbOKr4a5aessSrkSTYF8v0W2l3xLWcDmqF3rOUsSkVls6Q1I9l0aEknhoDSAOe29HET2Q5re4a52zaXjGl0kh8jcu4x9TbSN3/uv5mQRR8OlhuTJCl1p5H0/OZWtoLGeUpvIe6qrK5IEnoxcU5q1RGhPjCy38FEzpFKKdCQdfBMLRmz2+J2pYcr5GCffEb3XK9yxikFC+IRA5R+ltc/vfSClMGsm79B+2o7bLb+qzgvrw21kDt+efa7zb28Toumt2/NMSYEEf+T+U0rX4iIw/NZ2OrP9gP8Kdx9GWJriAQSNiAN074WqHw==
+
+Encoded payload for update order Id
+{"merchantAuth":"f7GnuKdNBjlVJHjBSTdAodg1phoOmJ4ksbOKr4a5aessSrkSTYF8v0W2l3xLWcDmqF3rOUsSkVls6Q1I9l0aEknhoDSAOe29HET2Q5re4a52zaXjGl0kh8jcu4x9TbSN3\/uv5mQRR8OlhuTJCl1p5H0\/OZWtoLGeUpvIe6qrK5IEnoxcU5q1RGhPjCy38FEzpFKKdCQdfBMLRmz2+J2pYcr5GCffEb3XK9yxikFC+IRA5R+ltc\/vfSClMGsm79B+2o7bLb+qzgvrw21kDt+efa7zb28Toumt2\/NMSYEEf+T+U0rX4iIw\/NZ2OrP9gP8Kdx9GWJriAQSNiAN074WqHw==","merchantId":"NmVlMmVjOTQtYjk1MS00OTU5LWEzNTAtMjQ1ZDE2MTc1OTY1"}
+
+Response from update order id
+"{\"ok\":false,\"statusCode\":404,\"data\":{},\"message\":\"Transaction not found\"}"
