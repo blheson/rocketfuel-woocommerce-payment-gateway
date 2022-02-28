@@ -55,6 +55,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'dev' => 'https://dev-app.rocketdemo.net/api',
 			'stage2' => 'https://qa-app.rocketdemo.net/api',
 			'preprod' => 'https://preprod-app.rocketdemo.net/api',
+			'sandbox'=> 'https://app-sandbox.rocketfuelblockchain.com/api',
 		);
 
 		return isset($environment_data[$environment]) ? $environment_data[$environment] : 'https://app.rocketfuelblockchain.com/api';
@@ -86,7 +87,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 					'prod' => 'Production',
 					'dev' => 'Development',
 					'stage2' => 'QA',
-					'preprod' => 'Pre-Production'
+					'preprod' => 'Pre-Production',
+					'sandbox'=>'Sandbox'
 				)
 			),
 			'description' => array(

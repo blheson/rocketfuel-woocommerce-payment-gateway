@@ -10,7 +10,8 @@
         stage2: `https://qa-iframe.rocketdemo.net/`,
         local: `http://localhost:8080`,
         preprod: `https://preprod-iframe.rocketdemo.net/`,
-        dev: `https://dev-iframe.rocketdemo.net/`
+        dev: `https://dev-iframe.rocketdemo.net/`,
+        sandbox: `https://iframe-sandbox.rocketfuelblockchain.com`,
       },
       isOverlay: false
     };
@@ -19,7 +20,8 @@
       stage2: `https://qa-app.rocketdemo.net/api`,
       local: `http://localhost:3001/api`,
       preprod: `https://preprod-app.rocketdemo.net/api`,
-      dev: 'https://dev-app.rocketdemo.net/api'
+      dev: 'https://dev-app.rocketdemo.net/api',
+      sandbox: 'https://app-sandbox.rocketfuelblockchain.com/api',
     };
     this.rkflToken =null
     var rocketFuelDefaultOptions = {
