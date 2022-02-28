@@ -265,3 +265,4 @@ document.querySelector(".rocketfuel_retrigger_payment_button").addEventListener(
     console.log('clicked');
     RocketfuelPaymentEngine.init();
 })
+console.log('sss');
