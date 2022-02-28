@@ -7,7 +7,9 @@ use Rocketfuel_Gateway\Plugin;
 class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 {
 
-
+	/**
+	 * Constructor
+	 */
 	public function __construct()
 	{
 		$this->id = 'rocketfuel_gateway';
@@ -20,9 +22,26 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$this->method_description = 'Pay with Crypto using Rocketfuel';
 
+
+
+		$this->supports = array(
+			'products',
+			'refunds',
+			'tokenization',
+			'subscriptions',
+			'multiple_subscriptions',
+			'subscription_cancellation',
+			'subscription_suspension',
+			'subscription_reactivation',
+			'subscription_amount_changes',
+			'subscription_date_changes',
+			'subscription_payment_method_change',
+			'subscription_payment_method_change_customer',
+		);
 		$this->init_form_fields();
 
 		$this->init_settings();
+
 
 		$this->title = $this->get_option('title');
 
@@ -40,12 +59,12 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$this->email = $this->get_option('email');
 
 		$this->payment_complete_order_status = $this->get_option('payment_complete_order_status') ? $this->get_option('payment_complete_order_status') : 'completed';
-
-		$this->supports = array('products');
-
 		$this->merchant_id = $this->get_option('merchant_id');
 
+
+		//Hooks
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+		add_action('admin_notices', array($this, 'admin_notices'));
 	}
 	public function get_endpoint($environment)
 	{
@@ -55,7 +74,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'dev' => 'https://dev-app.rocketdemo.net/api',
 			'stage2' => 'https://qa-app.rocketdemo.net/api',
 			'preprod' => 'https://preprod-app.rocketdemo.net/api',
-			'sandbox'=> 'https://app-sandbox.rocketfuelblockchain.com/api',
+			'sandbox' => 'https://app-sandbox.rocketfuelblockchain.com/api',
 		);
 
 		return isset($environment_data[$environment]) ? $environment_data[$environment] : 'https://app.rocketfuelblockchain.com/api';
@@ -88,7 +107,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 					'dev' => 'Development',
 					'stage2' => 'QA',
 					'preprod' => 'Pre-Production',
-					'sandbox'=>'Sandbox'
+					'sandbox' => 'Sandbox'
 				)
 			),
 			'description' => array(
@@ -135,11 +154,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	{
 		global $woocommerce;
 		if (!$this->password || !$this->email) {
-			echo '<span style="color:red">' . __('Vendor should fill in the settings page to start using Rocketfuel', 'rocketfuel') . '</span>';
+			echo '<span style="color:red">' . __('Vendor should fill in the settings page to start using Rocketfuel', 'rocketfuel-payment-gateway') . '</span>';
 			return;
 		}
 		$result = $this->process_user_data();
-	 
+
 
 
 		if ($result && null !== $result['temporary_order_id']) {
@@ -152,177 +171,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 
 ?>
-		<style>
-			.rocketfuel_process_payment {
-				text-align: center;
-				display: flex;
-				justify-content: center;
-				align-content: center;
-				align-items: baseline;
-			}
-
-			#Rocketfuel {
-				display: block !important;
-
-			}
-
-			#rocketfuel_process_payment_button {
-				background-color: #229633;
-				border: #229633;
-			}
-
-			h3.indicate_text {
-				margin: 0;
-				font-size: 32px;
-				margin-right: 10px;
-				color: #fff;
-			}
-
-			.loader_rocket {
-				border: 1px solid #000000;
-				border-top: 1px solid #ffffff;
-				border-radius: 50%;
-				width: 20px;
-				height: 20px;
-				animation: spin 0.4s linear infinite;
-			}
-
-			.rocket_fuel_payment_overlay_wrapper {
-				width: 100%;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				align-content: center;
-			}
-
-			@keyframes spin {
-				0% {
-					transform: rotate(0deg);
-				}
-
-				100% {
-					transform: rotate(360deg);
-				}
-			}
-
-			#rocket_fuel_payment_overlay_gateway {
-				width: 100%;
-				top: 0;
-				right: 0;
-				height: 100%;
-				z-index: 100000 !important;
-				position: fixed;
-				background: rgb(0 0 0 / 97%);
-				display: flex;
-			}
-
-			#iframeWrapper {
-				z-index: 100001 !important;
-				position: fixed !important;
-			}
-
-			.rocket_fuel_payment_overlay_wrapper_gateway {
-				width: 100%;
-				display: flex;
-				align-items: center;
-				align-content: center;
-				justify-content: center;
-			}
-
-			#rocketfuel_retrigger_payment button {
-				text-align: center;
-				background: #f0833c !important;
-				padding: 0px;
-				border: none;
-				width: 300px;
-				padding-bottom: 2px;
-				height: 48px;
-				font-size: 17px;
-				margin-top: 12px;
-				border-radius: 3px;
-				font-weight: 300;
-				color: #fff;
-				cursor: pointer;
-			}
-
-
-			#rocketfuel_retrigger_payment {
-				display: none;
-			}
-
-			#rocketfuel_retrigger_payment button:hover {
-				outline: none;
-				border: none;
-
-				background-color: #e26f02 !important;
-				border-color: #e26f02 !important;
-
-			}
-
-			.rocketfuel_exit_plan_wrapper {
-				display: flex;
-				text-align: center;
-				justify-content: center;
-				align-items: center;
-				margin-top: 30px;
-			}
-
-			.rocketfuel_exit_plan_wrapper figure {
-				width: 14px;
-				height: 37px;
-				margin: 0;
-				right: 0px;
-				position: relative;
-				transition: right 700ms;
-				display: inline-block;
-
-			}
-
-			.proceed-forward-rkfl:hover figure {
-				right: -6px;
-				transition: right 200ms;
-			}
-
-			/* .rocketfuel_exit_plan_wrapper:hover a {
-                color: #ddd;
-            } */
-
-			.rocketfuel_exit_plan_wrapper a.completed-button-rkfl {
-				border: 1px solid #ffffff4d;
-				border-radius: 4px;
-				padding: 2px 10px;
-
-			}
-
-			.rocketfuel_exit_plan_wrapper a.proceed-forward-rkfl {
-				padding-right: 10px;
-			}
-
-			.rocketfuel_exit_plan_wrapper a {
-
-				text-decoration: none;
-				color: #fff !important;
-				font-size: 12px;
-
-			}
-
-			.rocketfuel_exit_plan_wrapper a:focus {
-				outline: none !important;
-				text-decoration: none !important;
-				background: transparent !important;
-			}
-
-			.rocketfuel_retrigger_payment_button {
-				padding: 10px;
-				background: #f0833c;
-				color: #fff;
-				cursor: pointer;
-				max-width: 200px;
-				text-align: center;
-				display: flex;
-				justify-content: center;
-			}
-		</style>
+		<link rel="stylesheet" href="<?php echo esc_url(Plugin::get_url('assets/css/rkfl_iframe.css')) ?>">
 
 		<div>
 			<p>Click to pay</p>
@@ -337,6 +186,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel) ?>">
 
 		<input type="hidden" name="order_status_rocketfuel" value="wc-on-hold">
+		<input type="hidden" name="environment_rocketfuel" value="<?php echo $this->environment; ?>">
 
 		<script>
 			/**
@@ -638,7 +488,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			)
 		);
 
-	
+
 
 		$payment_response = Process_Payment_Controller::process_payment($data);
 
@@ -647,7 +497,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			return false;
 		}
 
-	
+
 		$result = json_decode($payment_response);
 
 		return array('result' => $result, 'temporary_order_id' => $temporary_order_id);
@@ -730,7 +580,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$order = wc_get_order($order_id);
 
 		$temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
- 
+
 		$this->swap_order_id($temporary_order_id, $order_id);
 		// Remove cart
 		// $woocommerce->cart->empty_cart();
@@ -754,12 +604,12 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 
 		$order_payload = $this->get_encrypted($data, false);
- 
+
 
 		$merchant_id = base64_encode($this->merchant_id);
 
 		$body = wp_json_encode(array('merchantAuth' => $order_payload, 'merchantId' => $merchant_id));
- 
+
 
 		$args = array(
 			'timeout'	=> 45,
@@ -814,5 +664,21 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		}
 
 		return base64_encode($out);
+	}
+	/**
+	 * Check if Rocketfuel merchant details is filled.
+	 */
+	public function admin_notices()
+	{
+
+		if ($this->enabled == 'no') {
+			return;
+		}
+
+		// Check required fields.
+		if (!($this->public_key && $this->password)) {
+			echo '<div class="error"><p>' . sprintf(__('Please enter your Rocketfuel merchant details <a href="%s">here</a> to be able to use the Rocketfuel WooCommerce plugin.', 'rocketfuel-payment-gateway'), admin_url('admin.php?page=wc-settings&tab=checkout&section=rocketfuel_gateway')) . '</p></div>';
+			return;
+		}
 	}
 }
