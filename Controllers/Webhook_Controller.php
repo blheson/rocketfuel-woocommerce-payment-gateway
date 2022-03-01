@@ -34,22 +34,38 @@ class Webhook_Controller
 		}
 
 		$status = (int) $data['paymentStatus'];
+
+
+
 		if (0 === $status) {
 			return true;
 		}
+
 		if (-1 === $status) {
 			$order->update_status('wc-failed', 'Rocketfuel could not verify the payment');
 			return true;
 		}
+
+
 		if (101 === $status) {
 			$order->update_status('wc-partial-payment');
 			return true;
 		}
+
 		if (1 === $status) {
 
+			if (isset($data['isSubscription']) && $data['isSubscription'] === true) {
+				$message = sprintf(__('Payment via Rocketfuel is successful (Transaction Reference: %s)', 'rocketfuel-payment-gateway'), isset($data['transactionId']) ? $data['transactionId'] : '');
+
+				$order->add_order_note($message);
+			}
+
 			$default_status = self::get_gateway()->payment_complete_order_status;
+
 			$default_status = $default_status ? $default_status : 'wc-completed';
+
 			$order->update_status($default_status);
+
 			return true;
 		}
 	}
@@ -58,6 +74,7 @@ class Webhook_Controller
 	 */
 	public static function check_callback()
 	{
+
 		return rest_ensure_response(
 			array(
 				'callback_status' => 'ok',
@@ -69,16 +86,24 @@ class Webhook_Controller
 	 *
 	 * @param string $body body to verify.
 	 * @param string $signature signature used for verification.
+	 * @return bool
 	 */
 	public static function verify_callback($body, $signature)
 	{
+
 		$signature_buffer = base64_decode($signature);
+
 		return (1 === openssl_verify($body, $signature_buffer, self::get_callback_public_key(), OPENSSL_ALGO_SHA256));
 	}
+
 	private static function get_gateway()
 	{
 		return new Rocketfuel_Gateway_Controller();
 	}
+	/**
+	 * Returns RKFL public key
+	 * @retun string|false
+	 */
 	public static function get_callback_public_key()
 	{
 		$pub_key_path = dirname(__FILE__) . '/rf.pub';
