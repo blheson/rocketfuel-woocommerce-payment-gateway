@@ -11,9 +11,11 @@ var RocketfuelPaymentEngine = {
 
     getUUID: async function () {
         let uuid = document.querySelector('input[name=uuid_rocketfuel]').value;
+
         if (uuid) {
             return uuid;
         }
+        
         let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
 
         let response = await fetch(url);
@@ -33,7 +35,9 @@ var RocketfuelPaymentEngine = {
         document.querySelector('input[name=temp_orderid_rocketfuel]').value = result.data.temporary_order_id;
 
         console.log("res", result.data.result.uuid);
+
         return result.data.result.uuid;
+
     },
     getEnvironment: function () {
         let environment = document.querySelector('input[name=environment_rocketfuel]')?.value;
@@ -52,10 +56,10 @@ var RocketfuelPaymentEngine = {
         if (!user_data) return false;
 
         return user_data;
+
     },
     updateOrder: function (result) {
         try {
-
 
             console.log("Response from callback :", result);
 
@@ -79,19 +83,18 @@ var RocketfuelPaymentEngine = {
 
             document.getElementById('order_status_rocketfuel').value = status;
 
-
         } catch (error) {
+
             console.error('Error from update order method', error);
+
         }
 
     },
 
     startPayment: function (autoTriggerState = true) {
 
-
         // document.getElementById('rocketfuel_retrigger_payment_button').innerText = "Preparing Payment window...";
         this.watchIframeShow = true;
-
 
         document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
 
@@ -122,6 +125,7 @@ var RocketfuelPaymentEngine = {
 
     windowListener: function () {
         let engine = this;
+
         window.addEventListener('message', (event) => {
 
             switch (event.data.type) {
@@ -142,6 +146,7 @@ var RocketfuelPaymentEngine = {
         localStorage.setItem(key, value);
     },
     initRocketFuel: async function () {
+
         return new Promise(async (resolve, reject) => {
             if (!RocketFuel) {
                 location.reload();
@@ -155,11 +160,13 @@ var RocketfuelPaymentEngine = {
             });
 
             let uuid = await this.getUUID();
+
             RocketfuelPaymentEngine.rkflConfig = {
                 uuid,
                 callback: RocketfuelPaymentEngine.updateOrder,
                 environment: RocketfuelPaymentEngine.getEnvironment()
             }
+
             if (userData.first_name && userData.email) {
                 payload = {
                     firstName: userData.first_name,
@@ -172,9 +179,9 @@ var RocketfuelPaymentEngine = {
                     }
                 }
 
-
                 try {
-                    console.log('details', userData.email, localStorage.getItem('rkfl_email'), payload)
+                    console.log('details', userData.email, localStorage.getItem('rkfl_email'), payload);
+
                     if (userData.email !== localStorage.getItem('rkfl_email')) { //remove signon details when email is different
                         localStorage.removeItem('rkfl_token');
                         localStorage.removeItem('access');
@@ -208,15 +215,13 @@ var RocketfuelPaymentEngine = {
                         RocketfuelPaymentEngine.rkflConfig.token = rkflToken;
                     }
 
-
-
-
                     resolve(true);
                 } catch (error) {
                     reject(error?.message);
                 }
 
             }
+
             if (RocketfuelPaymentEngine.rkflConfig) {
 
                 RocketfuelPaymentEngine.rkfl = new RocketFuel(RocketfuelPaymentEngine.rkflConfig);
@@ -239,8 +244,11 @@ var RocketfuelPaymentEngine = {
 
             let res = await engine.initRocketFuel();
             console.log(res);
+
         } catch (error) {
-            console.log('error from promise', error)
+
+            console.log('error from promise', error);
+
         }
 
         console.log('Done initiating RKFL');
@@ -248,6 +256,7 @@ var RocketfuelPaymentEngine = {
         engine.windowListener();
 
         if (document.getElementById('rocketfuel_retrigger_payment_button')) {
+
             document.getElementById('rocketfuel_retrigger_payment_button').addEventListener('click', () => {
                 RocketfuelPaymentEngine.startPayment(false);
             });
@@ -261,8 +270,10 @@ var RocketfuelPaymentEngine = {
 
 document.querySelector(".rocketfuel_retrigger_payment_button").addEventListener('click', (e) => {
     e.preventDefault();
+
     document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = '<div class="loader_rocket"></div>';
-    console.log('clicked');
+
     RocketfuelPaymentEngine.init();
+
 })
-console.log('sss');
+ 
