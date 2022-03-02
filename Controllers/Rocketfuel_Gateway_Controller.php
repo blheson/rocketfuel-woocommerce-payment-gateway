@@ -164,7 +164,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			$result = $this->process_user_data();
 			// $result = Woocommerce_Controller::process_user_data();
 
-			file_put_contents(__DIR__ . "/log.json", 'UUID: - '."\n".json_encode($result), FILE_APPEND);
+			// file_put_contents(__DIR__ . "/log.json", 'UUID: - '."\n".json_encode($result), FILE_APPEND);
 
 			if ($result && null !== $result['temporary_order_id']) {
 				$temp_orderid_rocketfuel = $result['temporary_order_id'];
@@ -227,7 +227,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'redirectUrl' => ''
 			)
 		);
-		file_put_contents(__DIR__ . "/log.json", 'cart: - '."\n".json_encode($cart), FILE_APPEND);
+		// file_put_contents(__DIR__ . "/log.json", 'cart: - '."\n".json_encode($cart), FILE_APPEND);
 		$payment_response = Process_Payment_Controller::process_payment($data);
 
 		if (!$payment_response && !is_string($payment_response)) {
@@ -269,7 +269,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				$new_array=$temp_data ;
 			}
 
-			file_put_contents(__DIR__ . '/log.json', "\n".'New Array   '.json_encode($new_array) . "\n", FILE_APPEND);
+			// file_put_contents(__DIR__ . '/log.json', "\n".'New Array   '.json_encode($new_array) . "\n", FILE_APPEND);
 
 			$data[] = $new_array;
 		}

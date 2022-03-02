@@ -102,60 +102,6 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 
 			$order_amount = $amount;
 
-			// $paystack_url = $this->enpoint . '/charge/charge_authorization';
-
-			// $headers = array(
-			// 	'Content-Type'  => 'application/json',
-			// 	'Authorization' => 'Bearer ' . $this->secret_key,
-			// );
-
-			// $metadata['custom_fields'] = $this->get_custom_fields($order_id);
-
-			// $body = array(
-			// 	'email'              => $email,
-			// 	'amount'             => $order_amount,
-			// 	'metadata'           => $metadata,
-			// 	'authorization_code' => $auth_code,
-			// );
-
-			// $args = array(
-			// 	'body'    => json_encode($body),
-			// 	'headers' => $headers,
-			// 	'timeout' => 60,
-			// );
-
-			// $request = wp_remote_post($paystack_url, $args);
-
-			// if (!is_wp_error($request) && 200 === wp_remote_retrieve_response_code($request)) {
-
-			// 	// $paystack_response = json_decode(wp_remote_retrieve_body($request));
-
-			// 	// if ('success' == $paystack_response->data->status) {
-
-			// 	// 	$paystack_ref = $paystack_response->data->reference;
-
-			// 	// 	$order->payment_complete($paystack_ref);
-
-			// 	// 	$message = sprintf(__('Payment via Paystack successful (Transaction Reference: %s)', 'woo-paystack'), $paystack_ref);
-
-			// 	// 	$order->add_order_note($message);
-
-			// 	// 	if (parent::is_autocomplete_order_enabled($order)) {
-			// 	// 		$order->update_status('completed');
-			// 	// 	}
-
-			// 	// 	return true;
-			// 	// } else {
-
-			// 	// 	$gateway_response = __('Paystack payment failed.', 'woo-paystack');
-
-			// 	// 	if (isset($paystack_response->data->gateway_response) && !empty($paystack_response->data->gateway_response)) {
-			// 	// 		$gateway_response = sprintf(__('Paystack payment failed. Reason: %s', 'woo-paystack'), $paystack_response->data->gateway_response);
-			// 	// 	}
-
-			// 	// 	return new WP_Error('paystack_error', $gateway_response);
-			// 	// }
-			// }
 		}
 
 		// return new WP_Error('rkfl_error', __('This subscription can&#39;t be renewed automatically. The customer will have to login to their account to renew their subscription', 'woo-paystack'));
