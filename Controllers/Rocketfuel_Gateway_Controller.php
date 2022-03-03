@@ -257,7 +257,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			);
 
 			// Mock subscription 
-			if (rand(0, 1) > 0) {
+			if (rand(0, 2) > 0) {
 				$new_array = array_merge($temp_data, array(
 					'isSubscription' => true,
 					'frequency' => 'daily',
