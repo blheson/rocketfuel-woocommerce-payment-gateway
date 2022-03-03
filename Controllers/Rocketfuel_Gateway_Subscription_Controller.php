@@ -17,6 +17,7 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 	public function __construct()
 	{
 		parent::__construct();
+	
 
 		if (class_exists('WC_Subscriptions_Order')) {
 

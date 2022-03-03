@@ -27,16 +27,16 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$this->supports = array(
 			'products',
 			'refunds',
-			'tokenization',
+
 			'subscriptions',
 			'multiple_subscriptions',
 			'subscription_cancellation',
-			'subscription_suspension',
+
 			'subscription_reactivation',
-			'subscription_amount_changes',
-			'subscription_date_changes',
+
 			'subscription_payment_method_change',
 			'subscription_payment_method_change_customer',
+			'gateway_scheduled_payments'
 		);
 		$this->init_form_fields();
 
@@ -162,6 +162,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		if (wp_doing_ajax()) {
 
 			$result = $this->process_user_data();
+		
 			// $result = Woocommerce_Controller::process_user_data();
 
 			// file_put_contents(__DIR__ . "/log.json", 'UUID: - '."\n".json_encode($result), FILE_APPEND);
@@ -204,10 +205,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 * Process Data and get UUID from RKFL
 	 * @return array|false 
 	 */
-	public function process_user_data(){
+	public function process_user_data()
+	{
 
-		$cart = $this->sortCart(WC()->cart->get_cart());
-
+		$cart = $this->sort_cart(WC()->cart->get_cart());
+	file_put_contents(__DIR__ . '/cart.json', "\n".'New Array   '.json_encode($cart) . "\n",FILE_APPEND);
 		$temporary_order_id = md5(microtime());
 
 		$merchant_cred = array(
@@ -239,16 +241,31 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		return array('result' => $result, 'temporary_order_id' => $temporary_order_id);
 	}
+	public function is_subscription_product($product)
+	{
+		try{
+		 
+				return class_exists('WC_Subscriptions_Product') && \WC_Subscriptions_Product::is_subscription($product);
+		}catch(\Throwable $th){
+			 
+			return false;
+		}
+		
+	
+	}
 	/**
 	 * Parse cart items and prepare for order
 	 * @param array $items 
 	 * @return array
 	 */
-	public function sortCart($items){
+	public function sort_cart($items)
+	{
 
 		$data = array();
 
 		foreach ($items as $cart_item) {
+
+
 			$temp_data  = array(
 				'name' => $cart_item['data']->get_title(),
 				'id' => (string)$cart_item['product_id'],
@@ -256,17 +273,38 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'quantity' => (string)$cart_item['quantity']
 			);
 
+		
+
 			// Mock subscription 
-			if (rand(0, 2) > 0) {
-				$new_array = array_merge($temp_data, array(
-					'isSubscription' => true,
-					'frequency' => 'daily',
-					'subscriptionPeriod' => '1m',
-					'merchantSubscriptionId' => (string)$cart_item['product_id'],
-					'autoRenewal' => true
-				));
-			}else{
-				$new_array=$temp_data ;
+			$_product = wc_get_product($cart_item['product_id']);
+
+			if ($_product && $this->is_subscription_product($_product)) {
+
+				$_product_meta = get_post_meta($cart_item['product_id']);
+				
+
+
+				if ($_product_meta && is_array($_product_meta)) {
+
+					$new_array = array_merge(
+						$temp_data,
+						array(
+
+							'isSubscription' => true,
+
+							'frequency' => $_product_meta['_subscription_period'][0],
+
+							'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
+
+							'merchantSubscriptionId' => (string)$cart_item['product_id'],
+
+							'autoRenewal' => true
+						)
+					);
+				}
+			} else {
+
+				$new_array = $temp_data;
 			}
 
 			// file_put_contents(__DIR__ . '/log.json', "\n".'New Array   '.json_encode($new_array) . "\n", FILE_APPEND);
@@ -277,10 +315,10 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		try {
 
 			if (
-				(null !== WC()->cart->get_shipping_total()) && 
-				(!strpos(strtolower(WC()->cart->get_shipping_total()), 'free')) && 
+				(null !== WC()->cart->get_shipping_total()) &&
+				(!strpos(strtolower(WC()->cart->get_shipping_total()), 'free')) &&
 				WC()->cart->get_shipping_total() > 0
-				) {
+			) {
 
 				$data[] = array(
 					'name' => 'Shipping',
@@ -300,7 +338,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 * @param WP_REST_REQUEST $request_data
 	 * @return void
 	 */
-	public function update_order($request_data){
+	public function update_order($request_data)
+	{
 
 		$data = $request_data->get_params();
 
