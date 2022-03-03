@@ -14,9 +14,10 @@ class Webhook_Controller
 	 *
 	 * @param WP_REQUEST $request_data From wp request.
 	 */
-	public static function payment($request_data)
-	{
+	public static function payment($request_data){
+		
 		$body = $request_data->get_params();
+
 		$data = $body['data'];
 
 		$signature = $body['signature'];
@@ -24,7 +25,9 @@ class Webhook_Controller
 		if (!self::verify_callback($data['data'], $signature)) {
 			return false;
 		}
+
 		$order = wc_get_order($data['offerId']);
+
 		if (!$order) {
 			return false;
 		}
@@ -55,6 +58,7 @@ class Webhook_Controller
 		if (1 === $status) {
 
 			if (isset($data['isSubscription']) && $data['isSubscription'] === true) {
+
 				$message = sprintf(__('Payment via Rocketfuel is successful (Transaction Reference: %s)', 'rocketfuel-payment-gateway'), isset($data['transactionId']) ? $data['transactionId'] : '');
 
 				$order->add_order_note($message);

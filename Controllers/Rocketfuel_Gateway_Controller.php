@@ -209,7 +209,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	{
 
 		$cart = $this->sort_cart(WC()->cart->get_cart());
-	file_put_contents(__DIR__ . '/cart.json', "\n".'New Array   '.json_encode($cart) . "\n",FILE_APPEND);
+
 		$temporary_order_id = md5(microtime());
 
 		$merchant_cred = array(
@@ -246,9 +246,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		try{
 		 
 				return class_exists('WC_Subscriptions_Product') && \WC_Subscriptions_Product::is_subscription($product);
+
 		}catch(\Throwable $th){
 			 
 			return false;
+
 		}
 		
 	
@@ -282,8 +284,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 				$_product_meta = get_post_meta($cart_item['product_id']);
 				
-
-
 				if ($_product_meta && is_array($_product_meta)) {
 
 					$new_array = array_merge(
@@ -306,8 +306,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 				$new_array = $temp_data;
 			}
-
-			// file_put_contents(__DIR__ . '/log.json', "\n".'New Array   '.json_encode($new_array) . "\n", FILE_APPEND);
 
 			$data[] = $new_array;
 		}
@@ -338,8 +336,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 * @param WP_REST_REQUEST $request_data
 	 * @return void
 	 */
-	public function update_order($request_data)
-	{
+	public function update_order($request_data){
 
 		$data = $request_data->get_params();
 

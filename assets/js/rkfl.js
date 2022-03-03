@@ -23,6 +23,7 @@
       dev: 'https://dev-app.rocketdemo.net/api',
       sandbox: 'https://app-sandbox.rocketfuelblockchain.com/api',
     };
+    window.iframeInfo = this.iframeInfo;
     this.rkflToken = null
     var rocketFuelDefaultOptions = {
       uuid: null,
@@ -244,8 +245,14 @@
   }
 
   function showOverlay(iframe) {
-    document.getElementById("iframeWrapper").appendChild(iframe)
-    this.isOverlay = true;
+    if(iframe && !this.isOverlay) {
+      document.getElementById("iframeWrapper").appendChild(iframe)
+      this.isOverlay = true;
+    } else {
+      setTimeout(function(){
+        showOverlay(window.iframeInfo.iframe);
+      }, 1000)
+    }
   }
 
   function closeOverlay(iframeInfo) {
@@ -339,3 +346,10 @@
 
   }
 })();
+function removeLocalStorage(){
+  localStorage.removeItem('access');
+  localStorage.removeItem('refresh');
+  localStorage.removeItem('rkfl_token');
+  localStorage.removeItem('merchant_auth');
+}
+removeLocalStorage();
