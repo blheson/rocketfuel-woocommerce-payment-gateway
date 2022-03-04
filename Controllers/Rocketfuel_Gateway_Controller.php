@@ -286,13 +286,16 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 				if ($_product_meta && is_array($_product_meta)) {
 
+
+					$frequency = $_product_meta['_subscription_period'][0] === 'day' ? 'daily' : $_product_meta['_subscription_period'][0].'ly';
+
 					$new_array = array_merge(
 						$temp_data,
 						array(
 
 							'isSubscription' => true,
 
-							'frequency' => $_product_meta['_subscription_period'][0].'ly',
+							'frequency' => $frequency,
 
 							'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
 

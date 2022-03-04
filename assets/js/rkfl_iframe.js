@@ -83,7 +83,10 @@ var RocketfuelPaymentEngine = {
             }
 
             document.querySelector('input[name=order_status_rocketfuel]').value = status;
+            
             document.querySelector('input[name=payment_status_rocketfuel]').value = 'complete';
+
+            document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
             
 
         } catch (error) {
