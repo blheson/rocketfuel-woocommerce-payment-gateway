@@ -69,19 +69,22 @@ var RocketfuelPaymentEngine = {
 
             let result_status = parseInt(result.status);
 
-            if (result_status == 101) {
+            if (result_status === 101) {
                 status = "wc-partial-payment";
             }
 
-            if (result_status == 1 || result.status == "completed") {
-                status = "<?= $this->payment_complete_order_status; ?>"; //placeholder to get order status set by seller
+            if (result_status === 1 || result.status === "completed") {
+                status = document.querySelector('input[name=payment_complete_order_status]')?.value  || 'wc-processing';
+               ; //placeholder to get order status set by seller
             }
 
-            if (result_status == -1) {
+            if (result_status === -1) {
                 status = "wc-failed";
             }
 
-            document.getElementById('order_status_rocketfuel').value = status;
+            document.querySelector('input[name=order_status_rocketfuel]').value = status;
+            document.querySelector('input[name=payment_status_rocketfuel]').value = 'complete';
+            
 
         } catch (error) {
 
@@ -120,7 +123,7 @@ var RocketfuelPaymentEngine = {
 
         //revert trigger button message
         document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
-        // document.getElementById('rocketfuel_retrigger_payment').style.display = "none";
+
     },
 
     windowListener: function () {
@@ -135,7 +138,6 @@ var RocketfuelPaymentEngine = {
                 case 'rocketfuel_new_height':
                     engine.prepareProgressMessage();
                     engine.watchIframeShow = false;
-                    break;
                 default:
                     break;
             }
@@ -159,13 +161,14 @@ var RocketfuelPaymentEngine = {
                 environment: RocketfuelPaymentEngine.getEnvironment()
             });
 
-            let uuid = await this.getUUID();
+            let uuid = await this.getUUID(); //set uuid
 
             RocketfuelPaymentEngine.rkflConfig = {
                 uuid,
                 callback: RocketfuelPaymentEngine.updateOrder,
                 environment: RocketfuelPaymentEngine.getEnvironment()
-            }
+            } 
+
 
             if (userData.first_name && userData.email) {
                 payload = {
@@ -194,8 +197,7 @@ var RocketfuelPaymentEngine = {
 
                         response = await RocketfuelPaymentEngine.rkfl.rkflAutoSignUp(payload, RocketfuelPaymentEngine.getEnvironment());
 
-                        // RocketfuelPaymentEngine.setLocalStorage('rkfl_first_name',userData.first_name);
-                        // RocketfuelPaymentEngine.setLocalStorage('rkfl_last_name',userData.last_name);
+ 
                         RocketfuelPaymentEngine.setLocalStorage('rkfl_email', userData.email);
 
                         if (response) {
@@ -206,11 +208,7 @@ var RocketfuelPaymentEngine = {
 
                     }
 
-                    // const rkflConfig = {
-                    // 	uuid,
-                    // 	callback: RocketfuelPaymentEngine.updateOrder,
-                    // 	environment: RocketfuelPaymentEngine.getEnvironment()
-                    // }
+ 
                     if (rkflToken) {
                         RocketfuelPaymentEngine.rkflConfig.token = rkflToken;
                     }
@@ -224,7 +222,7 @@ var RocketfuelPaymentEngine = {
 
             if (RocketfuelPaymentEngine.rkflConfig) {
 
-                RocketfuelPaymentEngine.rkfl = new RocketFuel(RocketfuelPaymentEngine.rkflConfig);
+                RocketfuelPaymentEngine.rkfl = new RocketFuel(RocketfuelPaymentEngine.rkflConfig); // init RKFL
                 resolve(true);
 
             } else {

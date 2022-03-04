@@ -14,7 +14,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	{
 		$this->id = 'rocketfuel_gateway';
 
-		// $this->icon = 'rkfl.png';
+		// $this->icon = Plugin::get_url('assets/img/logso.png');
 
 		$this->has_fields = false;
 
@@ -162,10 +162,9 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		if (wp_doing_ajax()) {
 
 			$result = $this->process_user_data();
-		
+
 			// $result = Woocommerce_Controller::process_user_data();
 
-			// file_put_contents(__DIR__ . "/log.json", 'UUID: - '."\n".json_encode($result), FILE_APPEND);
 
 			if ($result && null !== $result['temporary_order_id']) {
 				$temp_orderid_rocketfuel = $result['temporary_order_id'];
@@ -187,15 +186,19 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		<input type="hidden" name="admin_url_rocketfuel" value="<?php echo esc_url(admin_url('admin-ajax.php?action=rocketfuel_process_user_data&nonce=' . wp_create_nonce("rocketfuel_nonce"))); ?>">
 
-		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()) ?>">
+		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
 
-		<input type="hidden" name="uuid_rocketfuel" value="<?php echo esc_attr($uuid) ?>">
+		<input type="hidden" name="payment_status_rocketfuel" value="pending">
 
-		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel) ?>">
+		<input type="hidden" name="payment_complete_order_status" value="<?php echo esc_attr($this->payment_complete_order_status); ?>">
+
+		<input type="hidden" name="uuid_rocketfuel" value="<?php echo esc_attr($uuid); ?>">
+
+		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel); ?>">
 
 		<input type="hidden" name="order_status_rocketfuel" value="wc-on-hold">
 
-		<input type="hidden" name="environment_rocketfuel" value="<?php echo $this->environment; ?>">
+		<input type="hidden" name="environment_rocketfuel" value="<?php echo  esc_attr($this->environment); ?>">
 
 		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl_iframe.js')); ?>">
 		</script>
@@ -229,7 +232,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'redirectUrl' => ''
 			)
 		);
-		// file_put_contents(__DIR__ . "/log.json", 'cart: - '."\n".json_encode($cart), FILE_APPEND);
+
 		$payment_response = Process_Payment_Controller::process_payment($data);
 
 		if (!$payment_response && !is_string($payment_response)) {
@@ -243,17 +246,13 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	}
 	public function is_subscription_product($product)
 	{
-		try{
-		 
-				return class_exists('WC_Subscriptions_Product') && \WC_Subscriptions_Product::is_subscription($product);
+		try {
 
-		}catch(\Throwable $th){
-			 
+			return class_exists('WC_Subscriptions_Product') && \WC_Subscriptions_Product::is_subscription($product);
+		} catch (\Throwable $th) {
+
 			return false;
-
 		}
-		
-	
 	}
 	/**
 	 * Parse cart items and prepare for order
@@ -275,15 +274,16 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'quantity' => (string)$cart_item['quantity']
 			);
 
-		
+
 
 			// Mock subscription 
 			$_product = wc_get_product($cart_item['product_id']);
+		 
 
 			if ($_product && $this->is_subscription_product($_product)) {
-
+			 
 				$_product_meta = get_post_meta($cart_item['product_id']);
-				
+
 				if ($_product_meta && is_array($_product_meta)) {
 
 					$new_array = array_merge(
@@ -336,7 +336,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 * @param WP_REST_REQUEST $request_data
 	 * @return void
 	 */
-	public function update_order($request_data){
+	public function update_order($request_data)
+	{
 
 		$data = $request_data->get_params();
 

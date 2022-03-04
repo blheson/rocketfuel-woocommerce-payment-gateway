@@ -8,3 +8,4 @@ https://woocommerce.com/document/subscriptions/payment-gateways/#section-1
 https://woocommerce.com/document/subscriptions/renewal-process/#section-1
 https://woocommerce.com/document/subscriptions/develop/functions/product-functions/
 https://woocommerce.com/document/subscriptions/develop/data-structure/#section-9
+https://woocommerce.com/document/subscriptions/develop/functions/management-functions/
