@@ -292,7 +292,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 							'isSubscription' => true,
 
-							'frequency' => $_product_meta['_subscription_period'][0],
+							'frequency' => $_product_meta['_subscription_period'][0].'ly',
 
 							'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
 
