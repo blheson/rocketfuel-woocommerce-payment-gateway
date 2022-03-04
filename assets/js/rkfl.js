@@ -10,7 +10,8 @@
         stage2: `https://qa-iframe.rocketdemo.net/`,
         local: `http://localhost:8080`,
         preprod: `https://preprod-iframe.rocketdemo.net/`,
-        dev: `https://dev-iframe.rocketdemo.net/`
+        dev: `https://dev-iframe.rocketdemo.net/`,
+        sandbox: `https://iframe-sandbox.rocketfuelblockchain.com`,
       },
       isOverlay: false
     };
@@ -19,16 +20,18 @@
       stage2: `https://qa-app.rocketdemo.net/api`,
       local: `http://localhost:3001/api`,
       preprod: `https://preprod-app.rocketdemo.net/api`,
-      dev: 'https://dev-app.rocketdemo.net/api'
+      dev: 'https://dev-app.rocketdemo.net/api',
+      sandbox: 'https://app-sandbox.rocketfuelblockchain.com/api',
     };
-    this.rkflToken =null
+    window.iframeInfo = this.iframeInfo;
+    this.rkflToken = null
     var rocketFuelDefaultOptions = {
       uuid: null,
       token: null,  //rkfltoken 
       callback: null,
-      merchantAuth:null,
+      merchantAuth: null,
       environment: 'prod',
-      payload:null
+      payload: null
     };
     if (arguments[0] && typeof arguments[0] == "object") {
       this.options = setDefaultConfiguration(
@@ -38,8 +41,8 @@
     } else {
       this.options = defaultConfiguration;
     }
-    
-    if(arguments[0].uuid!=null){
+
+    if (arguments[0].uuid != null) {
 
       initializeEvents(this.iframeInfo, rocketFuelDefaultOptions);
       getUUIDInfo(rocketFuelDefaultOptions, this.domain, this.iframeInfo);
@@ -48,37 +51,36 @@
   //public methods
   this.RocketFuel.prototype.initPayment = function () {
     showOverlay(this.iframeInfo.iframe);
-  }; 
-  this.RocketFuel.prototype.addBank = async function(data, env) {
+  };
+  this.RocketFuel.prototype.addBank = async function (data, env) {
     const apiDomain = this.domain[env];
     const resp = await fetch(`${apiDomain}/stock-market/dwolla/add-bank`, {
       method: 'POST',
       headers: {
-          'Content-Type': 'application/json',
-          'authorization': `Bearer ${getLocaLStorage('access')}` //getter and setter for localStorage
+        'Content-Type': 'application/json',
+        'authorization': `Bearer ${getLocaLStorage('access')}` //getter and setter for localStorage
       },
       body: data
-  }).then(res=>res.json())
-  .catch(err=>console.log(err))
-  return resp;
+    }).then(res => res.json())
+      .catch(err => console.log(err))
+    return resp;
   }
-  this.RocketFuel.prototype.fetchBanks = async function(env){
-        const apiDomain = this.domain[env];
-        const resp = await fetch(`${apiDomain}/stock-market/my?update=false`,{
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'authorization': `Bearer ${getLocaLStorage('access')}` 
-            },
-        })
-        .then(resp=>resp.json())
-        .catch(err=>console.log(err));
-      
-        return resp;
+  this.RocketFuel.prototype.fetchBanks = async function (env) {
+    const apiDomain = this.domain[env];
+    const resp = await fetch(`${apiDomain}/stock-market/my?update=false`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': `Bearer ${getLocaLStorage('access')}`
+      },
+    })
+      .then(resp => resp.json())
+      .catch(err => console.log(err));
+
+    return resp;
   }
-  
-  this.RocketFuel.prototype.purchaseCheck = async function(data, env)
-  {
+
+  this.RocketFuel.prototype.purchaseCheck = async function (data, env) {
     const accessToken = getLocaLStorage('access');
     const encryptOptions = {
       method: "POST",
@@ -89,8 +91,8 @@
       body: JSON.parse(JSON.stringify(data))
     }
     const apiDomain = this.domain[env];
-    const response = await (await fetch(`${apiDomain}/purchase/encrypt-check`,encryptOptions)).text();
-    const {result} = await JSON.parse(response);
+    const response = await (await fetch(`${apiDomain}/purchase/encrypt-check`, encryptOptions)).text();
+    const { result } = await JSON.parse(response);
     const checkoptions = {
       method: "POST",
       headers: {
@@ -101,7 +103,7 @@
     };
     const check = await fetch(`${apiDomain}/purchase/check`, checkoptions);
   }
-  this.RocketFuel.prototype.makePurchase = async function(data, env){
+  this.RocketFuel.prototype.makePurchase = async function (data, env) {
     const accessToken = getLocaLStorage('access');
     const encryptOptions = {
       method: "POST",
@@ -111,9 +113,9 @@
       },
       body: JSON.parse(JSON.stringify(data))
     }
-    const apiDomain =  this.domain[env];
-    const response = await (await fetch(`${apiDomain}/purchase/encrypt-check`,encryptOptions)).text();
-    const {result} = await JSON.parse(response);
+    const apiDomain = this.domain[env];
+    const response = await (await fetch(`${apiDomain}/purchase/encrypt-check`, encryptOptions)).text();
+    const { result } = await JSON.parse(response);
     const checkoptions = {
       method: "POST",
       headers: {
@@ -125,18 +127,21 @@
     const purchaseResp = await fetch(`${apiDomain}/purchase`, checkoptions);
     return purchaseResp;
   }
-  this.RocketFuel.prototype.rkflAutoSignUp= async function(data,env){
-    const rkflToken= await autoSignUp(data,this.domain ,env)
-    setLocalStorage('access',rkflToken.result.access);
-    setLocalStorage('refresh',rkflToken.result.refresh);
-    setLocalStorage('rkfl_token',rkflToken.result.rkflToken);
+  this.RocketFuel.prototype.rkflAutoSignUp = async function (data, env) {
+    const rkflToken = await autoSignUp(data, this.domain, env);
+    if (rkflToken.result) {
+      setLocalStorage('access', rkflToken.result.access);
+      setLocalStorage('refresh', rkflToken.result.refresh);
+      setLocalStorage('rkfl_token', rkflToken.result.rkflToken);
+    }
+
     this.rkflToken = rkflToken
-    if(data && data.merchantAuth) {
+    if (data && data.merchantAuth) {
       setLocalStorage('merchant_auth', data.merchantAuth);
     }
-   return  rkflToken 
-  } 
-  
+    return rkflToken
+  }
+
   //private methods
   function setDefaultConfiguration(source, properties) {
     var property;
@@ -147,13 +152,13 @@
     }
     return source;
   }
-  function getLocaLStorage(key){
+  function getLocaLStorage(key) {
     return localStorage.getItem(key)
   }
-  function setLocalStorage(key, value){
+  function setLocalStorage(key, value) {
     localStorage.setItem(key, value);
   }
-  function initializeEvents(iframeInfo,rocketFuelDefaultOptions) {
+  function initializeEvents(iframeInfo, rocketFuelDefaultOptions) {
     window.addEventListener("message", async (event) => {
       if (event.data.type === "rocketfuel_new_height") {
         const iframe = document.getElementById(iframeInfo.iFrameId);
@@ -185,14 +190,14 @@
         closeOverlay(iframeInfo);
       }
       if (event.data.type === "rocketfuel_result_ok") {
-        if(rocketFuelDefaultOptions.callback){
+        if (rocketFuelDefaultOptions.callback) {
           rocketFuelDefaultOptions.callback(event.data.response);
         }
       }
     });
   }
 
-  function getUUIDInfo(rocketFuelDefaultOptions,domainInfo, iframeInfo) {
+  function getUUIDInfo(rocketFuelDefaultOptions, domainInfo, iframeInfo) {
     if (!rocketFuelDefaultOptions.uuid) {
       // return error
     }
@@ -208,20 +213,20 @@
     fetch(`${apiDomain}/hosted-page?uuid=${rocketFuelDefaultOptions.uuid}`, requestOptions)
       .then((response) => response.text())
       .then((result) => {
-        
+
         //update rfOrder handle the data
         const iframeResp = JSON.parse(result);
-        if(iframeResp.ok !== undefined && iframeResp.ok){
-          iframeResp.result.returnval.token=rocketFuelDefaultOptions.token;
-          iframeResp.result.returnval.merchantAuth=rocketFuelDefaultOptions.merchantAuth;
-          iframeInfo.iframeData = iframeResp.result!==undefined?iframeResp.result.returnval:undefined;
-          }
+        if (iframeResp.ok !== undefined && iframeResp.ok) {
+          iframeResp.result.returnval.token = rocketFuelDefaultOptions.token;
+          iframeResp.result.returnval.merchantAuth = rocketFuelDefaultOptions.merchantAuth;
+          iframeInfo.iframeData = iframeResp.result !== undefined ? iframeResp.result.returnval : undefined;
+        }
         iframeInfo.iframe = createIFrame(iframeInfo, rocketFuelDefaultOptions);
       })
       .catch((error) => console.log("error", error));
   }
 
-async function autoSignUp(rocketFuelDefaultOptions,domainInfo,env) {
+  async function autoSignUp(rocketFuelDefaultOptions, domainInfo, env) {
     var myHeaders = new Headers();
     myHeaders.append("authorization", "Bearer " + null);
     myHeaders.append('Content-Type', 'application/json');
@@ -229,19 +234,25 @@ async function autoSignUp(rocketFuelDefaultOptions,domainInfo,env) {
     var requestOptions = {
       method: "POST",
       headers: myHeaders,
-    redirect: "follow",
-    body: JSON.stringify(rocketFuelDefaultOptions)
+      redirect: "follow",
+      body: JSON.stringify(rocketFuelDefaultOptions)
     };
     const apiDomain = domainInfo[env];
-    let  resp= await fetch(`${apiDomain}/auth/autosignup`, requestOptions)
-    let rkflres= await resp.text()
-    const iframeResp = JSON.parse(rkflres);  
+    let resp = await fetch(`${apiDomain}/auth/autosignup`, requestOptions)
+    let rkflres = await resp.text()
+    const iframeResp = JSON.parse(rkflres);
     return iframeResp;
   }
 
   function showOverlay(iframe) {
-    document.getElementById("iframeWrapper").appendChild(iframe)
-    this.isOverlay = true;
+    if(iframe && !this.isOverlay) {
+      document.getElementById("iframeWrapper").appendChild(iframe)
+      this.isOverlay = true;
+    } else {
+      setTimeout(function(){
+        showOverlay(window.iframeInfo.iframe);
+      }, 1000)
+    }
   }
 
   function closeOverlay(iframeInfo) {
@@ -253,7 +264,7 @@ async function autoSignUp(rocketFuelDefaultOptions,domainInfo,env) {
     return typeof rocketfuel === "object";
   }
 
-  function sendCartToIframe(iframe,iframeInfo) {
+  function sendCartToIframe(iframe, iframeInfo) {
     if (iframe) {
       iframeInfo.iframeData.token = localStorage.getItem('rkfl_token') || null;
       iframeInfo.iframeData.merchantAuth = localStorage.getItem('merchant_auth') || null;
@@ -283,55 +294,62 @@ async function autoSignUp(rocketFuelDefaultOptions,domainInfo,env) {
     return iframe;
   }
 
-    //Make the DIV element draggagle:
-    document.addEventListener('DOMContentLoaded',dragElement);
+  //Make the DIV element draggagle:
+  document.addEventListener('DOMContentLoaded', dragElement);
 
-    
-    function dragElement() {
-      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-      let iframeWrapper = document.createElement("div");
-      let iframeWrapperHeader = document.createElement("div");
-      iframeWrapper.id = "iframeWrapper";
-      iframeWrapperHeader.id = "iframeWrapperHeader"
-      document.querySelector('body').appendChild(iframeWrapper).appendChild(iframeWrapperHeader);
 
-      document.getElementById("iframeWrapper").style.cssText = "width: 365px; position: absolute; z-index: 9; top: 10px; right: 10px; box-shadow: 0px 4px 7px rgb(0 0 0 / 30%);";
-      document.getElementById("iframeWrapperHeader").style.cssText = "padding: 10px; cursor: move; z-index: 10; position: absolute; width: 50%; height: 62px"
+  function dragElement() {
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    let iframeWrapper = document.createElement("div");
+    let iframeWrapperHeader = document.createElement("div");
+    iframeWrapper.id = "iframeWrapper";
+    iframeWrapperHeader.id = "iframeWrapperHeader"
+    document.querySelector('body').appendChild(iframeWrapper).appendChild(iframeWrapperHeader);
 
-      document.getElementById("iframeWrapperHeader").onmousedown = dragMouseDown;
-    
-      function dragMouseDown(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // get the mouse cursor position at startup:
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        // call a function whenever the cursor moves:
-        document.onmousemove = elementDrag;
-      }
-    
-      function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // calculate the new cursor position:
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        // set the element's new position:
-        iframeWrapper.style.top = (iframeWrapper.offsetTop - pos2) + "px";
-        iframeWrapper.style.left = (iframeWrapper.offsetLeft - pos1) + "px";
-      }
-    
-      function closeDragElement() {
-        /* stop moving when mouse button is released:*/
-        document.onmouseup = null;
-        document.onmousemove = null;
-      }
-      function getRkflToken(data){
-          return data
-      }
-      
-    }  
+    document.getElementById("iframeWrapper").style.cssText = "width: 365px; position: absolute; z-index: 9; top: 10px; right: 10px; box-shadow: 0px 4px 7px rgb(0 0 0 / 30%);";
+    document.getElementById("iframeWrapperHeader").style.cssText = "padding: 10px; cursor: move; z-index: 10; position: absolute; width: 50%; height: 62px"
+
+    document.getElementById("iframeWrapperHeader").onmousedown = dragMouseDown;
+
+    function dragMouseDown(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // get the mouse cursor position at startup:
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      // call a function whenever the cursor moves:
+      document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // calculate the new cursor position:
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      // set the element's new position:
+      iframeWrapper.style.top = (iframeWrapper.offsetTop - pos2) + "px";
+      iframeWrapper.style.left = (iframeWrapper.offsetLeft - pos1) + "px";
+    }
+
+    function closeDragElement() {
+      /* stop moving when mouse button is released:*/
+      document.onmouseup = null;
+      document.onmousemove = null;
+    }
+    function getRkflToken(data) {
+      return data
+    }
+
+  }
 })();
+function removeLocalStorage(){
+  localStorage.removeItem('access');
+  localStorage.removeItem('refresh');
+  localStorage.removeItem('rkfl_token');
+  localStorage.removeItem('merchant_auth');
+}
+removeLocalStorage();

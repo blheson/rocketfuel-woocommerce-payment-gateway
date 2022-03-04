@@ -7,12 +7,14 @@ use Rocketfuel_Gateway\Plugin;
 class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 {
 
-
+	/**
+	 * Constructor
+	 */
 	public function __construct()
 	{
 		$this->id = 'rocketfuel_gateway';
 
-		// $this->icon = 'rkfl.png';
+		// $this->icon = Plugin::get_url('assets/img/logso.png');
 
 		$this->has_fields = false;
 
@@ -20,9 +22,26 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$this->method_description = 'Pay with Crypto using Rocketfuel';
 
+
+
+		$this->supports = array(
+			'products',
+			'refunds',
+
+			'subscriptions',
+			'multiple_subscriptions',
+			'subscription_cancellation',
+
+			'subscription_reactivation',
+
+			'subscription_payment_method_change',
+			'subscription_payment_method_change_customer',
+			'gateway_scheduled_payments'
+		);
 		$this->init_form_fields();
 
 		$this->init_settings();
+
 
 		$this->title = $this->get_option('title');
 
@@ -40,12 +59,12 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$this->email = $this->get_option('email');
 
 		$this->payment_complete_order_status = $this->get_option('payment_complete_order_status') ? $this->get_option('payment_complete_order_status') : 'completed';
-
-		$this->supports = array('products');
-
 		$this->merchant_id = $this->get_option('merchant_id');
 
+
+		//Hooks
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+		add_action('admin_notices', array($this, 'admin_notices'));
 	}
 	public function get_endpoint($environment)
 	{
@@ -55,6 +74,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'dev' => 'https://dev-app.rocketdemo.net/api',
 			'stage2' => 'https://qa-app.rocketdemo.net/api',
 			'preprod' => 'https://preprod-app.rocketdemo.net/api',
+			'sandbox' => 'https://app-sandbox.rocketfuelblockchain.com/api',
 		);
 
 		return isset($environment_data[$environment]) ? $environment_data[$environment] : 'https://app.rocketfuelblockchain.com/api';
@@ -86,7 +106,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 					'prod' => 'Production',
 					'dev' => 'Development',
 					'stage2' => 'QA',
-					'preprod' => 'Pre-Production'
+					'preprod' => 'Pre-Production',
+					'sandbox' => 'Sandbox'
 				)
 			),
 			'description' => array(
@@ -132,489 +153,65 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	public function payment_fields()
 	{
 		global $woocommerce;
+
 		if (!$this->password || !$this->email) {
-			echo '<span style="color:red">' . __('Vendor should fill in the settings page to start using Rocketfuel', 'rocketfuel') . '</span>';
+			echo '<span style="color:red">' . __('Vendor should fill in the settings page to start using Rocketfuel', 'rocketfuel-payment-gateway') . '</span>';
 			return;
 		}
-		$result = $this->process_user_data();
-	 
+
+		if (wp_doing_ajax()) {
+
+			$result = $this->process_user_data();
+
+			// $result = Woocommerce_Controller::process_user_data();
 
 
-		if ($result && null !== $result['temporary_order_id']) {
-			$temp_orderid_rocketfuel = $result['temporary_order_id'];
+			if ($result && null !== $result['temporary_order_id']) {
+				$temp_orderid_rocketfuel = $result['temporary_order_id'];
+			}
+
+			if ($result &&  null !== $result['result']->result) {
+				$uuid = $result['result']->result->uuid;
+			}
 		}
-
-		if ($result &&  null !== $result['result']->result) {
-			$uuid = $result['result']->result->uuid;
-		}
-
-
 ?>
-		<style>
-			.rocketfuel_process_payment {
-				text-align: center;
-				display: flex;
-				justify-content: center;
-				align-content: center;
-				align-items: baseline;
-			}
-
-			#Rocketfuel {
-				display: block !important;
-
-			}
-
-			#rocketfuel_process_payment_button {
-				background-color: #229633;
-				border: #229633;
-			}
-
-			h3.indicate_text {
-				margin: 0;
-				font-size: 32px;
-				margin-right: 10px;
-				color: #fff;
-			}
-
-			.loader_rocket {
-				border: 1px solid #000000;
-				border-top: 1px solid #ffffff;
-				border-radius: 50%;
-				width: 20px;
-				height: 20px;
-				animation: spin 0.4s linear infinite;
-			}
-
-			.rocket_fuel_payment_overlay_wrapper {
-				width: 100%;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				align-content: center;
-			}
-
-			@keyframes spin {
-				0% {
-					transform: rotate(0deg);
-				}
-
-				100% {
-					transform: rotate(360deg);
-				}
-			}
-
-			#rocket_fuel_payment_overlay_gateway {
-				width: 100%;
-				top: 0;
-				right: 0;
-				height: 100%;
-				z-index: 100000 !important;
-				position: fixed;
-				background: rgb(0 0 0 / 97%);
-				display: flex;
-			}
-
-			#iframeWrapper {
-				z-index: 100001 !important;
-				position: fixed !important;
-			}
-
-			.rocket_fuel_payment_overlay_wrapper_gateway {
-				width: 100%;
-				display: flex;
-				align-items: center;
-				align-content: center;
-				justify-content: center;
-			}
-
-			#rocketfuel_retrigger_payment button {
-				text-align: center;
-				background: #f0833c !important;
-				padding: 0px;
-				border: none;
-				width: 300px;
-				padding-bottom: 2px;
-				height: 48px;
-				font-size: 17px;
-				margin-top: 12px;
-				border-radius: 3px;
-				font-weight: 300;
-				color: #fff;
-				cursor: pointer;
-			}
-
-
-			#rocketfuel_retrigger_payment {
-				display: none;
-			}
-
-			#rocketfuel_retrigger_payment button:hover {
-				outline: none;
-				border: none;
-
-				background-color: #e26f02 !important;
-				border-color: #e26f02 !important;
-
-			}
-
-			.rocketfuel_exit_plan_wrapper {
-				display: flex;
-				text-align: center;
-				justify-content: center;
-				align-items: center;
-				margin-top: 30px;
-			}
-
-			.rocketfuel_exit_plan_wrapper figure {
-				width: 14px;
-				height: 37px;
-				margin: 0;
-				right: 0px;
-				position: relative;
-				transition: right 700ms;
-				display: inline-block;
-
-			}
-
-			.proceed-forward-rkfl:hover figure {
-				right: -6px;
-				transition: right 200ms;
-			}
-
-			/* .rocketfuel_exit_plan_wrapper:hover a {
-                color: #ddd;
-            } */
-
-			.rocketfuel_exit_plan_wrapper a.completed-button-rkfl {
-				border: 1px solid #ffffff4d;
-				border-radius: 4px;
-				padding: 2px 10px;
-
-			}
-
-			.rocketfuel_exit_plan_wrapper a.proceed-forward-rkfl {
-				padding-right: 10px;
-			}
-
-			.rocketfuel_exit_plan_wrapper a {
-
-				text-decoration: none;
-				color: #fff !important;
-				font-size: 12px;
-
-			}
-
-			.rocketfuel_exit_plan_wrapper a:focus {
-				outline: none !important;
-				text-decoration: none !important;
-				background: transparent !important;
-			}
-
-			.rocketfuel_retrigger_payment_button {
-				padding: 10px;
-				background: #f0833c;
-				color: #fff;
-				cursor: pointer;
-				max-width: 200px;
-				text-align: center;
-				display: flex;
-				justify-content: center;
-			}
-		</style>
+		<link rel="stylesheet" href="<?php echo esc_url(Plugin::get_url('assets/css/rkfl_iframe.css')) ?>">
 
 		<div>
 			<p>Click to pay</p>
 			<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button">Pay with Rocketfuel</div>
 		</div>
+
 		<div id="rkfl_error"></div>
+
 		<input type="hidden" name="admin_url_rocketfuel" value="<?php echo esc_url(admin_url('admin-ajax.php?action=rocketfuel_process_user_data&nonce=' . wp_create_nonce("rocketfuel_nonce"))); ?>">
 
+		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
 
-		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()) ?>">
-		<input type="hidden" name="uuid_rocketfuel" value="<?php echo esc_attr($uuid) ?>">
-		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel) ?>">
+		<input type="hidden" name="payment_status_rocketfuel" value="pending">
+
+		<input type="hidden" name="payment_complete_order_status" value="<?php echo esc_attr($this->payment_complete_order_status); ?>">
+
+		<input type="hidden" name="uuid_rocketfuel" value="<?php echo esc_attr($uuid); ?>">
+
+		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel); ?>">
 
 		<input type="hidden" name="order_status_rocketfuel" value="wc-on-hold">
 
-		<script>
-			/**
-			 * Payment Engine object
-			 */
-			var RocketfuelPaymentEngine = {
+		<input type="hidden" name="environment_rocketfuel" value="<?php echo  esc_attr($this->environment); ?>">
 
-				order_id: '',
-				url: new URL(window.location.href),
-				watchIframeShow: false,
-				rkflConfig: null,
-
-				getUUID: async function() {
-					let uuid = document.querySelector('input[name=uuid_rocketfuel]').value;
-					if (uuid) {
-						return uuid;
-					}
-					let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
-
-					let response = await fetch(url);
-
-					if (!response.ok) {
-						return false;
-					}
-
-					let result = await response.json();
-
-					if (!result.data?.result?.uuid) {
-						return false;
-					}
-
-					RocketfuelPaymentEngine.order_id = result.data.temporary_order_id;
-
-					document.querySelector('input[name=temp_orderid_rocketfuel]').value = result.data.temporary_order_id;
-
-					console.log("res", result.data.result.uuid);
-					return result.data.result.uuid;
-				},
-				getEnvironment: function() {
-					let environment = "<?php echo $this->environment; ?>"
-
-					return environment || 'prod';
-				},
-				getUserData: function() {
-
-
-					let user_data = {
-						first_name: document.getElementById('billing_first_name') ? document.getElementById('billing_first_name').value : null,
-						last_name: document.getElementById('billing_last_name') ? document.getElementById('billing_last_name').value : null,
-						email: document.getElementById('billing_email') ? document.getElementById('billing_email').value : null,
-						merchant_auth: document.querySelector('input[name=merchant_auth_rocketfuel]') ? document.querySelector('input[name=merchant_auth_rocketfuel]').value : null
-					}
-
-					if (!user_data) return false;
-
-					return user_data;
-				},
-				updateOrder: function(result) {
-					try {
-
-
-						console.log("Response from callback :", result);
-
-						console.log("order_id :", RocketfuelPaymentEngine.order_id);
-
-						let status = "wc-on-hold";
-
-						let result_status = parseInt(result.status);
-
-						if (result_status == 101) {
-							status = "wc-partial-payment";
-						}
-
-						if (result_status == 1 || result.status == "completed") {
-							status = "<?= $this->payment_complete_order_status; ?>"; //placeholder to get order status set by seller
-						}
-
-						if (result_status == -1) {
-							status = "wc-failed";
-						}
-
-						document.getElementById('order_status_rocketfuel').value = status;
-
-
-					} catch (error) {
-						console.error('Error from update order method', error);
-					}
-
-				},
-
-				startPayment: function(autoTriggerState = true) {
-
-
-					// document.getElementById('rocketfuel_retrigger_payment_button').innerText = "Preparing Payment window...";
-					this.watchIframeShow = true;
-
-
-					document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
-
-					let checkIframe = setInterval(() => {
-
-						if (RocketfuelPaymentEngine.rkfl.iframeInfo.iframe) {
-							RocketfuelPaymentEngine.rkfl.initPayment();
-							clearInterval(checkIframe);
-						}
-
-					}, 500);
-
-				},
-				prepareRetrigger: function() {
-
-					//show retrigger button
-					document.getElementById('rocketfuel_retrigger_payment_button').disabled = false;
-
-					document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = 'Pay with Rocketfuel';
-
-				},
-				prepareProgressMessage: function() {
-
-					//revert trigger button message
-					document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
-					// document.getElementById('rocketfuel_retrigger_payment').style.display = "none";
-				},
-
-				windowListener: function() {
-					let engine = this;
-					window.addEventListener('message', (event) => {
-
-						switch (event.data.type) {
-							case 'rocketfuel_iframe_close':
-								engine.prepareRetrigger();
-								break;
-							case 'rocketfuel_new_height':
-								engine.prepareProgressMessage();
-								engine.watchIframeShow = false;
-								break;
-							default:
-								break;
-						}
-
-					})
-				},
-				setLocalStorage: function(key, value) {
-					localStorage.setItem(key, value);
-				},
-				initRocketFuel: async function() {
-					return new Promise(async (resolve, reject) => {
-						if (!RocketFuel) {
-							location.reload();
-							reject();
-						}
-						let userData = RocketfuelPaymentEngine.getUserData();
-						let payload, response, rkflToken;
-
-						RocketfuelPaymentEngine.rkfl = new RocketFuel({
-							environment: RocketfuelPaymentEngine.getEnvironment()
-						});
-
-						let uuid = await this.getUUID();
-						RocketfuelPaymentEngine.rkflConfig = {
-							uuid,
-							callback: RocketfuelPaymentEngine.updateOrder,
-							environment: RocketfuelPaymentEngine.getEnvironment()
-						}
-						if (userData.first_name && userData.email) {
-							payload = {
-								firstName: userData.first_name,
-								lastName: userData.last_name,
-								email: userData.email,
-								merchantAuth: userData.merchant_auth,
-								kycType: 'null',
-								kycDetails: {
-									'DOB': "01-01-1990"
-								}
-							}
-
-
-							try {
-								console.log('details', userData.email, localStorage.getItem('rkfl_email'), payload)
-								if (userData.email !== localStorage.getItem('rkfl_email')) { //remove signon details when email is different
-									localStorage.removeItem('rkfl_token');
-									localStorage.removeItem('access');
-
-								}
-
-								rkflToken = localStorage.getItem('rkfl_token');
-
-								if (!rkflToken && payload.merchantAuth) {
-
-									response = await RocketfuelPaymentEngine.rkfl.rkflAutoSignUp(payload, RocketfuelPaymentEngine.getEnvironment());
-
-									// RocketfuelPaymentEngine.setLocalStorage('rkfl_first_name',userData.first_name);
-									// RocketfuelPaymentEngine.setLocalStorage('rkfl_last_name',userData.last_name);
-									RocketfuelPaymentEngine.setLocalStorage('rkfl_email', userData.email);
-
-									if (response) {
-
-										rkflToken = response.result?.rkflToken;
-
-									}
-
-								}
-
-								// const rkflConfig = {
-								// 	uuid,
-								// 	callback: RocketfuelPaymentEngine.updateOrder,
-								// 	environment: RocketfuelPaymentEngine.getEnvironment()
-								// }
-								if (rkflToken) {
-									RocketfuelPaymentEngine.rkflConfig.token = rkflToken;
-								}
-
-
-
-
-								resolve(true);
-							} catch (error) {
-								reject(error?.message);
-							}
-
-						}
-						if (RocketfuelPaymentEngine.rkflConfig) {
-
-							RocketfuelPaymentEngine.rkfl = new RocketFuel(RocketfuelPaymentEngine.rkflConfig);
-							resolve(true);
-
-						} else {
-							resolve(false);
-						}
-
-					})
-
-				},
-
-				init: async function() {
-
-					let engine = this;
-					console.log('Start initiating RKFL');
-
-					try {
-
-						let res = await engine.initRocketFuel();
-						console.log(res);
-					} catch (error) {
-						console.log('error from promise', error)
-					}
-
-					console.log('Done initiating RKFL');
-
-					engine.windowListener();
-
-					if (document.getElementById('rocketfuel_retrigger_payment_button')) {
-						document.getElementById('rocketfuel_retrigger_payment_button').addEventListener('click', () => {
-							RocketfuelPaymentEngine.startPayment(false);
-						});
-
-					}
-
-					engine.startPayment();
-
-				}
-			}
-
-
-			document.querySelector(".rocketfuel_retrigger_payment_button").addEventListener('click', (e) => {
-				e.preventDefault();
-				document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = '<div class="loader_rocket"></div>';
-				console.log('clicked');
-				RocketfuelPaymentEngine.init();
-			})
+		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl_iframe.js')); ?>">
 		</script>
 <?php
 	}
+	/**
+	 * Process Data and get UUID from RKFL
+	 * @return array|false 
+	 */
 	public function process_user_data()
 	{
 
-		// $gateway = new Rocketfuel_Gateway_Controller();
-		// $response = new \stdClass();
-
-		$cart = $this->sortCart(WC()->cart->get_cart());
+		$cart = $this->sort_cart(WC()->cart->get_cart());
 
 		$temporary_order_id = md5(microtime());
 
@@ -636,8 +233,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			)
 		);
 
-	
-
 		$payment_response = Process_Payment_Controller::process_payment($data);
 
 		if (!$payment_response && !is_string($payment_response)) {
@@ -645,37 +240,93 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			return false;
 		}
 
-	
 		$result = json_decode($payment_response);
 
 		return array('result' => $result, 'temporary_order_id' => $temporary_order_id);
+	}
+	public function is_subscription_product($product)
+	{
+		try {
+
+			return class_exists('WC_Subscriptions_Product') && \WC_Subscriptions_Product::is_subscription($product);
+		} catch (\Throwable $th) {
+
+			return false;
+		}
 	}
 	/**
 	 * Parse cart items and prepare for order
 	 * @param array $items 
 	 * @return array
 	 */
-	public function sortCart($items)
+	public function sort_cart($items)
 	{
+
 		$data = array();
 
 		foreach ($items as $cart_item) {
-			$data[] = array(
+
+
+			$temp_data  = array(
 				'name' => $cart_item['data']->get_title(),
 				'id' => (string)$cart_item['product_id'],
 				'price' => $cart_item['data']->get_price(),
 				'quantity' => (string)$cart_item['quantity']
 			);
+
+
+
+			// Mock subscription 
+			$_product = wc_get_product($cart_item['product_id']);
+		 
+
+			if ($_product && $this->is_subscription_product($_product)) {
+			 
+				$_product_meta = get_post_meta($cart_item['product_id']);
+
+				if ($_product_meta && is_array($_product_meta)) {
+
+					$new_array = array_merge(
+						$temp_data,
+						array(
+
+							'isSubscription' => true,
+
+							'frequency' => $_product_meta['_subscription_period'][0].'ly',
+
+							'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
+
+							'merchantSubscriptionId' => (string)$cart_item['product_id'],
+
+							'autoRenewal' => true
+						)
+					);
+				}
+			} else {
+
+				$new_array = $temp_data;
+			}
+
+			$data[] = $new_array;
 		}
 
-		if ((null !== WC()->cart->get_shipping_total()) && (!strpos(strtolower(WC()->cart->get_shipping_total()), 'free'))) {
+		try {
 
-			$data[] = array(
-				'name' => 'Shipping',
-				'id' => microtime(),
-				'price' => WC()->cart->get_shipping_total(),
-				'quantity' => '1'
-			);
+			if (
+				(null !== WC()->cart->get_shipping_total()) &&
+				(!strpos(strtolower(WC()->cart->get_shipping_total()), 'free')) &&
+				WC()->cart->get_shipping_total() > 0
+			) {
+
+				$data[] = array(
+					'name' => 'Shipping',
+					'id' => microtime(),
+					'price' => WC()->cart->get_shipping_total(),
+					'quantity' => '1'
+				);
+			}
+		} catch (\Throwable $th) {
+			// silently ignore
 		}
 
 		return $data;
@@ -728,7 +379,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$order = wc_get_order($order_id);
 
 		$temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
- 
+
 		$this->swap_order_id($temporary_order_id, $order_id);
 		// Remove cart
 		// $woocommerce->cart->empty_cart();
@@ -740,24 +391,36 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'redirect' => $buildUrl
 		);
 	}
+	/**
+	 * Encrypt Merchant Id
+	 * @return string
+	 */
 	public function merchant_auth()
 	{
 		return $this->get_encrypted($this->merchant_id);
 	}
-	public function swap_order_id($temp_order_id, $newOrderId)
+	/**
+	 * Swap temporary order for new order Id
+	 * @param int $temp_order_id
+	 * @param int $new_order_id
+	 * @return true
+	 * 
+	 */
+	public function swap_order_id($temp_order_id, $new_order_id)
 	{
+
 		$data = json_encode(array('tempOrderId' =>
-		$temp_order_id, 'newOrderId' => $newOrderId));
+		$temp_order_id, 'newOrderId' => $new_order_id));
 
 
 
 		$order_payload = $this->get_encrypted($data, false);
- 
+
 
 		$merchant_id = base64_encode($this->merchant_id);
 
 		$body = wp_json_encode(array('merchantAuth' => $order_payload, 'merchantId' => $merchant_id));
- 
+
 
 		$args = array(
 			'timeout'	=> 45,
@@ -812,5 +475,21 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		}
 
 		return base64_encode($out);
+	}
+	/**
+	 * Check if Rocketfuel merchant details is filled.
+	 */
+	public function admin_notices()
+	{
+
+		if ($this->enabled == 'no') {
+			return;
+		}
+
+		// Check required fields.
+		if (!($this->public_key && $this->password)) {
+			echo '<div class="error"><p>' . sprintf(__('Please enter your Rocketfuel merchant details <a href="%s">here</a> to be able to use the Rocketfuel WooCommerce plugin.', 'rocketfuel-payment-gateway'), admin_url('admin.php?page=wc-settings&tab=checkout&section=rocketfuel_gateway')) . '</p></div>';
+			return;
+		}
 	}
 }
