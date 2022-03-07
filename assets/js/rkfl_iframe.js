@@ -1,8 +1,7 @@
-
 /**
  * Payment Engine object
  */
-var RocketfuelPaymentEngine = {
+ var RocketfuelPaymentEngine = {
 
     order_id: '',
     url: new URL(window.location.href),
@@ -150,7 +149,7 @@ var RocketfuelPaymentEngine = {
                     
                 case 'rocketfuel_result_ok':
 
-                    console.log('Event from rocketfuel_result_ok', event.data.response);
+                    console.log('Event from rocketfuel_result_ok', event.data);
 
                     if(event.data.response){
                         RocketfuelPaymentEngine.updateOrder(event.data.response);

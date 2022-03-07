@@ -232,12 +232,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'redirectUrl' => ''
 			)
 		);
-		file_put_contents(__DIR__.'/freq.json','Cart data'."\n".json_encode($data),FILE_APPEND);
+ 
 
 		$payment_response = Process_Payment_Controller::process_payment($data);
 		
-		file_put_contents(__DIR__.'/freq.json','Payment response'."\n".json_encode($payment_response),FILE_APPEND);
-
+ 
 		if (!$payment_response && !is_string($payment_response)) {
 
 			return false;
@@ -262,12 +261,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$frequency = false;
 
-		// if ($_product_meta['_subscription_period'][0] === 'day') {
-		// 	$frequency = (int)$_product_meta['_subscription_period_interval'][0] === 1 ? 'daily' : $_product_meta['_subscription_period'][0] . 'ly';
-		// } not supported yet
-// 		file_put_contents(__DIR__.'/freq.json',json_encode($_product_meta['_subscription_period'][0]),FILE_APPEND);
-		
-// 		file_put_contents(__DIR__.'/freq.json',json_encode((int)$_product_meta['_subscription_period_interval'][0]),FILE_APPEND);
 		if ($_product_meta['_subscription_period'][0] === 'week' && (int)$_product_meta['_subscription_period_interval'][0] === 1) {
 			$frequency = 'weekly';
 		}
@@ -276,7 +269,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			if ((int)$_product_meta['_subscription_period_interval'][0] === 1) {
 				$frequency = 'monthly';
 			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 3) {
-				$frequency = 'quaterly';
+				$frequency = 'quarterly';
 			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 6) {
 				$frequency = 'half-yearly';
 			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 12) {
