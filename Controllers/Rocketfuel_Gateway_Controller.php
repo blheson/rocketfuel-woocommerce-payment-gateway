@@ -232,8 +232,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'redirectUrl' => ''
 			)
 		);
+		file_put_contents(__DIR__.'/freq.json','Cart data'."\n".json_encode($data),FILE_APPEND);
 
 		$payment_response = Process_Payment_Controller::process_payment($data);
+		
+		file_put_contents(__DIR__.'/freq.json','Payment response'."\n".json_encode($payment_response),FILE_APPEND);
 
 		if (!$payment_response && !is_string($payment_response)) {
 
@@ -253,6 +256,37 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 			return false;
 		}
+	}
+	public function calculate_frequency($_product_meta)
+	{
+
+		$frequency = false;
+
+		// if ($_product_meta['_subscription_period'][0] === 'day') {
+		// 	$frequency = (int)$_product_meta['_subscription_period_interval'][0] === 1 ? 'daily' : $_product_meta['_subscription_period'][0] . 'ly';
+		// } not supported yet
+// 		file_put_contents(__DIR__.'/freq.json',json_encode($_product_meta['_subscription_period'][0]),FILE_APPEND);
+		
+// 		file_put_contents(__DIR__.'/freq.json',json_encode((int)$_product_meta['_subscription_period_interval'][0]),FILE_APPEND);
+		if ($_product_meta['_subscription_period'][0] === 'week' && (int)$_product_meta['_subscription_period_interval'][0] === 1) {
+			$frequency = 'weekly';
+		}
+
+		if ($_product_meta['_subscription_period'][0] === 'month') {
+			if ((int)$_product_meta['_subscription_period_interval'][0] === 1) {
+				$frequency = 'monthly';
+			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 3) {
+				$frequency = 'quaterly';
+			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 6) {
+				$frequency = 'half-yearly';
+			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 12) {
+				$frequency = 'yearly';
+			}
+		}
+		if ($_product_meta['_subscription_period'][0] === 'year' && (int)$_product_meta['_subscription_period_interval'][0] === 1) {
+			$frequency = 'yearly';
+		}
+		return $frequency;
 	}
 	/**
 	 * Parse cart items and prepare for order
@@ -278,29 +312,38 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 			// Mock subscription 
 			$_product = wc_get_product($cart_item['product_id']);
-		 
+
 
 			if ($_product && $this->is_subscription_product($_product)) {
-			 
+
 				$_product_meta = get_post_meta($cart_item['product_id']);
 
 				if ($_product_meta && is_array($_product_meta)) {
 
-					$new_array = array_merge(
-						$temp_data,
-						array(
+ 
+					$frequency = $this->calculate_frequency($_product_meta);
 
-							'isSubscription' => true,
+					if ($frequency) {
 
-							'frequency' => $_product_meta['_subscription_period'][0].'ly',
+						$new_array = array_merge(
+							$temp_data,
+							array(
 
-							'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
+								'isSubscription' => true,
 
-							'merchantSubscriptionId' => (string)$cart_item['product_id'],
+								'frequency' => $frequency,
 
-							'autoRenewal' => true
-						)
-					);
+								'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
+
+								'merchantSubscriptionId' => (string)$cart_item['product_id'],
+
+								'autoRenewal' => true
+							)
+						);
+
+					} else {
+$new_array = $temp_data;
+					}
 				}
 			} else {
 
