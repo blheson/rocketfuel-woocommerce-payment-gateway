@@ -190,6 +190,9 @@
         closeOverlay(iframeInfo);
       }
       if (event.data.type === "rocketfuel_result_ok") {
+       
+        console.log('Event is shown: ',event.data);
+
         if (rocketFuelDefaultOptions.callback) {
           rocketFuelDefaultOptions.callback(event.data.response);
         }
@@ -245,11 +248,11 @@
   }
 
   function showOverlay(iframe) {
-    if(iframe && !this.isOverlay) {
+    if (iframe && !this.isOverlay) {
       document.getElementById("iframeWrapper").appendChild(iframe)
       this.isOverlay = true;
     } else {
-      setTimeout(function(){
+      setTimeout(function () {
         showOverlay(window.iframeInfo.iframe);
       }, 1000)
     }
@@ -346,7 +349,7 @@
 
   }
 })();
-function removeLocalStorage(){
+function removeLocalStorage() {
   localStorage.removeItem('access');
   localStorage.removeItem('refresh');
   localStorage.removeItem('rkfl_token');

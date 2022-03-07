@@ -254,6 +254,34 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			return false;
 		}
 	}
+	public function calculate_frequency($_product_meta)
+	{
+
+		$frequency = false;
+
+		// if ($_product_meta['_subscription_period'][0] === 'day') {
+		// 	$frequency = (int)$_product_meta['_subscription_period'][0] === 1 ? 'daily' : $_product_meta['_subscription_period'][0] . 'ly';
+		// } not supported yet
+		if ($_product_meta['_subscription_period'][0] === 'week' && (int)$_product_meta['_subscription_period'][0] === 1) {
+			$frequency = 'weekly';
+		}
+
+		if ($_product_meta['_subscription_period'][0] === 'month') {
+			if ((int)$_product_meta['_subscription_period'][0] === 1) {
+				$frequency = 'monthly';
+			} else if ((int)$_product_meta['_subscription_period'][0] === 3) {
+				$frequency = 'quarterly';
+			} else if ((int)$_product_meta['_subscription_period'][0] === 6) {
+				$frequency = 'half-yearly';
+			} else if ((int)$_product_meta['_subscription_period'][0] === 12) {
+				$frequency = 'yearly';
+			}
+		}
+		if ($_product_meta['_subscription_period'][0] === 'year' && (int)$_product_meta['_subscription_period'][0] === 1) {
+			$frequency = 'yearly';
+		}
+		return $frequency;
+	}
 	/**
 	 * Parse cart items and prepare for order
 	 * @param array $items 
@@ -278,32 +306,39 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 			// Mock subscription 
 			$_product = wc_get_product($cart_item['product_id']);
-		 
+
 
 			if ($_product && $this->is_subscription_product($_product)) {
-			 
+
 				$_product_meta = get_post_meta($cart_item['product_id']);
 
 				if ($_product_meta && is_array($_product_meta)) {
 
 
-					$frequency = $_product_meta['_subscription_period'][0] === 'day' ? 'daily' : $_product_meta['_subscription_period'][0].'ly';
 
-					$new_array = array_merge(
-						$temp_data,
-						array(
+					$frequency = calculate_frequency($_product_meta);
 
-							'isSubscription' => true,
+					if ($frequency) {
 
-							'frequency' => $frequency,
+						$new_array = array_merge(
+							$temp_data,
+							array(
 
-							'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
+								'isSubscription' => true,
 
-							'merchantSubscriptionId' => (string)$cart_item['product_id'],
+								'frequency' => $frequency,
 
-							'autoRenewal' => true
-						)
-					);
+								'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
+
+								'merchantSubscriptionId' => (string)$cart_item['product_id'],
+
+								'autoRenewal' => true
+							)
+						);
+
+					} else {
+$new_array = $temp_data;
+					}
 				}
 			} else {
 

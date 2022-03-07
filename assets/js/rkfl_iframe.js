@@ -15,7 +15,7 @@ var RocketfuelPaymentEngine = {
         if (uuid) {
             return uuid;
         }
-        
+
         let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
 
         let response = await fetch(url);
@@ -67,6 +67,10 @@ var RocketfuelPaymentEngine = {
 
             let status = "wc-on-hold";
 
+            if(!result?.status){
+                return false;
+            }
+
             let result_status = parseInt(result.status);
 
             if (result_status === 101) {
@@ -74,8 +78,10 @@ var RocketfuelPaymentEngine = {
             }
 
             if (result_status === 1 || result.status === "completed") {
-                status = document.querySelector('input[name=payment_complete_order_status]')?.value  || 'wc-processing';
-               ; //placeholder to get order status set by seller
+
+                status = document.querySelector('input[name=payment_complete_order_status]')?.value || 'wc-processing';
+
+                //placeholder to get order status set by seller
             }
 
             if (result_status === -1) {
@@ -83,11 +89,11 @@ var RocketfuelPaymentEngine = {
             }
 
             document.querySelector('input[name=order_status_rocketfuel]').value = status;
-            
+
             document.querySelector('input[name=payment_status_rocketfuel]').value = 'complete';
 
             document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
-            
+
 
         } catch (error) {
 
@@ -141,6 +147,15 @@ var RocketfuelPaymentEngine = {
                 case 'rocketfuel_new_height':
                     engine.prepareProgressMessage();
                     engine.watchIframeShow = false;
+                    
+                case 'rocketfuel_result_ok':
+
+                    console.log('Event from rocketfuel_result_ok', event.data.response);
+
+                    if(event.data.response){
+                        RocketfuelPaymentEngine.updateOrder(event.data.response);
+                    }
+                 
                 default:
                     break;
             }
@@ -170,8 +185,7 @@ var RocketfuelPaymentEngine = {
                 uuid,
                 callback: RocketfuelPaymentEngine.updateOrder,
                 environment: RocketfuelPaymentEngine.getEnvironment()
-            } 
-
+            }
 
             if (userData.first_name && userData.email) {
                 payload = {
@@ -200,7 +214,7 @@ var RocketfuelPaymentEngine = {
 
                         response = await RocketfuelPaymentEngine.rkfl.rkflAutoSignUp(payload, RocketfuelPaymentEngine.getEnvironment());
 
- 
+
                         RocketfuelPaymentEngine.setLocalStorage('rkfl_email', userData.email);
 
                         if (response) {
@@ -211,7 +225,7 @@ var RocketfuelPaymentEngine = {
 
                     }
 
- 
+
                     if (rkflToken) {
                         RocketfuelPaymentEngine.rkflConfig.token = rkflToken;
                     }
@@ -259,7 +273,9 @@ var RocketfuelPaymentEngine = {
         if (document.getElementById('rocketfuel_retrigger_payment_button')) {
 
             document.getElementById('rocketfuel_retrigger_payment_button').addEventListener('click', () => {
+
                 RocketfuelPaymentEngine.startPayment(false);
+
             });
 
         }
@@ -277,4 +293,3 @@ document.querySelector(".rocketfuel_retrigger_payment_button").addEventListener(
     RocketfuelPaymentEngine.init();
 
 })
- 
