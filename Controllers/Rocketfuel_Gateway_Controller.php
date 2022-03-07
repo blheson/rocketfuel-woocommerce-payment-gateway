@@ -276,7 +276,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			if ((int)$_product_meta['_subscription_period_interval'][0] === 1) {
 				$frequency = 'monthly';
 			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 3) {
-				$frequency = 'quarterly';
+				$frequency = 'quaterly';
 			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 6) {
 				$frequency = 'half-yearly';
 			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 12) {
