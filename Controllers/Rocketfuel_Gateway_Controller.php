@@ -200,7 +200,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		<input type="hidden" name="environment_rocketfuel" value="<?php echo  esc_attr($this->environment); ?>">
 
-		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl_iframe.js')); ?>">
+	
+		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl_iframe.js?ver='.microtime())); ?>">
 		</script>
 <?php
 	}

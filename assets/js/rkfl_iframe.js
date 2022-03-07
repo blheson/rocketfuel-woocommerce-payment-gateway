@@ -1,7 +1,7 @@
 /**
  * Payment Engine object
  */
- var RocketfuelPaymentEngine = {
+var RocketfuelPaymentEngine = {
 
     order_id: '',
     url: new URL(window.location.href),
@@ -60,13 +60,12 @@
     updateOrder: function (result) {
         try {
 
-            console.log("Response from callback :", result);
+            console.log("Response from callback :", result, result?.status === undefined);
 
-            console.log("order_id :", RocketfuelPaymentEngine.order_id);
 
             let status = "wc-on-hold";
 
-            if(!result?.status){
+            if (result?.status === undefined) {
                 return false;
             }
 
@@ -91,8 +90,9 @@
 
             document.querySelector('input[name=payment_status_rocketfuel]').value = 'complete';
 
-            document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
+            document.getElementById('rocketfuel_retrigger_payment_button').dataset.disable = true;
 
+            document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 0.5;
 
         } catch (error) {
 
@@ -146,15 +146,15 @@
                 case 'rocketfuel_new_height':
                     engine.prepareProgressMessage();
                     engine.watchIframeShow = false;
-                    
+
                 case 'rocketfuel_result_ok':
 
                     console.log('Event from rocketfuel_result_ok', event.data);
 
-                    if(event.data.response){
+                    if (event.data.response) {
                         RocketfuelPaymentEngine.updateOrder(event.data.response);
                     }
-                 
+
                 default:
                     break;
             }
@@ -271,8 +271,10 @@
 
         if (document.getElementById('rocketfuel_retrigger_payment_button')) {
 
-            document.getElementById('rocketfuel_retrigger_payment_button').addEventListener('click', () => {
-
+            document.getElementById('rocketfuel_retrigger_payment_button').addEventListener('click', (e) => {
+                if (e.target.dataset.disable === 'true') {
+                    return;
+                }
                 RocketfuelPaymentEngine.startPayment(false);
 
             });
@@ -286,6 +288,9 @@
 
 document.querySelector(".rocketfuel_retrigger_payment_button").addEventListener('click', (e) => {
     e.preventDefault();
+    if (e.target.dataset.disable === 'true') {
+        return;
+    }
 
     document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = '<div class="loader_rocket"></div>';
 
