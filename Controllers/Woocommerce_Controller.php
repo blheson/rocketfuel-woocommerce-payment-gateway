@@ -9,33 +9,103 @@
 namespace Rocketfuel_Gateway\Controllers;
 
 use Rocketfuel_Gateway\Plugin;
+use Rocketfuel_Gateway\Services\Subscription_Service;
 
 class Woocommerce_Controller
 {
     public static function register()
     {
+
         add_action('plugins_loaded', array(__CLASS__, 'init_rocketfuel_gateway_class'));
+
         add_filter('woocommerce_payment_gateways', array(__CLASS__, 'add_gateway_class'));
+
         add_action('init', array(__CLASS__, 'register_partial_payment_order_status'));
 
         add_filter('wc_order_statuses', array(__CLASS__, 'add_partial_payment_to_order_status'));
+
         add_action('wp_ajax_nopriv_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
+
         add_action('wp_ajax_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
+
         if (!is_admin()) {
+
             add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_action'));
         }
 
         add_action('woocommerce_checkout_update_order_meta', array(__CLASS__, 'add_temp_id_to_order'));
 
         add_action('woocommerce_checkout_create_order', array(__CLASS__, 'checkout_create_order'));
+
+        add_action('woocommerce_subscription_status_cancelled', array(__CLASS__, 'cancel_subscription_order'));
+
+        add_action('woocommerce_subscription_status_pending-cancelled', array(__CLASS__, 'cancel_subscription_order'));
+    }
+    /**
+     * Cancel Subscription
+     * @param 
+     */
+    public function cancel_subscription_order($subscription)
+    {
+
+        // wcs_get_subscriptions_for_order( $order );
+
+        $order_id = $subscription->get_parent_id();
+
+        file_put_contents(__DIR__ . '/log.json', "\n" . 'Order Id returned from cancel_subscription_order: -> ' . json_encode($order_id) . "\n", FILE_APPEND);
+
+        if (!$order_id) {
+            return false;
+        }
+
+        $temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
+
+        file_put_contents(__DIR__ . '/log.json', "\n" . 'temporary_order_id returned from cancel_subscription_order: -> ' . json_encode($temporary_order_id) . "\n", FILE_APPEND);
+
+        if (!$temporary_order_id) {
+            return false;
+        }
+
+        $gateway = new Rocketfuel_Gateway_Controller();
+
+        $order_items = $subscription->get_items();
+
+        // Loop through order items
+        foreach ($order_items as $item_id => $item) {
+
+            $product = $item->get_product();
+
+            // Or to get the simple subscription or the variation subscription product ID
+            $_product_id = $product->get_id();
+
+            $payload = array(
+                'merchant_id' => $gateway->merchant_id,
+                'merchant_auth' => $gateway->merchant_auth(),
+                'subscription_id' => $temporary_order_id . '_' . $_product_id,
+                'endpoint'=> $gateway->endpoint
+            );
+
+            file_put_contents(__DIR__ . '/log.json', "\n" . 'payload for cancel_subscription_order: -> ' . json_encode($payload) . "\n", FILE_APPEND);
+            
+
+            $response = Subscription_Service::cancel_subscription($payload);
+            
+            $response_body = wp_remote_retrieve_body($response);
+
+            file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse bodty for cancel_subscription_order: -> ' . json_encode($response_body) . "\n", FILE_APPEND);
+
+            file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse for cancel_subscription_order: -> ' . json_encode($response) . "\n", FILE_APPEND);
+
+        }
     }
     /**
      * Check order details before submit
+     * 
      */
-    public function checkout_create_order($data)
+    public function checkout_create_order()
     {
 
-     
+
         if (isset($_POST['payment_method']) && $_POST['payment_method'] === 'rocketfuel_gateway' && $_POST['payment_status_rocketfuel'] !== 'complete') {
 
             $error_text = __("Rocketfuel Error: Payment not confirmed", "woocommerce");
@@ -43,12 +113,12 @@ class Woocommerce_Controller
             throw new \Exception($error_text);
 
             return false;
-
         }
     }
 
     /**
      * Keep Temporary order_id for webhook
+     * @param string $order_id
      */
     public function add_temp_id_to_order($order_id)
     {
@@ -74,8 +144,6 @@ class Woocommerce_Controller
 
 
         $gateway = new Rocketfuel_Gateway_Controller();
-        $response = new \stdClass();
-
 
         $cart = $gateway->sortCart(WC()->cart->get_cart());
 

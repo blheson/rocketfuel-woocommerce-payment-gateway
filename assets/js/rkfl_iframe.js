@@ -93,6 +93,7 @@ var RocketfuelPaymentEngine = {
             document.getElementById('rocketfuel_retrigger_payment_button').dataset.disable = true;
 
             document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 0.5;
+            // localStorage.set
 
         } catch (error) {
 
