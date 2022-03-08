@@ -270,17 +270,17 @@ var RocketfuelPaymentEngine = {
 
         engine.windowListener();
 
-        if (document.getElementById('rocketfuel_retrigger_payment_button')) {
+        // if (document.getElementById('rocketfuel_retrigger_payment_button')) {
 
-            document.getElementById('rocketfuel_retrigger_payment_button').addEventListener('click', (e) => {
-                if (e.target.dataset.disable === 'true') {
-                    return;
-                }
-                RocketfuelPaymentEngine.startPayment(false);
+        //     document.getElementById('rocketfuel_retrigger_payment_button').addEventListener('click', (e) => {
+        //         if (e.target.dataset.disable === 'true') {
+        //             return;
+        //         }
+                // RocketfuelPaymentEngine.startPayment(false);
 
-            });
+            // });
 
-        }
+        // }
 
         engine.startPayment();
 
