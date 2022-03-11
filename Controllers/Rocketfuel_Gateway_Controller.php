@@ -212,9 +212,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	public function process_user_data()
 	{
 
-		$cart = $this->sort_cart(WC()->cart->get_cart());
-
 		$temporary_order_id = md5(microtime());
+
+		$cart = $this->sort_cart(WC()->cart->get_cart(), $temporary_order_id);
+
+		
 
 		$merchant_cred = array(
 			'email' => $this->email,
@@ -287,7 +289,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 * @param array $items 
 	 * @return array
 	 */
-	public function sort_cart($items)
+	public function sort_cart($items,$temp_order_id)
 	{
 
 		$data = array();
@@ -329,7 +331,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 								'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
 
-								'merchantSubscriptionId' => (string)$cart_item['product_id'],
+								'merchantSubscriptionId' => (string)$temp_order_id.'_'.$cart_item['product_id'],
 
 								'autoRenewal' => true
 							)
@@ -352,7 +354,7 @@ $new_array = $temp_data;
 			if (
 				(null !== WC()->cart->get_shipping_total()) &&
 				(!strpos(strtolower(WC()->cart->get_shipping_total()), 'free')) &&
-				WC()->cart->get_shipping_total() > 0
+				(int) WC()->cart->get_shipping_total() > 0
 			) {
 
 				$data[] = array(
