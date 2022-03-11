@@ -331,7 +331,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 								'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
 
-								'merchantSubscriptionId' => (string)$temp_order_id.'_'.$cart_item['product_id'],
+								'merchantSubscriptionId' => (string)$temp_order_id.'-'.$cart_item['product_id'],
 
 								'autoRenewal' => true
 							)
