@@ -1,7 +1,7 @@
 /**
  * Payment Engine object
  */
-var RocketfuelPaymentEngine = {
+ var RocketfuelPaymentEngine = {
 
     order_id: '',
     url: new URL(window.location.href),
