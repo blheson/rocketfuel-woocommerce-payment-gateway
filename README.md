@@ -2,7 +2,7 @@
 RocketFuel Payment Method 2.0.3 for Woocommerce
 Requires at least: 5.5
 Tested up to: 5.9
-Stable tag: 2.1.6.3
+Stable tag: 3.1.0.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -19,7 +19,6 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 * Go to your RocketFuel merchant account
 * Click "Edit" in the bottom left corner. A window will pop up.
 * Paste callback URL and click "Save".
-
 
 # Changelog
 
@@ -38,3 +37,9 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 2.1.6.1 Fixed double first name issue
 2.1.6.2 Remove filler for lastname
 2.1.6.3 Sync rkfl sdk
+2.1.6.4 Added Multiple Currency support
+2.1.6.5 Add Shipping to line item
+2.1.6.6 Sync rkfl and add sandbox
+2.1.6.7 Sync rkfl and add sandbox
+3.1.0.2 Revert new changes to overlay flow
+3.1.0.2 Zero shipping removed
