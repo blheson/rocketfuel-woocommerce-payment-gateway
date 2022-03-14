@@ -45,8 +45,9 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 	}
-	public function get_endpoint($environment){
-		
+	public function get_endpoint($environment)
+	{
+
 		$environment_data = array(
 			'prod' => 'https://app.rocketfuelblockchain.com/api',
 			'dev' => 'https://dev-app.rocketdemo.net/api',
@@ -146,17 +147,16 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			);
 		}
 
-		if((null !== WC()->cart->get_shipping_total()) && (int)WC()->cart->get_shipping_total() > 0 && (!strpos(strtolower(WC()->cart->get_shipping_total()), 'free'))){
+		if ((null !== WC()->cart->get_shipping_total()) && (int)WC()->cart->get_shipping_total() > 0 && (!strpos(strtolower(WC()->cart->get_shipping_total()), 'free'))) {
 
 			$data[] = array(
 				'name' => 'Shipping',
 				'id' => microtime(),
-				'price'=> WC()->cart->get_shipping_total(), 
+				'price' => WC()->cart->get_shipping_total(),
 				'quantity' => '1'
 			);
-
 		}
-		
+
 		return $data;
 	}
 	/**
@@ -164,7 +164,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 * @param WP_REST_REQUEST $request_data
 	 * @return void
 	 */
-	public function update_order($request_data){
+	public function update_order($request_data)
+	{
 
 		$data = $request_data->get_params();
 
@@ -173,7 +174,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			echo json_encode(array('status' => 'failed', 'message' => 'Order was not updated. Invalid parameter. You must pass in order_id and status'));
 
 			exit;
-
 		}
 
 		$order_id = $data['order_id'];
@@ -203,19 +203,23 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	public function process_payment($order_id)
 	{
 		global $woocommerce;
+
 		$order = wc_get_order($order_id);
+
 		$cart = $this->sort_cart(WC()->cart->get_cart());
 
 		$user_data = base64_encode(json_encode(array(
-			'first_name' => $order->get_billing_first_name(),
-			'last_name' => $order->get_billing_last_name(),
-			'email' => $order->get_billing_email(),
+			'first_name' => method_exists($order, 'get_billing_first_name') ? $order->get_billing_first_name() : $order->billing_first_name,
+			'last_name' => method_exists($order, 'get_billing_last_name') ? $order->get_billing_last_name() : $order->billing_last_name,
+			'email' => method_exists($order, 'get_billing_email') ? $order->get_billing_email() : $order->billing_email,
 			'merchant_auth' => 	$this->merchant_auth()
 		)));
+
 		$merchant_cred = array(
 			'email' => $this->email,
 			'password' => $this->password
 		);
+
 		$data = array(
 			'cred' => $merchant_cred,
 			'endpoint' => $this->endpoint,
@@ -223,24 +227,32 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'amount' => $order->get_total(),
 				'cart' => $cart,
 				'merchant_id' => $this->merchant_id,
-				'shippingAddress'=>array(
-					"phoneNo"=> WC()->customer->get_shipping_phone(),
-					"address1"=> WC()->customer->get_shipping_address(),
-					"address2"=>  WC()->customer->get_shipping_address_2(),
-					"state"=>  WC()->customer->get_shipping_state(),
-					"city"=>  WC()->customer->get_shipping_city(),
-					"zipcode"=>  WC()->customer->get_shipping_postcode(),
-					"country"=> WC()->customer->get_shipping_country(),
-					"landmark"=> ""
-					
-			),
-				'currency' => $order->get_currency(),
+				'shippingAddress' => array(
+					"phoneNo" =>  method_exists(WC()->customer, 'get_shipping_phone') ?
+						WC()->customer->get_shipping_phone() : '',
+					"address1" => method_exists(WC()->customer, 'get_shipping_address') ?
+						WC()->customer->get_shipping_address() : '',
+					"address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
+						WC()->customer->get_shipping_address_2() : '',
+					"state" =>  method_exists(WC()->customer, 'get_shipping_state') ?
+						WC()->customer->get_shipping_state() : '',
+					"city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
+						WC()->customer->get_shipping_city() : '',
+					"zipcode" => method_exists(WC()->customer, 'get_shipping_postcode') ?
+						WC()->customer->get_shipping_postcode() : '',
+					"country" => method_exists(WC()->customer, 'get_shipping_country') ?
+						WC()->customer->get_shipping_country() : '',
+					"landmark" => ""
+				),
+				'currency' => method_exists($order, 'get_currency') ? $order->get_currency() : $order->order_currency,
 				'order' => (string) $order_id,
 				'redirectUrl' => ''
 			)
 		);
 
-		file_put_contents(__DIR__.'/log.json',json_encode($data),FILE_APPEND);
+
+
+		file_put_contents(__DIR__ . '/log.json', json_encode($data), FILE_APPEND);
 
 		$payment_response = Process_Payment_Controller::process_payment($data);
 
@@ -258,7 +270,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$uuid = $urlArr[count($urlArr) - 1];
 
 		// Remove cart
-		$woocommerce->cart->empty_cart();
+		// $woocommerce->cart->empty_cart();
 		// Return thankyou redirect
 		// $pay_link = get_permalink(get_option(Plugin::$prefix . 'process_payment_page_id' ));
 		// $order_key = explode( 'order-received', $this->get_return_url($order))[1];
