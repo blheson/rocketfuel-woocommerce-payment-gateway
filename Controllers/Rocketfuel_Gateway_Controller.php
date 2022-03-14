@@ -227,6 +227,17 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'body' => array(
 				'amount' => WC()->cart->total,
 				'cart' => $cart,
+				'shippingAddress'=>array(
+						"phoneNo"=> "",
+						"address1"=> WC()->customer->get_shipping_address(),
+						"address2"=>  WC()->customer->get_shipping_address_2(),
+						"state"=>  WC()->customer->get_shipping_state(),
+						"city"=>  WC()->customer->get_shipping_city(),
+						"zipcode"=>  WC()->customer->get_shipping_postcode(),
+						"country"=> WC()->customer->get_shipping_country(),
+						"landmark"=> ""
+						
+				)
 				'merchant_id' => $this->merchant_id,
 				'currency' => get_woocommerce_currency("USD"),
 				'order' => (string)$temporary_order_id,
@@ -302,8 +313,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'quantity' => (string)$cart_item['quantity']
 			);
 
-
-
 			// Mock subscription 
 			$_product = wc_get_product($cart_item['product_id']);
 
@@ -336,7 +345,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 						);
 
 					} else {
-$new_array = $temp_data;
+				$new_array = $temp_data;
 					}
 				}
 			} else {
@@ -347,24 +356,24 @@ $new_array = $temp_data;
 			$data[] = $new_array;
 		}
 
-		try {
+		// try {
 
-			if (
-				(null !== WC()->cart->get_shipping_total()) &&
-				(!strpos(strtolower(WC()->cart->get_shipping_total()), 'free')) &&
-				WC()->cart->get_shipping_total() > 0
-			) {
+		// 	if (
+		// 		(null !== WC()->cart->get_shipping_total()) &&
+		// 		(!strpos(strtolower(WC()->cart->get_shipping_total()), 'free')) &&
+		// 		WC()->cart->get_shipping_total() > 0
+		// 	) {
 
-				$data[] = array(
-					'name' => 'Shipping',
-					'id' => microtime(),
-					'price' => WC()->cart->get_shipping_total(),
-					'quantity' => '1'
-				);
-			}
-		} catch (\Throwable $th) {
-			// silently ignore
-		}
+		// 		$data[] = array(
+		// 			'name' => 'Shipping',
+		// 			'id' => microtime(),
+		// 			'price' => WC()->cart->get_shipping_total(),
+		// 			'quantity' => '1'
+		// 		);
+		// 	}
+		// } catch (\Throwable $th) {
+		// 	// silently ignore
+		// }
 
 		return $data;
 	}
