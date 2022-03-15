@@ -123,7 +123,8 @@ var RocketfuelPaymentEngine = {
     prepareRetrigger: function () {
 
         //show retrigger button
-        document.getElementById('rocketfuel_retrigger_payment_button').disabled = false;
+        document.getElementById('rocketfuel_retrigger_payment_button').dataset.disable = false;
+
 
         document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = 'Pay with Rocketfuel';
 
@@ -131,7 +132,9 @@ var RocketfuelPaymentEngine = {
     prepareProgressMessage: function () {
 
         //revert trigger button message
-        document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
+     
+        document.getElementById('rocketfuel_retrigger_payment_button').dataset.disable = true;
+
 
     },
 
@@ -143,10 +146,14 @@ var RocketfuelPaymentEngine = {
             switch (event.data.type) {
                 case 'rocketfuel_iframe_close':
                     engine.prepareRetrigger();
+
                     break;
                 case 'rocketfuel_new_height':
                     engine.prepareProgressMessage();
+                    
                     engine.watchIframeShow = false;
+
+                    document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = 'Pay with Rocketfuel';
 
                 case 'rocketfuel_result_ok':
 

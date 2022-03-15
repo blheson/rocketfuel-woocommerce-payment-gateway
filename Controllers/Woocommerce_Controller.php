@@ -80,8 +80,10 @@ class Woocommerce_Controller
 
             $payload = array(
                 'merchant_id' => base64_encode($gateway->merchant_id),
-                'merchant_auth' => $gateway->merchant_auth(),
-                'subscription_id' => $temporary_order_id . '-' . $_product_id,
+                'merchant_auth' => $gateway->get_encrypted(
+                    json_encode(array("subscriptionId"=>$temporary_order_id . '-' . $_product_id)),false
+                ),
+                'subscription_id'=>$temporary_order_id . '-' . $_product_id,
                 'endpoint'=> $gateway->endpoint
             );
 

@@ -225,7 +225,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'password' => $this->password
 		);
 
-		file_put_contents(__DIR__ . '/mer.json', "\n" . 'Cart for process User data: -> ' .  $this->merchant_auth() . "\n", FILE_APPEND);
+		 
 
 		$data = array(
 			'cred' => $merchant_cred,
@@ -234,15 +234,35 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'amount' => WC()->cart->total,
 				'cart' => $cart,
 				'merchant_id' => $this->merchant_id,
+				'shippingAddress' => array(
+					"phoneNo" =>  method_exists(WC()->customer, 'get_shipping_phone') ?
+						WC()->customer->get_shipping_phone() : '',
+					"address1" => method_exists(WC()->customer, 'get_shipping_address') ?
+						WC()->customer->get_shipping_address() : '',
+					"address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
+						WC()->customer->get_shipping_address_2() : '',
+					"state" =>  method_exists(WC()->customer, 'get_shipping_state') ?
+						WC()->customer->get_shipping_state() : '',
+					"city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
+						WC()->customer->get_shipping_city() : '',
+					"zipcode" => method_exists(WC()->customer, 'get_shipping_postcode') ?
+						WC()->customer->get_shipping_postcode() : '',
+					"country" => method_exists(WC()->customer, 'get_shipping_country') ?
+						WC()->customer->get_shipping_country() : '',
+					"landmark" => ""
+				),
+				
 				'currency' => get_woocommerce_currency("USD"),
+
 				'order' => (string)$temporary_order_id,
 				'redirectUrl' => ''
 			)
 		);
-
+		file_put_contents(__DIR__ . '/log.json', "\n" . 'Carts: -> ' .  json_encode($data). "\n", FILE_APPEND);
 
 		$payment_response = Process_Payment_Controller::process_payment($data);
-
+	
+		file_put_contents(__DIR__ . '/log.json', "\n" . 'payment_response: -> ' .  json_encode($payment_response). "\n", FILE_APPEND);
 
 		if (!$payment_response && !is_string($payment_response)) {
 
@@ -518,7 +538,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		return base64_encode($out);
 	}
-	/**
+/**
 	 * Check if Rocketfuel merchant details is filled.
 	 */
 	public function admin_notices()
