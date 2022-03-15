@@ -79,13 +79,14 @@ class Woocommerce_Controller
             $_product_id = $product->get_id();
 
             $payload = array(
-                'merchant_id' => $gateway->merchant_id,
+                'merchant_id' => base64_encode($gateway->merchant_id),
                 'merchant_auth' => $gateway->merchant_auth(),
                 'subscription_id' => $temporary_order_id . '_' . $_product_id,
                 'endpoint'=> $gateway->endpoint
             );
 
             file_put_contents(__DIR__ . '/log.json', "\n" . 'payload for cancel_subscription_order: -> ' . json_encode($payload) . "\n", FILE_APPEND);
+            file_put_contents(__DIR__ . '/log.json', "\n" . 'merchant: -> ' . json_encode(base64_encode($gateway->merchant_id)) . "\n", FILE_APPEND);
             
 
             $response = Subscription_Service::cancel_subscription($payload);
