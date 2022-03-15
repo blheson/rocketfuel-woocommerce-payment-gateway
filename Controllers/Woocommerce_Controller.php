@@ -81,7 +81,7 @@ class Woocommerce_Controller
             $payload = array(
                 'merchant_id' => base64_encode($gateway->merchant_id),
                 'merchant_auth' => $gateway->merchant_auth(),
-                'subscription_id' => $temporary_order_id . '_' . $_product_id,
+                'subscription_id' => $temporary_order_id . '-' . $_product_id,
                 'endpoint'=> $gateway->endpoint
             );
 
