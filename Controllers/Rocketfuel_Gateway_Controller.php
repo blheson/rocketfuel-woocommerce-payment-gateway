@@ -249,7 +249,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 						WC()->customer->get_shipping_postcode() : '',
 					"country" => method_exists(WC()->customer, 'get_shipping_country') ?
 						WC()->customer->get_shipping_country() : '',
-					"landmark" => ""
+					"landmark" => "",
+					"firstname"=> method_exists(WC()->customer, 'get_shipping_first_name') ?
+					WC()->customer->get_shipping_first_name() : '',
+					"lastname"=> method_exists(WC()->customer, 'get_shipping_last_name') ?
+					WC()->customer->get_shipping_last_name() : '',
 				),
 				
 				'currency' => get_woocommerce_currency("USD"),
