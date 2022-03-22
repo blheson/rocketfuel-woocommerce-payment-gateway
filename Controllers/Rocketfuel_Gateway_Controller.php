@@ -161,7 +161,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		if (wp_doing_ajax()) {
 
-			$result = $this->process_user_data();
+			$result =null; 
+			$this->process_user_data();
 
 			// $result = Woocommerce_Controller::process_user_data();
 

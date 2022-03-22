@@ -9,11 +9,11 @@ var RocketfuelPaymentEngine = {
     rkflConfig: null,
 
     getUUID: async function () {
-        let uuid = document.querySelector('input[name=uuid_rocketfuel]').value;
+        // let uuid = document.querySelector('input[name=uuid_rocketfuel]').value;
 
-        if (uuid) {
-            return uuid;
-        }
+        // if (uuid) {
+        //     return uuid;
+        // }
 
         let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
 
