@@ -81,24 +81,24 @@ class Woocommerce_Controller
             $payload = array(
                 'merchant_id' => base64_encode($gateway->merchant_id),
                 'merchant_auth' => $gateway->get_encrypted(
-                    json_encode(array("subscriptionId"=>$temporary_order_id . '-' . $_product_id)),false
+                    json_encode(array("subscriptionId" => $temporary_order_id . '-' . $_product_id)),
+                    false
                 ),
-                'subscription_id'=>$temporary_order_id . '-' . $_product_id,
-                'endpoint'=> $gateway->endpoint
+                'subscription_id' => $temporary_order_id . '-' . $_product_id,
+                'endpoint' => $gateway->endpoint
             );
 
             file_put_contents(__DIR__ . '/log.json', "\n" . 'payload for cancel_subscription_order: -> ' . json_encode($payload) . "\n", FILE_APPEND);
             file_put_contents(__DIR__ . '/log.json', "\n" . 'merchant: -> ' . json_encode(base64_encode($gateway->merchant_id)) . "\n", FILE_APPEND);
-            
+
 
             $response = Subscription_Service::cancel_subscription($payload);
-            
+
             $response_body = wp_remote_retrieve_body($response);
 
             file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse bodty for cancel_subscription_order: -> ' . json_encode($response_body) . "\n", FILE_APPEND);
 
             file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse for cancel_subscription_order: -> ' . json_encode($response) . "\n", FILE_APPEND);
-
         }
     }
     /**
@@ -145,10 +145,9 @@ class Woocommerce_Controller
     public static function process_user_data()
     {
 
-
+        $temporary_order_id = md5(microtime());
         $gateway = new Rocketfuel_Gateway_Controller();
-
-        $cart = $gateway->sortCart(WC()->cart->get_cart());
+        $cart = $gateway->sort_cart(WC()->cart->get_cart(), $temporary_order_id);
 
         $merchant_cred = array(
             'email' => $gateway->email,
@@ -162,11 +161,37 @@ class Woocommerce_Controller
                 'amount' => WC()->cart->total,
                 'cart' => $cart,
                 'merchant_id' => $gateway->merchant_id,
+                'shippingAddress' => array(
+                    "phoneNo" =>  method_exists(WC()->customer, 'get_shipping_phone') ?
+                        WC()->customer->get_shipping_phone() : '',
+                    "address1" => method_exists(WC()->customer, 'get_shipping_address') ?
+                        WC()->customer->get_shipping_address() : '',
+                    "address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
+                        WC()->customer->get_shipping_address_2() : '',
+                    "state" =>  method_exists(WC()->customer, 'get_shipping_state') ?
+                        WC()->customer->get_shipping_state() : '',
+                    "city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
+                        WC()->customer->get_shipping_city() : '',
+                    "zipcode" => method_exists(WC()->customer, 'get_shipping_postcode') ?
+                        WC()->customer->get_shipping_postcode() : '',
+                    "country" => method_exists(WC()->customer, 'get_shipping_country') ?
+                        WC()->customer->get_shipping_country() : '',
+                    "landmark" => "",
+                    "firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
+                        WC()->customer->get_shipping_first_name() : '',
+                    "lastname" => method_exists(WC()->customer, 'get_shipping_last_name') ?
+                        WC()->customer->get_shipping_last_name() : '',
+                ),
+
                 'currency' => get_woocommerce_currency("USD"),
-                'order' => (string) microtime(),
+
+                'order' => (string)$temporary_order_id,
                 'redirectUrl' => ''
             )
         );
+
+        file_put_contents(__DIR__ . '/log.json', "\n" . 'got herer: -> ' . json_encode('22222') . "\n", FILE_APPEND);
+
         unset($gateway);
 
         $payment_response = Process_Payment_Controller::process_payment($data);

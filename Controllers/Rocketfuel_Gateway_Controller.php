@@ -160,9 +160,10 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		}
 
 		if (wp_doing_ajax()) {
-
+			$uuid ='';
 			$result =null; 
-			$this->process_user_data();
+			$temp_orderid_rocketfuel='';
+			// $this->process_user_data();
 
 			// $result = Woocommerce_Controller::process_user_data();
 
@@ -247,7 +248,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 					"city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
 						WC()->customer->get_shipping_city() : '',
 					"zipcode" => method_exists(WC()->customer, 'get_shipping_postcode') ?
-						WC()->customer->get_shipping_postcode() : '',
+						strlen(WC()->customer->get_shipping_postcode()) : '',
 					"country" => method_exists(WC()->customer, 'get_shipping_country') ?
 						WC()->customer->get_shipping_country() : '',
 					"landmark" => "",
