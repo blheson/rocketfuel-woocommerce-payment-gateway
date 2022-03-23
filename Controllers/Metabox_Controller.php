@@ -4,8 +4,8 @@ namespace Rocketfuel_Gateway\Controllers;
 
 use Rocketfuel_Gateway\Plugin;
 
-class Metabox_Controller
-{
+class Metabox_Controller{
+
 	public static function register(){
 
 		// if (is_admin()) {
@@ -16,13 +16,12 @@ class Metabox_Controller
 	
 	}
 
-
 	/**
 	 * Render cancel Subscription button
 	 * @param array $data
 	 */
-	public static function cancel_subscription_button($accessToken, $data)
-	{
+	public static function cancel_subscription_button($accessToken, $data){
+
 		global $post;
 		
 		$body = wp_json_encode($data['body']);
@@ -37,4 +36,5 @@ class Metabox_Controller
 
 		return $response;
 	}
+	
 }

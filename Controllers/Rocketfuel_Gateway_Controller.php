@@ -227,8 +227,10 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'password' => $this->password
 		);
 
-		 
-
+		 $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
+		 WC()->customer->get_shipping_phone() : '';
+$zipcode = method_exists(WC()->customer, 'get_shipping_postcode') ?
+WC()->customer->get_shipping_postcode() : '';
 		$data = array(
 			'cred' => $merchant_cred,
 			'endpoint' => $this->endpoint,
@@ -237,8 +239,9 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'cart' => $cart,
 				'merchant_id' => $this->merchant_id,
 				'shippingAddress' => array(
-					"phoneNo" =>  method_exists(WC()->customer, 'get_shipping_phone') ?
-						WC()->customer->get_shipping_phone() : '',
+					"phoneNo" =>  $phone?
+					$phone : (method_exists(WC()->customer, 'get_billing_phone') ?
+						WC()->customer->get_billing_phone() : ''),
 					"address1" => method_exists(WC()->customer, 'get_shipping_address') ?
 						WC()->customer->get_shipping_address() : '',
 					"address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
@@ -247,8 +250,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 						WC()->customer->get_shipping_state() : '',
 					"city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
 						WC()->customer->get_shipping_city() : '',
-					"zipcode" => method_exists(WC()->customer, 'get_shipping_postcode') ?
-						strlen(WC()->customer->get_shipping_postcode()) : '',
+					"zipcode" => $zipcode,
 					"country" => method_exists(WC()->customer, 'get_shipping_country') ?
 						WC()->customer->get_shipping_country() : '',
 					"landmark" => "",

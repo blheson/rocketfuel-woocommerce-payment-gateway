@@ -135,7 +135,6 @@ class Woocommerce_Controller
                     $order = wc_get_order($order_id);
 
                     $order->update_status(sanitize_text_field($_POST['order_status_rocketfuel']));
-
                 } catch (\Throwable $th) {
                     //silently ignore
                 }
@@ -154,7 +153,10 @@ class Woocommerce_Controller
             'email' => $gateway->email,
             'password' => $gateway->password
         );
-
+        $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
+            WC()->customer->get_shipping_phone() : '';
+        $zipcode = method_exists(WC()->customer, 'get_shipping_postcode') ?
+            WC()->customer->get_shipping_postcode() : '';
         $data = array(
             'cred' => $merchant_cred,
             'endpoint' => $gateway->endpoint,
@@ -163,8 +165,10 @@ class Woocommerce_Controller
                 'cart' => $cart,
                 'merchant_id' => $gateway->merchant_id,
                 'shippingAddress' => array(
-                    "phoneNo" =>  method_exists(WC()->customer, 'get_shipping_phone') ?
-                        WC()->customer->get_shipping_phone() : '',
+                    "phoneNo" =>  $phone?$phone:(method_exists(WC()->customer, 'get_billing_phone') ?
+                    WC()->customer->get_billing_phone() : ''),
+                    "email" =>  method_exists(WC()->customer, 'get_billing_email') ?
+                    WC()->customer->get_billing_email() : '',
                     "address1" => method_exists(WC()->customer, 'get_shipping_address') ?
                         WC()->customer->get_shipping_address() : '',
                     "address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
@@ -173,18 +177,17 @@ class Woocommerce_Controller
                         WC()->customer->get_shipping_state() : '',
                     "city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
                         WC()->customer->get_shipping_city() : '',
-                    "zipcode" => method_exists(WC()->customer, 'get_shipping_postcode') ?
-                        WC()->customer->get_shipping_postcode() : '',
+                    "zipcode" =>$zipcode,
                     "country" => method_exists(WC()->customer, 'get_shipping_country') ?
                         WC()->customer->get_shipping_country() : '',
                     "landmark" => "",
                     "firstname" => isset($_GET['shipping_firstname']) ?
-                    sanitize_text_field( $_GET['shipping_firstname'] ) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
+                        sanitize_text_field($_GET['shipping_firstname']) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
                             WC()->customer->get_shipping_first_name() :
                             ''
                         ),
                     "lastname" => isset($_GET['shipping_lastname']) ?
-                    sanitize_text_field( $_GET['shipping_lastname'] ) : (method_exists(WC()->customer, 'get_shipping_last_name') ?
+                        sanitize_text_field($_GET['shipping_lastname']) : (method_exists(WC()->customer, 'get_shipping_last_name') ?
                             WC()->customer->get_shipping_last_name() : ''),
                 ),
 
