@@ -15,8 +15,18 @@ var RocketfuelPaymentEngine = {
         //     return uuid;
         // }
 
+        let firstname = document.getElementById('shipping_first_name')?.value;
+        let lastname = document.getElementById('shipping_last_name')?.value;
+
         let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
 
+        if (lastname) {
+            url +='&shipping_lastname=' + lastname;
+        }
+        if (firstname) {
+            url += '&shipping_firstname=' + firstname;
+        }
+        console.log('the firstname and last name');
         let response = await fetch(url);
 
         if (!response.ok) {
@@ -132,7 +142,7 @@ var RocketfuelPaymentEngine = {
     prepareProgressMessage: function () {
 
         //revert trigger button message
-     
+
         document.getElementById('rocketfuel_retrigger_payment_button').dataset.disable = true;
 
 
@@ -150,7 +160,7 @@ var RocketfuelPaymentEngine = {
                     break;
                 case 'rocketfuel_new_height':
                     engine.prepareProgressMessage();
-                    
+
                     engine.watchIframeShow = false;
 
                     document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = 'Pay with Rocketfuel';
@@ -283,9 +293,9 @@ var RocketfuelPaymentEngine = {
         //         if (e.target.dataset.disable === 'true') {
         //             return;
         //         }
-                // RocketfuelPaymentEngine.startPayment(false);
+        // RocketfuelPaymentEngine.startPayment(false);
 
-            // });
+        // });
 
         // }
 

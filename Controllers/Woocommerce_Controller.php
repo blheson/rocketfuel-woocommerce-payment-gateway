@@ -134,7 +134,8 @@ class Woocommerce_Controller
                 try {
                     $order = wc_get_order($order_id);
 
-                    $order->update_status($_POST['order_status_rocketfuel']);
+                    $order->update_status(sanitize_text_field($_POST['order_status_rocketfuel']));
+
                 } catch (\Throwable $th) {
                     //silently ignore
                 }
@@ -177,10 +178,14 @@ class Woocommerce_Controller
                     "country" => method_exists(WC()->customer, 'get_shipping_country') ?
                         WC()->customer->get_shipping_country() : '',
                     "landmark" => "",
-                    "firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
-                        WC()->customer->get_shipping_first_name() : '',
-                    "lastname" => method_exists(WC()->customer, 'get_shipping_last_name') ?
-                        WC()->customer->get_shipping_last_name() : '',
+                    "firstname" => isset($_GET['shipping_firstname']) ?
+                    sanitize_text_field( $_GET['shipping_firstname'] ) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
+                            WC()->customer->get_shipping_first_name() :
+                            ''
+                        ),
+                    "lastname" => isset($_GET['shipping_lastname']) ?
+                    sanitize_text_field( $_GET['shipping_lastname'] ) : (method_exists(WC()->customer, 'get_shipping_last_name') ?
+                            WC()->customer->get_shipping_last_name() : ''),
                 ),
 
                 'currency' => get_woocommerce_currency("USD"),
@@ -189,8 +194,6 @@ class Woocommerce_Controller
                 'redirectUrl' => ''
             )
         );
-
-        file_put_contents(__DIR__ . '/log.json', "\n" . 'got herer: -> ' . json_encode('22222') . "\n", FILE_APPEND);
 
         unset($gateway);
 

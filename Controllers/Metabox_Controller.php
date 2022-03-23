@@ -24,7 +24,9 @@ class Metabox_Controller
 	public static function cancel_subscription_button($accessToken, $data)
 	{
 		global $post;
+		
 		$body = wp_json_encode($data['body']);
+
 		$args = array(
 			'timeout'	=> 45,
 			'headers' => array('authorization' => "Bearer  $accessToken", 'Content-Type' => 'application/json'),
@@ -32,7 +34,6 @@ class Metabox_Controller
 		);
 
 		$response = wp_remote_post($data['endpoint'] . '/hosted-page', $args);
-
 
 		return $response;
 	}
