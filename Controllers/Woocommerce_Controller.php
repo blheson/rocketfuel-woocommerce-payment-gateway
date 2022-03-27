@@ -52,7 +52,7 @@ class Woocommerce_Controller
 
         $order_id = $subscription->get_parent_id();
 
-        file_put_contents(__DIR__ . '/log.json', "\n" . 'Order Id returned from cancel_subscription_order: -> ' . json_encode($order_id) . "\n", FILE_APPEND);
+        // file_put_contents(__DIR__ . '/log.json', "\n" . 'Order Id returned from cancel_subscription_order: -> ' . json_encode($order_id) . "\n", FILE_APPEND);
 
         if (!$order_id) {
             return false;
@@ -60,7 +60,7 @@ class Woocommerce_Controller
 
         $temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
 
-        file_put_contents(__DIR__ . '/log.json', "\n" . 'temporary_order_id returned from cancel_subscription_order: -> ' . json_encode($temporary_order_id) . "\n", FILE_APPEND);
+        // file_put_contents(__DIR__ . '/log.json', "\n" . 'temporary_order_id returned from cancel_subscription_order: -> ' . json_encode($temporary_order_id) . "\n", FILE_APPEND);
 
         if (!$temporary_order_id) {
             return false;
@@ -88,17 +88,17 @@ class Woocommerce_Controller
                 'endpoint' => $gateway->endpoint
             );
 
-            file_put_contents(__DIR__ . '/log.json', "\n" . 'payload for cancel_subscription_order: -> ' . json_encode($payload) . "\n", FILE_APPEND);
-            file_put_contents(__DIR__ . '/log.json', "\n" . 'merchant: -> ' . json_encode(base64_encode($gateway->merchant_id)) . "\n", FILE_APPEND);
+            // file_put_contents(__DIR__ . '/log.json', "\n" . 'payload for cancel_subscription_order: -> ' . json_encode($payload) . "\n", FILE_APPEND);
+            // file_put_contents(__DIR__ . '/log.json', "\n" . 'merchant: -> ' . json_encode(base64_encode($gateway->merchant_id)) . "\n", FILE_APPEND);
 
 
             $response = Subscription_Service::cancel_subscription($payload);
 
             $response_body = wp_remote_retrieve_body($response);
 
-            file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse bodty for cancel_subscription_order: -> ' . json_encode($response_body) . "\n", FILE_APPEND);
+            // file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse bodty for cancel_subscription_order: -> ' . json_encode($response_body) . "\n", FILE_APPEND);
 
-            file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse for cancel_subscription_order: -> ' . json_encode($response) . "\n", FILE_APPEND);
+            // file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse for cancel_subscription_order: -> ' . json_encode($response) . "\n", FILE_APPEND);
         }
     }
     /**

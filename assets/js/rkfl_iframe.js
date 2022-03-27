@@ -26,7 +26,7 @@ var RocketfuelPaymentEngine = {
         if (firstname) {
             url += '&shipping_firstname=' + firstname;
         }
-        console.log('the firstname and last name');
+       
         let response = await fetch(url);
 
         if (!response.ok) {
@@ -99,10 +99,17 @@ var RocketfuelPaymentEngine = {
             document.querySelector('input[name=order_status_rocketfuel]').value = status;
 
             document.querySelector('input[name=payment_status_rocketfuel]').value = 'complete';
+            
+            localStorage.setItem('payment_status_rocketfuel','complete');
 
             document.getElementById('rocketfuel_retrigger_payment_button').dataset.disable = true;
 
             document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 0.5;
+
+            document.getElementById('rocketfuel_retrigger_payment_button').style.display = 'none';
+
+			document.getElementById('place_order').style.display = 'inherit';
+
             // localStorage.set
 
         } catch (error) {
@@ -315,3 +322,4 @@ document.querySelector(".rocketfuel_retrigger_payment_button").addEventListener(
     RocketfuelPaymentEngine.init();
 
 })
+document.querySelector('input[name=payment_status_rocketfuel]').value = localStorage.getItem('payment_status_rocketfuel');
