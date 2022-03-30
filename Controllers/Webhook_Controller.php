@@ -47,6 +47,17 @@ class Webhook_Controller
 		}
 		if (1 === $status) {
 
+			if (isset($data['isSubscription']) && $data['isSubscription'] === true) {
+
+				$message = sprintf(__('Payment via Rocketfuel is successful (Transaction Reference: %s)', 'rocketfuel-payment-gateway'), isset($data['transactionId']) ? $data['transactionId'] : '');
+
+				$order->add_order_note($message);
+
+				// if (class_exists('WC_Subscriptions_Manager')) {
+				// 	WC_Subscriptions_Manager::process_subscription_payments_on_order($order);
+				// }
+			}
+
 			$default_status = self::get_gateway()->payment_complete_order_status;
 			$default_status = $default_status ? $default_status : 'wc-completed';
 			$order->update_status($default_status);
