@@ -63,9 +63,9 @@ class Webhook_Controller
 
 				$order->add_order_note($message);
 
-				if (class_exists('WC_Subscriptions_Manager')) {
-					WC_Subscriptions_Manager::process_subscription_payments_on_order($order);
-				}
+				// if (class_exists('WC_Subscriptions_Manager')) {
+				// 	WC_Subscriptions_Manager::process_subscription_payments_on_order($order);
+				// }
 			}
 
 			$default_status = self::get_gateway()->payment_complete_order_status;

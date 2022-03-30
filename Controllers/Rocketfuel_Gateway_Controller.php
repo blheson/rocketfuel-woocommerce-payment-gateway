@@ -65,7 +65,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		//Hooks
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 		add_action('admin_notices', array($this, 'admin_notices'));
-		add_action('woocommerce_review_order_before_submit', array($this, 'rocketfuel_place_order'));
+		add_action('woocommerce_review_order_after_submit', array($this, 'rocketfuel_place_order'));
 	}
 	public function get_endpoint($environment)
 	{
@@ -355,7 +355,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 								'merchantSubscriptionId' => (string) $temp_orderid . '-' . $cart_item['product_id'],
 
-								'autoRenewal' => true
+								'autoRenewal' => false
 							)
 						);
 					} else {

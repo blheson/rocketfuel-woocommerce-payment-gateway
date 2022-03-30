@@ -28,9 +28,7 @@ class Woocommerce_Controller
         add_action('wp_ajax_nopriv_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
 
         add_action('wp_ajax_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
-        // add_action('wp_ajax_nopriv_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
-
-        // add_action('wp_ajax_rocketfuel_process_checkout', array(__CLASS__, 'rocketfuel_process_checkout'));
+ 
         add_action('wc_ajax_rocketfuel_process_checkout', array(__CLASS__, 'rocketfuel_process_checkout'));
 
         if (!is_admin()) {
@@ -40,7 +38,7 @@ class Woocommerce_Controller
 
         add_action('woocommerce_checkout_update_order_meta', array(__CLASS__, 'add_temp_id_to_order'));
 
-        // add_action('woocommerce_checkout_create_order', array(__CLASS__, 'checkout_create_order'));
+       
 
         add_action('woocommerce_subscription_status_cancelled', array(__CLASS__, 'cancel_subscription_order'));
 
@@ -57,7 +55,7 @@ class Woocommerce_Controller
 
         $order_id = $subscription->get_parent_id();
 
-        // file_put_contents(__DIR__ . '/log.json', "\n" . 'Order Id returned from cancel_subscription_order: -> ' . json_encode($order_id) . "\n", FILE_APPEND);
+   
 
         if (!$order_id) {
             return false;
