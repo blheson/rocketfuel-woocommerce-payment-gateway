@@ -62,6 +62,6 @@ class Plugin
     {
         Rest_Controller::register();
         Woocommerce_Controller::register();
-        Metabox_Controller::register();
+      
     }
 }
