@@ -10,6 +10,7 @@ namespace Rocketfuel_Gateway\Controllers;
 
 use Rocketfuel_Gateway\Plugin;
 use Rocketfuel_Gateway\Services\Subscription_Service;
+use Rocketfuel_Gateway\Controllers\Cart_Handler_Controller;
 
 class Woocommerce_Controller
 {
@@ -27,6 +28,10 @@ class Woocommerce_Controller
         add_action('wp_ajax_nopriv_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
 
         add_action('wp_ajax_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
+        // add_action('wp_ajax_nopriv_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
+
+        // add_action('wp_ajax_rocketfuel_process_checkout', array(__CLASS__, 'rocketfuel_process_checkout'));
+        add_action('wc_ajax_rocketfuel_process_checkout', array(__CLASS__, 'rocketfuel_process_checkout'));
 
         if (!is_admin()) {
 
@@ -35,7 +40,7 @@ class Woocommerce_Controller
 
         add_action('woocommerce_checkout_update_order_meta', array(__CLASS__, 'add_temp_id_to_order'));
 
-        add_action('woocommerce_checkout_create_order', array(__CLASS__, 'checkout_create_order'));
+        // add_action('woocommerce_checkout_create_order', array(__CLASS__, 'checkout_create_order'));
 
         add_action('woocommerce_subscription_status_cancelled', array(__CLASS__, 'cancel_subscription_order'));
 
@@ -101,23 +106,23 @@ class Woocommerce_Controller
             // file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse for cancel_subscription_order: -> ' . json_encode($response) . "\n", FILE_APPEND);
         }
     }
-    /**
-     * Check order details before submit
-     * 
-     */
-    public function checkout_create_order()
-    {
+    // /**
+    //  * Check order details before submit
+    //  * 
+    //  */
+    // public function checkout_create_order()
+    // {
 
 
-        if (isset($_POST['payment_method']) && $_POST['payment_method'] === 'rocketfuel_gateway' && $_POST['payment_status_rocketfuel'] !== 'complete') {
+    //     if (isset($_POST['payment_method']) && $_POST['payment_method'] === 'rocketfuel_gateway' && $_POST['payment_status_rocketfuel'] !== 'complete') {
 
-            $error_text = __("Rocketfuel Error: Payment not confirmed", "woocommerce");
+    //         $error_text = __("Rocketfuel Error: Payment not confirmed", "woocommerce");
 
-            throw new \Exception($error_text);
+    //         throw new \Exception($error_text);
 
-            return false;
-        }
-    }
+    //         return false;
+    //     }
+    // }
 
     /**
      * Keep Temporary order_id for webhook
@@ -141,75 +146,13 @@ class Woocommerce_Controller
             }
         }
     }
-
-    public static function process_user_data()
+  
+    public static function rocketfuel_process_checkout()
     {
-
-        $temporary_order_id = md5(microtime());
-        $gateway = new Rocketfuel_Gateway_Controller();
-        $cart = $gateway->sort_cart(WC()->cart->get_cart(), $temporary_order_id);
-
-        $merchant_cred = array(
-            'email' => $gateway->email,
-            'password' => $gateway->password
-        );
-        $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
-            WC()->customer->get_shipping_phone() : '';
-        $zipcode = method_exists(WC()->customer, 'get_shipping_postcode') ?
-            WC()->customer->get_shipping_postcode() : '';
-        $data = array(
-            'cred' => $merchant_cred,
-            'endpoint' => $gateway->endpoint,
-            'body' => array(
-                'amount' => WC()->cart->total,
-                'cart' => $cart,
-                'merchant_id' => $gateway->merchant_id,
-                'shippingAddress' => array(
-                    "phoneNo" =>  $phone?$phone:(method_exists(WC()->customer, 'get_billing_phone') ?
-                    WC()->customer->get_billing_phone() : ''),
-                    "email" =>  method_exists(WC()->customer, 'get_billing_email') ?
-                    WC()->customer->get_billing_email() : '',
-                    "address1" => method_exists(WC()->customer, 'get_shipping_address') ?
-                        WC()->customer->get_shipping_address() : '',
-                    "address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
-                        WC()->customer->get_shipping_address_2() : '',
-                    "state" =>  method_exists(WC()->customer, 'get_shipping_state') ?
-                        WC()->customer->get_shipping_state() : '',
-                    "city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
-                        WC()->customer->get_shipping_city() : '',
-                    "zipcode" =>$zipcode,
-                    "country" => method_exists(WC()->customer, 'get_shipping_country') ?
-                        WC()->customer->get_shipping_country() : '',
-                    "landmark" => "",
-                    "firstname" => isset($_GET['shipping_firstname']) ?
-                        sanitize_text_field($_GET['shipping_firstname']) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
-                            WC()->customer->get_shipping_first_name() :
-                            ''
-                        ),
-                    "lastname" => isset($_GET['shipping_lastname']) ?
-                        sanitize_text_field($_GET['shipping_lastname']) : (method_exists(WC()->customer, 'get_shipping_last_name') ?
-                            WC()->customer->get_shipping_last_name() : ''),
-                ),
-
-                'currency' => get_woocommerce_currency("USD"),
-
-                'order' => (string)$temporary_order_id,
-                'redirectUrl' => ''
-            )
-        );
-
-        unset($gateway);
-
-        $payment_response = Process_Payment_Controller::process_payment($data);
-
-        if (!$payment_response) {
-            wp_send_json_error(array('error' => true, 'message' => 'Payment cannot be completed'));
-        }
-
-        $result = json_decode($payment_response);
-
-        wp_send_json_success($result);
+        Cart_Handler_Controller::rocketfuel_process_checkout();
+     
     }
+   
     /**
      * Enqueue Rocketfuel scripts
      */
@@ -220,7 +163,15 @@ class Woocommerce_Controller
             return false;
         }
 
+
         wp_enqueue_script('rkfl-script', Plugin::get_url('assets/js/rkfl.js'), array(), time());
+        $data                    = array(
+            'start_checkout_nonce' => wp_create_nonce('_wc_rkfl_start_checkout_nonce'),
+            'start_checkout_url'   => \WC_AJAX::get_endpoint('rocketfuel_process_checkout'),
+            'return_url'           => wc_get_checkout_url(),
+            'cancel_url'           => ''
+        );
+        wp_localize_script('rkfl-script', 'wc_rkfl_context', $data);
     }
 
     public static function add_gateway_class($methods)

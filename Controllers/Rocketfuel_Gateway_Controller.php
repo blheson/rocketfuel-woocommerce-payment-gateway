@@ -151,65 +151,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			)
 		));
 	}
-	public function payment_fieldss()
-	{
-		global $woocommerce;
-
-		if (!$this->password || !$this->email) {
-			echo '<span style="color:red">' . __('Vendor should fill in the settings page to start using Rocketfuel', 'rocketfuel-payment-gateway') . '</span>';
-			return;
-		}
-		$uuid = '';
-		$result = null;
-		$temp_orderid_rocketfuel = '';
-		if (wp_doing_ajax()) {
-			// $uuid = '';
-			// $result = null;
-			// $temp_orderid_rocketfuel = '';
-			// $this->process_user_data();
-
-			// $result = Woocommerce_Controller::process_user_data();
-
-
-			if ($result && null !== $result['temporary_order_id']) {
-				$temp_orderid_rocketfuel = $result['temporary_order_id'];
-			}
-
-			if ($result &&  null !== $result['result']->result) {
-				$uuid = $result['result']->result->uuid;
-			}
-		}
-		?>
-		<link rel="stylesheet" href="<?php echo esc_url(Plugin::get_url('assets/css/rkfl_iframe.css')) ?>">
-
-		<div>
-			<p>Click to pay</p>
-			<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button">Pay with Rocketfuel</div>
-		</div>
-
-		<div id="rkfl_error"></div>
-
-		<input type="hidden" name="admin_url_rocketfuel" value="<?php echo esc_url(admin_url('admin-ajax.php?action=rocketfuel_process_user_data&nonce=' . wp_create_nonce("rocketfuel_nonce"))); ?>">
-
-		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
-
-		<input type="hidden" name="payment_status_rocketfuel" value="pending">
-
-		<input type="hidden" name="payment_complete_order_status" value="<?php echo esc_attr($this->payment_complete_order_status); ?>">
-
-		<input type="hidden" name="uuid_rocketfuel" value="<?php echo esc_attr($uuid); ?>">
-
-		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel); ?>">
-
-		<input type="hidden" name="order_status_rocketfuel" value="wc-on-hold">
-
-		<input type="hidden" name="environment_rocketfuel" value="<?php echo  esc_attr($this->environment); ?>">
-
-
-		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl_iframe.js?ver=' . microtime())); ?>">
-		</script>
-		<?php
-	}
+ 
 	/**
 	 * Rocketfuel Place order Button
 	 * @return void
@@ -223,35 +165,16 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$uuid = '';
 		$result = null;
 		$temp_orderid_rocketfuel = '';
-		if (wp_doing_ajax()) {
-			// $uuid = '';
-			// $result = null;
-			// $temp_orderid_rocketfuel = '';
-			// $this->process_user_data();
-
-			// $result = Woocommerce_Controller::process_user_data();
-
-
-			// if ($result && null !== $result['temporary_order_id']) {
-			// 	$temp_orderid_rocketfuel = $result['temporary_order_id'];
-			// }
-
-			// if ($result &&  null !== $result['result']->result) {
-			// 	$uuid = $result['result']->result->uuid;
-			// }
-		}
+ 
 	?>
 
 		<link rel="stylesheet" href="<?php echo esc_url(Plugin::get_url('assets/css/rkfl_iframe.css')) ?>">
 
 		<div>
-			<p>Click to pay</p>
+ 
 			<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button">Pay with Rocketfuel</div>
 		</div>
-
-		<div id="rkfl_error"></div>
-
-		<input type="hidden" name="admin_url_rocketfuel" value="<?php echo esc_url(admin_url('admin-ajax.php?action=rocketfuel_process_user_data&nonce=' . wp_create_nonce("rocketfuel_nonce"))); ?>">
+ 
 
 		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
 
@@ -259,8 +182,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		<input type="hidden" name="payment_complete_order_status" value="<?php echo esc_attr($this->payment_complete_order_status); ?>">
 
-		<input type="hidden" name="uuid_rocketfuel" value="<?php echo esc_attr($uuid); ?>">
-
+	 
 		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel); ?>">
 
 		<input type="hidden" name="order_status_rocketfuel" value="wc-on-hold">
@@ -270,10 +192,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl_iframe.js?ver=' . microtime())); ?>">
 		</script>
-		<script>
-			if(document.getElementById('place_order'))
-			document.getElementById('place_order').style.display = 'none';
-		</script>
+	 
 
 <?php
 
