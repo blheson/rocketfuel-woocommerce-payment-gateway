@@ -232,6 +232,7 @@
                 switch (event.data.type) {
                     case 'rocketfuel_iframe_close':
                         engine.prepareRetrigger();
+						document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 1;
 
                         break;
                     case 'rocketfuel_new_height':
@@ -240,6 +241,8 @@
                         engine.watchIframeShow = false;
 
                         document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = 'Pay with Rocketfuel';
+                        document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 0.5;
+
 
                     case 'rocketfuel_result_ok':
 
