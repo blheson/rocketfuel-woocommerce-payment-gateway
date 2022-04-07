@@ -292,6 +292,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			return false;
 		}
 
+
 		$result = json_decode($payment_response);
 
 		return array('result' => $result, 'temporary_order_id' => $temporary_order_id);

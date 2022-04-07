@@ -28,7 +28,7 @@ class Woocommerce_Controller
         add_action('wp_ajax_nopriv_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
 
         add_action('wp_ajax_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
- 
+
         add_action('wc_ajax_rocketfuel_process_checkout', array(__CLASS__, 'rocketfuel_process_checkout'));
 
         if (!is_admin()) {
@@ -38,11 +38,19 @@ class Woocommerce_Controller
 
         add_action('woocommerce_checkout_update_order_meta', array(__CLASS__, 'add_temp_id_to_order'));
 
-       
+
 
         add_action('woocommerce_subscription_status_cancelled', array(__CLASS__, 'cancel_subscription_order'));
 
         add_action('woocommerce_subscription_status_pending-cancelled', array(__CLASS__, 'cancel_subscription_order'));
+        add_filter('woocommerce_order_button_html', array(__CLASS__, 'hide_order_button_html'));
+    }
+    public static function hide_order_button_html()
+    {
+        $style = 'style="display:none"';
+        $button_text = apply_filters('woocommerce_order_button_text', __('Placess order', 'woocommerce'));
+        $button = '<button type="submit" name="woocommerce_checkout_place_order" id="place_order" value="Place order" data-value="Place order" class="button alt" ' . $style . '>' . $button_text . '</button>';
+        return $button;
     }
     /**
      * Cancel Subscription
@@ -55,7 +63,7 @@ class Woocommerce_Controller
 
         $order_id = $subscription->get_parent_id();
 
-   
+
 
         if (!$order_id) {
             return false;
@@ -144,13 +152,12 @@ class Woocommerce_Controller
             }
         }
     }
-  
+
     public static function rocketfuel_process_checkout()
     {
         Cart_Handler_Controller::rocketfuel_process_checkout();
-     
     }
-   
+
     /**
      * Enqueue Rocketfuel scripts
      */

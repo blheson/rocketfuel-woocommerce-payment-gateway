@@ -1,8 +1,8 @@
 ; (function ($, window, document) {
     'use strict';
-    
-    if(document.getElementById('place_order'))
-    document.getElementById('place_order').style.display = 'none';
+
+    // if (document.getElementById('place_order'))
+    //     document.getElementById('place_order').style.display = 'none';
     var selector = '#rocketfuel_retrigger_payment_button';
     /**
      * Payment Engine object
@@ -13,7 +13,7 @@
         url: new URL(window.location.href),
         watchIframeShow: false,
         rkflConfig: null,
-		paymentResponse:'',
+        paymentResponse: '',
         // Show error notice at top of checkout form, or else within button container
         showError: function (errorMessage, selector) {
             var $container = $('.woocommerce-notices-wrapper, form.checkout');
@@ -80,11 +80,11 @@
             let rawresult = await response.text();
 
             let result = JSON.parse(rawresult);
-           
+
             if (!result.success) {
 
                 document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = 'Pay with Rocketfuel';
-                
+
                 // Error messages may be preformatted in which case response structure will differ
                 var messages = result.data ? result.data.messages : result.messages;
 
@@ -100,8 +100,8 @@
                 }
                 return null;
             }
-     
- 
+
+
 
             if (!result.data?.result?.uuid) {
                 return false;
@@ -135,7 +135,7 @@
             return user_data;
 
         },
-        triggerPlaceOrder:function(){
+        triggerPlaceOrder: function () {
             document.getElementById('place_order').style.display = 'inherit';
             console.log('Trigger is calling');
 
@@ -183,8 +183,8 @@
 
                 document.getElementById('rocketfuel_retrigger_payment_button').style.display = 'none';
 
-               
-                
+
+
 
             } catch (error) {
 
@@ -237,13 +237,13 @@
                 switch (event.data.type) {
                     case 'rocketfuel_iframe_close':
                         console.log('Event from rocketfuel_iframe_close', event.data);
-						
-						
+
+
                         engine.prepareRetrigger();
-						document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 1;
-if(event.data.paymentCompleted === 1){
-	 RocketfuelPaymentEngine.triggerPlaceOrder(engine.paymentResponse);
-}
+                        document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 1;
+                        if (event.data.paymentCompleted === 1) {
+                            RocketfuelPaymentEngine.triggerPlaceOrder();
+                        }
                         break;
                     case 'rocketfuel_new_height':
                         engine.prepareProgressMessage();
@@ -256,13 +256,13 @@ if(event.data.paymentCompleted === 1){
 
                     case 'rocketfuel_result_ok':
 
-                     
+
 
                         if (event.data.response) {
-							 console.log('Payment response has been recorded');
-							engine.paymentResponse = event.data.response
+                            console.log('Payment response has been recorded');
+                            engine.paymentResponse = event.data.response
                             engine.updateOrder(engine.paymentResponse);
-                           
+
                         }
 
                     default:
