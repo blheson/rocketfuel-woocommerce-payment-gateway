@@ -15,7 +15,7 @@ class Process_Payment_Controller{
 		$response = self::auth( $data );
 
 
-
+	file_put_contents(__DIR__.'/log.json','Auth res'.json_encode($response ),FILE_APPEND);
 		if ( is_wp_error( $response ) ) {
 			return rest_ensure_response( $response );
 		}
@@ -37,7 +37,7 @@ class Process_Payment_Controller{
 
 		$wp_remote_retrieve_body = wp_remote_retrieve_body( $charge_response);
 		
-	
+
 
 		if( $charge_response_code != '200' ){
 			wc_add_notice( __( 'Could not establish an order', 'rocketfuel-payment-gateway' ), 'error' );
