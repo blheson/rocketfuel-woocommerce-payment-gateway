@@ -126,7 +126,7 @@ class Woocommerce_Controller
      * Keep Temporary order_id for webhook
      * @param string $order_id
      */
-    public function add_temp_id_to_order($order_id)
+    public static function add_temp_id_to_order($order_id)
     {
 
         if (isset($_POST)) {

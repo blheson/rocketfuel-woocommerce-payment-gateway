@@ -13,6 +13,7 @@
         url: new URL(window.location.href),
         watchIframeShow: false,
         rkflConfig: null,
+		paymentResponse:'',
         // Show error notice at top of checkout form, or else within button container
         showError: function (errorMessage, selector) {
             var $container = $('.woocommerce-notices-wrapper, form.checkout');
@@ -134,6 +135,13 @@
             return user_data;
 
         },
+        triggerPlaceOrder:function(){
+            document.getElementById('place_order').style.display = 'inherit';
+            console.log('Trigger is calling');
+
+            $('form.checkout').trigger('submit');
+            console.log('Trigger has neen called ');
+        },
         updateOrder: function (result) {
             try {
 
@@ -175,11 +183,8 @@
 
                 document.getElementById('rocketfuel_retrigger_payment_button').style.display = 'none';
 
-                document.getElementById('place_order').style.display = 'inherit';
-                console.log('Trigger is calling');
-
-                $('form.checkout').trigger('submit');
-                console.log('Trigger has neen called ');
+               
+                
 
             } catch (error) {
 
@@ -231,9 +236,14 @@
 
                 switch (event.data.type) {
                     case 'rocketfuel_iframe_close':
+                        console.log('Event from rocketfuel_iframe_close', event.data);
+						
+						
                         engine.prepareRetrigger();
 						document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 1;
-
+if(event.data.paymentCompleted === 1){
+	 RocketfuelPaymentEngine.triggerPlaceOrder(engine.paymentResponse);
+}
                         break;
                     case 'rocketfuel_new_height':
                         engine.prepareProgressMessage();
@@ -246,10 +256,13 @@
 
                     case 'rocketfuel_result_ok':
 
-                        console.log('Event from rocketfuel_result_ok', event.data);
+                     
 
                         if (event.data.response) {
-                            RocketfuelPaymentEngine.updateOrder(event.data.response);
+							 console.log('Payment response has been recorded');
+							engine.paymentResponse = event.data.response
+                            engine.updateOrder(engine.paymentResponse);
+                           
                         }
 
                     default:
