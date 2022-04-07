@@ -25,10 +25,30 @@ class Cart_Handler_Controller
             'email' => $gateway->email,
             'password' => $gateway->password
         );
+
+
+
         $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
-            WC()->customer->get_shipping_phone() : '';
+            WC()->customer->get_shipping_phone() : false;
         $zipcode = method_exists(WC()->customer, 'get_shipping_postcode') ?
-            WC()->customer->get_shipping_postcode() : '';
+            WC()->customer->get_shipping_postcode() : false;
+        $email = method_exists(WC()->customer, 'get_email') ?
+            WC()->customer->get_email() : false;
+
+        $country_code = method_exists(WC()->customer, 'get_shipping_country') ?
+            WC()->customer->get_shipping_country() : '';
+
+        $country = WC()->countries->countries[$country_code];
+
+        $state_code = method_exists(WC()->customer, 'get_shipping_state') ?
+            WC()->customer->get_shipping_state() : '';
+
+
+        $states = $state_code ? WC()->countries->get_states($country_code) :  [];
+
+
+        $state  = !empty($states[$state_code]) ? $states[$state_code] : $state_code;
+
 
         $data = array(
             'cred' => $merchant_cred,
@@ -40,19 +60,17 @@ class Cart_Handler_Controller
                 'shippingAddress' => array(
                     "phoneNo" =>  $phone ? $phone : (method_exists(WC()->customer, 'get_billing_phone') ?
                         WC()->customer->get_billing_phone() : ''),
-                    "email" =>  method_exists(WC()->customer, 'get_billing_email') ?
-                        WC()->customer->get_billing_email() : '',
+                    "email" => $email ? $email : (method_exists(WC()->customer, 'get_billing_email') ?
+                        WC()->customer->get_billing_email() : ''),
                     "address1" => method_exists(WC()->customer, 'get_shipping_address') ?
                         WC()->customer->get_shipping_address() : '',
                     "address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
                         WC()->customer->get_shipping_address_2() : '',
-                    "state" =>  method_exists(WC()->customer, 'get_shipping_state') ?
-                        WC()->customer->get_shipping_state() : '',
+                    "state" =>   $state,
                     "city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
                         WC()->customer->get_shipping_city() : '',
                     "zipcode" => $zipcode,
-                    "country" => method_exists(WC()->customer, 'get_shipping_country') ?
-                        WC()->customer->get_shipping_country() : '',
+                    "country" => $country,
                     "landmark" => "",
                     "firstname" => isset($_GET['shipping_firstname']) ?
                         sanitize_text_field($_GET['shipping_firstname']) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
@@ -94,8 +112,6 @@ class Cart_Handler_Controller
         add_action('woocommerce_after_checkout_validation', array(__CLASS__, 'maybe_start_checkout'), 10, 2);
 
         WC()->checkout->process_checkout();
-
-        
     }
     /**
      * Report validation errors if any, or else save form data in session and proceed with checkout flow.
@@ -217,5 +233,4 @@ class Cart_Handler_Controller
             $customer->set_billing_email($billing_email);
         }
     }
- 
 }

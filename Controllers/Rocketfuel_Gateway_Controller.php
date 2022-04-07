@@ -223,7 +223,17 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			WC()->customer->get_shipping_postcode() : false;
 		$email = method_exists(WC()->customer, 'get_email') ?
 			WC()->customer->get_email() : false;
+		
+		$country = WC()->countries->countries[method_exists(WC()->customer, 'get_shipping_country') ?
+			WC()->customer->get_shipping_country() : ''];
 
+		$state_code = method_exists(WC()->customer, 'get_shipping_state') ?
+			WC()->customer->get_shipping_state() : '';
+
+		$states = $state_code ? WC()->countries->get_states( $country ):  [];
+		
+		$state  = ! empty( $states[ $state_code ] ) ? $states[ $state_code ] : '';
+		
 		$data = array(
 			'cred' => $merchant_cred,
 			'endpoint' => $this->endpoint,
@@ -254,14 +264,13 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 					"zipcode" => $zipcode,
 
-					"country" => method_exists(WC()->customer, 'get_shipping_country') ?
-						WC()->customer->get_shipping_country() : '',
+					"country" => $country,
 
 					"landmark" => "",
 
 					"firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
 						WC()->customer->get_shipping_first_name() : '',
-						
+
 					"lastname" => method_exists(WC()->customer, 'get_shipping_last_name') ?
 						WC()->customer->get_shipping_last_name() : '',
 				),
