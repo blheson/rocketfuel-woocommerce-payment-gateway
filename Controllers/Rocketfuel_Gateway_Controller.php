@@ -151,7 +151,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			)
 		));
 	}
- 
+
 	/**
 	 * Rocketfuel Place order Button
 	 * @return void
@@ -165,16 +165,16 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$uuid = '';
 		$result = null;
 		$temp_orderid_rocketfuel = '';
- 
-	?>
+
+?>
 
 		<link rel="stylesheet" href="<?php echo esc_url(Plugin::get_url('assets/css/rkfl_iframe.css')) ?>">
 
 		<div>
- 
+
 			<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button">Pay with Rocketfuel</div>
 		</div>
- 
+
 
 		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
 
@@ -182,7 +182,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		<input type="hidden" name="payment_complete_order_status" value="<?php echo esc_attr($this->payment_complete_order_status); ?>">
 
-	 
+
 		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel); ?>">
 
 		<input type="hidden" name="order_status_rocketfuel" value="wc-on-hold">
@@ -192,7 +192,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl_iframe.js?ver=' . microtime())); ?>">
 		</script>
-	 
+
 
 <?php
 
@@ -218,9 +218,12 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		);
 
 		$phone = method_exists(WC()->customer, 'get_shipping_phone') ?
-			WC()->customer->get_shipping_phone() : '';
+			WC()->customer->get_shipping_phone() : false;
 		$zipcode = method_exists(WC()->customer, 'get_shipping_postcode') ?
-			WC()->customer->get_shipping_postcode() : '';
+			WC()->customer->get_shipping_postcode() : false;
+		$email = method_exists(WC()->customer, 'get_email') ?
+			WC()->customer->get_email() : false;
+
 		$data = array(
 			'cred' => $merchant_cred,
 			'endpoint' => $this->endpoint,
@@ -232,20 +235,33 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 					"phoneNo" =>  $phone ?
 						$phone : (method_exists(WC()->customer, 'get_billing_phone') ?
 							WC()->customer->get_billing_phone() : ''),
+
+					"email" =>  $email ?
+						$email : (method_exists(WC()->customer, 'get_billing_email') ?
+							WC()->customer->get_billing_email() : ''),
+
 					"address1" => method_exists(WC()->customer, 'get_shipping_address') ?
 						WC()->customer->get_shipping_address() : '',
+
 					"address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
 						WC()->customer->get_shipping_address_2() : '',
+
 					"state" =>  method_exists(WC()->customer, 'get_shipping_state') ?
 						WC()->customer->get_shipping_state() : '',
+
 					"city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
 						WC()->customer->get_shipping_city() : '',
+
 					"zipcode" => $zipcode,
+
 					"country" => method_exists(WC()->customer, 'get_shipping_country') ?
 						WC()->customer->get_shipping_country() : '',
+
 					"landmark" => "",
+
 					"firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
 						WC()->customer->get_shipping_first_name() : '',
+						
 					"lastname" => method_exists(WC()->customer, 'get_shipping_last_name') ?
 						WC()->customer->get_shipping_last_name() : '',
 				),
