@@ -99,7 +99,7 @@ class Cart_Handler_Controller
 
         $result = json_decode($payment_response);
 
-        wp_send_json_success($result);
+        wp_send_json_success(array('temporary_order_id'=>$temporary_order_id,'uuid'=>$result));
     }
     public static function rocketfuel_process_checkout()
     {

@@ -98,22 +98,25 @@
                     }).join('');
                     this.showError('<ul class="woocommerce-error" role="alert">' + messageItems + '</ul>', selector);
                 }
+
                 return null;
+                
             }
 
+            let uuid = result.data?.uuid?.result?.uuid;
 
-
-            if (!result.data?.result?.uuid) {
+            if (!uuid) {
                 return false;
             }
+
 
             RocketfuelPaymentEngine.order_id = result.data.temporary_order_id;
 
             document.querySelector('input[name=temp_orderid_rocketfuel]').value = result.data.temporary_order_id;
 
-            console.log("res", result.data.result.uuid);
+            console.log("res", uuid);
 
-            return result.data.result.uuid;
+            return uuid;
 
         },
         getEnvironment: function () {
@@ -136,10 +139,13 @@
 
         },
         triggerPlaceOrder: function () {
-            document.getElementById('place_order').style.display = 'inherit';
+            // document.getElementById('place_order').style.display = 'inherit';
             console.log('Trigger is calling');
 
             $('form.checkout').trigger('submit');
+
+            // document.getElementById('place_order').style.display = 'none';
+
             console.log('Trigger has neen called ');
         },
         updateOrder: function (result) {
@@ -181,10 +187,7 @@
 
                 document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 0.5;
 
-                document.getElementById('rocketfuel_retrigger_payment_button').style.display = 'none';
-
-
-
+                // document.getElementById('rocketfuel_retrigger_payment_button').style.display = 'none';
 
             } catch (error) {
 

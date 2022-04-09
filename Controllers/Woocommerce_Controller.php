@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Thank you page class for Rocketfuel
+ * Woocommerce page class for Rocketfuel
  * 
  * @author UdorBlessing
  */
