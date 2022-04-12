@@ -127,9 +127,13 @@
         getUserData: function () {
 
             let user_data = {
+
                 first_name: document.getElementById('billing_first_name') ? document.getElementById('billing_first_name').value : null,
+
                 last_name: document.getElementById('billing_last_name') ? document.getElementById('billing_last_name').value : null,
+
                 email: document.getElementById('billing_email') ? document.getElementById('billing_email').value : null,
+
                 merchant_auth: document.querySelector('input[name=merchant_auth_rocketfuel]') ? document.querySelector('input[name=merchant_auth_rocketfuel]').value : null
             }
 
@@ -207,7 +211,9 @@
             let checkIframe = setInterval(() => {
 
                 if (RocketfuelPaymentEngine.rkfl.iframeInfo.iframe) {
+
                     RocketfuelPaymentEngine.rkfl.initPayment();
+
                     clearInterval(checkIframe);
                 }
 
@@ -242,10 +248,13 @@
                         console.log('Event from rocketfuel_iframe_close', event.data);
 
 
-                        engine.prepareRetrigger();
+                        // engine.prepareRetrigger();
                         document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 1;
+                        
                         if (event.data.paymentCompleted === 1) {
-                            RocketfuelPaymentEngine.triggerPlaceOrder();
+                            engine.triggerPlaceOrder();
+                        } else {
+                            engine.prepareRetrigger();
                         }
                         break;
                     case 'rocketfuel_new_height':
@@ -262,8 +271,11 @@
 
 
                         if (event.data.response) {
+
                             console.log('Payment response has been recorded');
+
                             engine.paymentResponse = event.data.response
+                            
                             engine.updateOrder(engine.paymentResponse);
 
                         }

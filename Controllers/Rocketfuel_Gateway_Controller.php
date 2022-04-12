@@ -223,17 +223,17 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			WC()->customer->get_shipping_postcode() : false;
 		$email = method_exists(WC()->customer, 'get_email') ?
 			WC()->customer->get_email() : false;
-		
+
 		$country = WC()->countries->countries[method_exists(WC()->customer, 'get_shipping_country') ?
 			WC()->customer->get_shipping_country() : ''];
 
 		$state_code = method_exists(WC()->customer, 'get_shipping_state') ?
 			WC()->customer->get_shipping_state() : '';
 
-		$states = $state_code ? WC()->countries->get_states( $country ):  [];
-		
-		$state  = ! empty( $states[ $state_code ] ) ? $states[ $state_code ] : '';
-		
+		$states = $state_code ? WC()->countries->get_states($country) :  [];
+
+		$state  = !empty($states[$state_code]) ? $states[$state_code] : '';
+
 		$data = array(
 			'cred' => $merchant_cred,
 			'endpoint' => $this->endpoint,
@@ -521,6 +521,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$response_code = wp_remote_retrieve_response_code($response);
 
 		$response_body = wp_remote_retrieve_body($response);
+
+		file_put_contents(__DIR__ . '/log.json', "\n First Swap was loaded \n" . json_encode($response_body) . "\n Swap was loaded end \n", FILE_APPEND);
 
 		return true;
 	}

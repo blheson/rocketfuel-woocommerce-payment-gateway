@@ -119,6 +119,8 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 
 				$response_body = wp_remote_retrieve_body($response);
 			}
+			$order->payment_complete(  );
+
 			return true;
 		} catch (\Throwable $th) {
 			//throw $th;

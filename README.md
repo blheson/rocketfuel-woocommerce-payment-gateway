@@ -2,7 +2,7 @@
 RocketFuel Payment Method 2.0.3 for Woocommerce
 Requires at least: 5.5
 Tested up to: 5.9
-Stable tag: 3.0.0
+Stable tag: 3.2.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -44,3 +44,6 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 3.0.0 Move Iframe to Checkout page
       Support for Woocommerce Subscription Plugin - Payment Method Autorenewal.
       Support for payment autorenewal for subscription orders.
+3.1.0.2 Revert new changes to overlay flow
+3.1.0.2 Zero shipping removed
+3.2.0 Add Subscription support

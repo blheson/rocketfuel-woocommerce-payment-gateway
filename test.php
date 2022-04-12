@@ -1,14 +1,16 @@
 <?php
 $out = '';
-$to_crypt  = '2335689b-7a4d-420a-9cc0-f5d765a96967';
+$to_crypt  = json_encode(array('orderId'=>'2947','subscriptionId'=>'ef2949ff918fccd1f72255cd78e60bac-2680'));
+// $to_crypt  = 'ef2949ff918fccd1f72255cd78e60bac-2680';
+
     $cert ="-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2e4stIYooUrKHVQmwztC
-/l0YktX6uz4bE1iDtA2qu4OaXx+IKkwBWa0hO2mzv6dAoawyzxa2jmN01vrpMkMj
-rB+Dxmoq7tRvRTx1hXzZWaKuv37BAYosOIKjom8S8axM1j6zPkX1zpMLE8ys3dUX
-FN5Dl/kBfeCTwGRV4PZjP4a+QwgFRzZVVfnpcRI/O6zhfkdlRah8MrAPWYSoGBpG
-CPiAjUeHO/4JA5zZ6IdfZuy/DKxbcOlt9H+z14iJwB7eVUByoeCE+Bkw+QE4msKs
-aIn4xl9GBoyfDZKajTzL50W/oeoE1UcuvVfaULZ9DWnHOy6idCFH1WbYDxYYIWLi
-AQIDAQAB
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjLrAnU5gsRRpAGmYiB9T
+0EyWr0jAVLQ7EOlgn4qTwRrTgFJdWCRmTRW09cghe/Bu8AHf4fhLnx/cYEjsaJDk
+m4L+RoZeuQUQAgLvcanvOJDLEYHArNYzgN8JFXeDdYHsZS0TdhCiiVrEJOr4t1A+
+6rMpyguda9vCzag1pf81G91WJ9RlMq1yWkc9fmuOvyOhMBsJQ/UuqpFbGXk8g1s6
+l4irLlaKcMhEdKZ1GjvNDQUPndvPKLyio4byjt6bSecgSGya4Ieuz7UhXn2vFcOk
+Ob9EpV8AqkLnui3pY5w1V/fjckdjXdLx9CPjaPk2a1/tacKYvKNcAUdPJ5l/NtwX
+fQIDAQAB
 -----END PUBLIC KEY-----";
 
 $public_key = openssl_pkey_get_public($cert);
