@@ -14,7 +14,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	{
 		$this->id = 'rocketfuel_gateway';
 
-		// $this->icon = 'rkfl.png';
+		// $this->icon = Plugin::get_url('assets/img/logso.png');
 
 		$this->has_fields = false;
 
@@ -65,6 +65,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		//Hooks
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 		add_action('admin_notices', array($this, 'admin_notices'));
+		add_action('woocommerce_review_order_after_submit', array($this, 'rocketfuel_place_order'));
 	}
 	public function get_endpoint($environment)
 	{
@@ -150,56 +151,51 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			)
 		));
 	}
-	public function payment_fields()
-	{
-		global $woocommerce;
 
+	/**
+	 * Rocketfuel Place order Button
+	 * @return void
+	 */
+	public function rocketfuel_place_order()
+	{
 		if (!$this->password || !$this->email) {
 			echo '<span style="color:red">' . __('Vendor should fill in the settings page to start using Rocketfuel', 'rocketfuel-payment-gateway') . '</span>';
 			return;
 		}
+		$uuid = '';
+		$result = null;
+		$temp_orderid_rocketfuel = '';
 
-		if (wp_doing_ajax()) {
-
-			$result = $this->process_user_data();
-		
-			// $result = Woocommerce_Controller::process_user_data();
-
-			// file_put_contents(__DIR__ . "/log.json", 'UUID: - '."\n".json_encode($result), FILE_APPEND);
-
-			if ($result && null !== $result['temporary_order_id']) {
-				$temp_orderid_rocketfuel = $result['temporary_order_id'];
-			}
-
-			if ($result &&  null !== $result['result']->result) {
-				$uuid = $result['result']->result->uuid;
-			}
-		}
 ?>
+
 		<link rel="stylesheet" href="<?php echo esc_url(Plugin::get_url('assets/css/rkfl_iframe.css')) ?>">
 
 		<div>
-			<p>Click to pay</p>
+
 			<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button">Pay with Rocketfuel</div>
 		</div>
 
-		<div id="rkfl_error"></div>
 
-		<input type="hidden" name="admin_url_rocketfuel" value="<?php echo esc_url(admin_url('admin-ajax.php?action=rocketfuel_process_user_data&nonce=' . wp_create_nonce("rocketfuel_nonce"))); ?>">
+		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
 
-		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()) ?>">
+		<input type="hidden" name="payment_status_rocketfuel" value="pending">
 
-		<input type="hidden" name="uuid_rocketfuel" value="<?php echo esc_attr($uuid) ?>">
+		<input type="hidden" name="payment_complete_order_status" value="<?php echo esc_attr($this->payment_complete_order_status); ?>">
 
-		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel) ?>">
+
+		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel); ?>">
 
 		<input type="hidden" name="order_status_rocketfuel" value="wc-on-hold">
 
-		<input type="hidden" name="environment_rocketfuel" value="<?php echo $this->environment; ?>">
+		<input type="hidden" name="environment_rocketfuel" value="<?php echo  esc_attr($this->environment); ?>">
 
-		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl_iframe.js')); ?>">
+
+		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl_iframe.js?ver=' . microtime())); ?>">
 		</script>
+
+
 <?php
+
 	}
 	/**
 	 * Process Data and get UUID from RKFL
@@ -208,14 +204,35 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	public function process_user_data()
 	{
 
-		$cart = $this->sort_cart(WC()->cart->get_cart());
-	file_put_contents(__DIR__ . '/cart.json', "\n".'New Array   '.json_encode($cart) . "\n",FILE_APPEND);
+
+
 		$temporary_order_id = md5(microtime());
+
+		$cart = $this->sort_cart(WC()->cart->get_cart(), $temporary_order_id);
+
+		// file_put_contents(__DIR__ . '/log.json', "\n" . 'Cart for process User data: -> ' . json_encode($cart ) . "\n", FILE_APPEND);
 
 		$merchant_cred = array(
 			'email' => $this->email,
 			'password' => $this->password
 		);
+
+		$phone = method_exists(WC()->customer, 'get_shipping_phone') ?
+			WC()->customer->get_shipping_phone() : false;
+		$zipcode = method_exists(WC()->customer, 'get_shipping_postcode') ?
+			WC()->customer->get_shipping_postcode() : false;
+		$email = method_exists(WC()->customer, 'get_email') ?
+			WC()->customer->get_email() : false;
+
+		$country = WC()->countries->countries[method_exists(WC()->customer, 'get_shipping_country') ?
+			WC()->customer->get_shipping_country() : ''];
+
+		$state_code = method_exists(WC()->customer, 'get_shipping_state') ?
+			WC()->customer->get_shipping_state() : '';
+
+		$states = $state_code ? WC()->countries->get_states($country) :  [];
+
+		$state  = !empty($states[$state_code]) ? $states[$state_code] : '';
 
 		$data = array(
 			'cred' => $merchant_cred,
@@ -224,18 +241,57 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'amount' => WC()->cart->total,
 				'cart' => $cart,
 				'merchant_id' => $this->merchant_id,
+				'shippingAddress' => array(
+					"phoneNo" =>  $phone ?
+						$phone : (method_exists(WC()->customer, 'get_billing_phone') ?
+							WC()->customer->get_billing_phone() : ''),
+
+					"email" =>  $email ?
+						$email : (method_exists(WC()->customer, 'get_billing_email') ?
+							WC()->customer->get_billing_email() : ''),
+
+					"address1" => method_exists(WC()->customer, 'get_shipping_address') ?
+						WC()->customer->get_shipping_address() : '',
+
+					"address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
+						WC()->customer->get_shipping_address_2() : '',
+
+					"state" =>  method_exists(WC()->customer, 'get_shipping_state') ?
+						WC()->customer->get_shipping_state() : '',
+
+					"city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
+						WC()->customer->get_shipping_city() : '',
+
+					"zipcode" => $zipcode,
+
+					"country" => $country,
+
+					"landmark" => "",
+
+					"firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
+						WC()->customer->get_shipping_first_name() : '',
+
+					"lastname" => method_exists(WC()->customer, 'get_shipping_last_name') ?
+						WC()->customer->get_shipping_last_name() : '',
+				),
+
 				'currency' => get_woocommerce_currency("USD"),
+
 				'order' => (string)$temporary_order_id,
 				'redirectUrl' => ''
 			)
 		);
-		// file_put_contents(__DIR__ . "/log.json", 'cart: - '."\n".json_encode($cart), FILE_APPEND);
+		// file_put_contents(__DIR__ . '/log.json', "\n" . 'Carts: -> ' .  json_encode($data). "\n", FILE_APPEND);
+
 		$payment_response = Process_Payment_Controller::process_payment($data);
+
+		// file_put_contents(__DIR__ . '/log.json', "\n" . 'payment_response: -> ' .  json_encode($payment_response). "\n", FILE_APPEND);
 
 		if (!$payment_response && !is_string($payment_response)) {
 
 			return false;
 		}
+
 
 		$result = json_decode($payment_response);
 
@@ -248,23 +304,47 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 */
 	public function is_subscription_product($product)
 	{
-		try{
-		 
-				return class_exists('WC_Subscriptions_Product') && \WC_Subscriptions_Product::is_subscription($product);
-		}catch(\Throwable $th){
-			 
+		try {
+
+			return class_exists('WC_Subscriptions_Product') && \WC_Subscriptions_Product::is_subscription($product);
+		} catch (\Throwable $th) {
+
 			return false;
 		}
-		
-	
+	}
+	public function calculate_frequency($_product_meta)
+	{
+
+		$frequency = false;
+
+		if ($_product_meta['_subscription_period'][0] === 'week' && (int)$_product_meta['_subscription_period_interval'][0] === 1) {
+			$frequency = 'weekly';
+		}
+
+		if ($_product_meta['_subscription_period'][0] === 'month') {
+			if ((int)$_product_meta['_subscription_period_interval'][0] === 1) {
+				$frequency = 'monthly';
+			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 3) {
+				$frequency = 'quarterly';
+			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 6) {
+				$frequency = 'half-yearly';
+			} else if ((int)$_product_meta['_subscription_period_interval'][0] === 12) {
+				$frequency = 'yearly';
+			}
+		}
+		if ($_product_meta['_subscription_period'][0] === 'year' && (int)$_product_meta['_subscription_period_interval'][0] === 1) {
+			$frequency = 'yearly';
+		}
+		return $frequency;
 	}
 
 	/**
 	 * Parse cart items and prepare for order
 	 * @param array $items 
+	 * @param string $temp_orderid
 	 * @return array
 	 */
-	public function sort_cart($items)
+	public function sort_cart($items, $temp_orderid)
 	{
 
 		$data = array();
@@ -279,39 +359,45 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'quantity' => (string)$cart_item['quantity']
 			);
 
-		
+
+
 			// Mock subscription 
 			$_product = wc_get_product($cart_item['product_id']);
 
 			if ($_product && $this->is_subscription_product($_product)) {
 
 				$_product_meta = get_post_meta($cart_item['product_id']);
-				
-
 
 				if ($_product_meta && is_array($_product_meta)) {
 
-					$new_array = array_merge(
-						$temp_data,
-						array(
 
-							'isSubscription' => true,
+					$frequency = $this->calculate_frequency($_product_meta);
 
-							'frequency' => $_product_meta['_subscription_period'][0],
+					if ($frequency) {
 
-							'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
+						$new_array = array_merge(
+							$temp_data,
+							array(
 
-							'merchantSubscriptionId' => (string)$cart_item['product_id'],
+								'isSubscription' => true,
 
-							'autoRenewal' => true
-						)
-					);
+								'frequency' => $frequency,
+
+								'subscriptionPeriod' => $_product_meta['_subscription_length'][0] . $_product_meta['_subscription_period'][0][0],
+
+								'merchantSubscriptionId' => (string) $temp_orderid . '-' . $cart_item['product_id'],
+
+								'autoRenewal' => false
+							)
+						);
+					} else {
+						$new_array = $temp_data;
+					}
 				}
 			} else {
 
 				$new_array = $temp_data;
 			}
- 
 			$data[] = $new_array;
 		}
 
@@ -320,7 +406,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			if (
 				(null !== WC()->cart->get_shipping_total()) &&
 				(!strpos(strtolower(WC()->cart->get_shipping_total()), 'free')) &&
-				WC()->cart->get_shipping_total() > 0
+				(int) WC()->cart->get_shipping_total() > 0
 			) {
 
 				$data[] = array(
@@ -365,10 +451,12 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			exit;
 		}
 
-		if ($status === 'admin_default')
+		if ($status === 'admin_default') {
 			$status = $this->payment_complete_order_status;
+		}
 
 		$data = $order->update_status($status);
+
 		echo json_encode(array('status' => 'success', 'message' => 'Order was updated'));
 		exit;
 	}
@@ -418,8 +506,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$data = json_encode(array('tempOrderId' =>
 		$temp_order_id, 'newOrderId' => $new_order_id));
 
-
-
 		$order_payload = $this->get_encrypted($data, false);
 
 
@@ -441,6 +527,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$response_code = wp_remote_retrieve_response_code($response);
 
 		$response_body = wp_remote_retrieve_body($response);
+
+		file_put_contents(__DIR__ . '/log.json', "\n First Swap was loaded \n" . json_encode($response_body) . "\n Swap was loaded end \n", FILE_APPEND);
 
 		return true;
 	}
