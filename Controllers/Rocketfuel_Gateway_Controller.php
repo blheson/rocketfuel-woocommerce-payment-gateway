@@ -315,7 +315,9 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		if ($_product_meta['_subscription_period'][0] === 'week' && (int)$_product_meta['_subscription_period_interval'][0] === 1) {
 			$frequency = 'weekly';
 		}
-
+		if ($_product_meta['_subscription_period'][0] === 'day' && (int)$_product_meta['_subscription_period_interval'][0] === 1) {
+			$frequency = 'daily';
+		}
 		if ($_product_meta['_subscription_period'][0] === 'month') {
 			if ((int)$_product_meta['_subscription_period_interval'][0] === 1) {
 				$frequency = 'monthly';
@@ -501,7 +503,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$temp_order_id, 'newOrderId' => $new_order_id));
 
 		$order_payload = $this->get_encrypted($data, false);
-
 
 		$merchant_id = base64_encode($this->merchant_id);
 
