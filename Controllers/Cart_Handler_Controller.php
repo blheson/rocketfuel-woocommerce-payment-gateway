@@ -11,7 +11,7 @@ class Cart_Handler_Controller
     {
 
         // add_action('wc_ajax_wc_ppec_update_shipping_costs', array($this, 'wc_ajax_update_shipping_costs'));
-        add_action('wc_ajax_wc_rkfl_start_checkout', array($this, 'rocketfuel_process_checkout'));
+        add_action('wc_ajax_wc_rkfl_start_checkout', array(__CLASS__, 'rocketfuel_process_checkout'));
     }
     public static function process_user_data()
     {
@@ -148,7 +148,7 @@ class Cart_Handler_Controller
         try {
             self::process_user_data();
             // wp_send_json_success(array('token' => WC()->session->paypal->token));
-        } catch (Error $e) {
+        } catch (\Error $e) {
             wp_send_json_error(array('messages' => array($e->getMessage())));
         }
     }
@@ -203,7 +203,7 @@ class Cart_Handler_Controller
         $customer->set_shipping_state($shipping_state);
         $customer->set_shipping_postcode($shipping_postcode);
 
-        if (version_compare(WC_VERSION, '3.0', '<')) {
+        if (version_compare(\WC_VERSION, '3.0', '<')) {
             $customer->shipping_first_name = $shipping_first_name;
             $customer->shipping_last_name  = $shipping_last_name;
             $customer->billing_first_name  = $billing_first_name;
