@@ -31,7 +31,7 @@ class Subscription_Service
 
 		return $response;
 	}
-		/**
+	/**
 	 * Get UUID of the customer
 	 * @param array $data
 	 */
@@ -39,10 +39,14 @@ class Subscription_Service
 	{
 
 
-		$body = wp_json_encode(array(
-			'merchantId' => $data['merchant_id'],
-			'merchantAuth' => $data['merchant_auth']
-		));
+		// $body = wp_json_encode(array(
+		// 	'merchantId' => $data['merchant_id'],
+		// 	'merchantAuth' => $data['merchant_auth']
+		// ));
+
+		$body = wp_json_encode(
+			$data
+		);
 
 		$args = array(
 			'timeout'	=> 45,

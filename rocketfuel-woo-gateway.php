@@ -15,14 +15,17 @@
  * @package Rocketfuel
  */
 
+use Rocketfuel_Gateway\Controllers\Rocketfuel_Gateway_Subscription_Controller;
 use Rocketfuel_Gateway\Plugin;
+use Rocketfuel_Gateway\Services\Subscription_Service;
 
 if ( ! defined( 'ABSPATH' ) ) {
     die( 'A cup does not drink what it holds?' );
 }
 
 if ( rocketfuel_check_woocommerce_is_active() ) {
-    define( 'ROCKETFUEL_VER', '2.0.4' );
+    define( 'ROCKETFUEL_VER', '3.2.0' );
+    
     require_once plugin_dir_path( __FILE__ ) . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
     Plugin::init( __FILE__ );
 } else {
@@ -44,3 +47,4 @@ function rocketfuel_check_woocommerce_is_active(){
     }
     return false;
 }
+

@@ -1,6 +1,7 @@
 <?php
 $out = '';
-$to_crypt  = json_encode(array('orderId'=>'2947','subscriptionId'=>'ef2949ff918fccd1f72255cd78e60bac-2680'));
+$to_crypt  = json_encode(array('merchantId'=>'2abb4e12-7317-4d5c-a14d-a2cf9d445e47'));
+// $to_crypt  = json_encode(array('orderId'=>'2947','subscriptionId'=>'ef2949ff918fccd1f72255cd78e60bac-2680'));
 // $to_crypt  = 'ef2949ff918fccd1f72255cd78e60bac-2680';
 
     $cert ="-----BEGIN PUBLIC KEY-----

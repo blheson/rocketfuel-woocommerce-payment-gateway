@@ -2,8 +2,10 @@
 
 namespace Rocketfuel_Gateway\Controllers;
 
+use Rocketfuel_Gateway\Services\Subscription_Service;
+
 if (!defined('ABSPATH')) {
-	exit;
+    exit;
 }
 /**
  * Class Rocketfuel_Gateway_Subscription_Controller 
@@ -11,12 +13,12 @@ if (!defined('ABSPATH')) {
 class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Controller
 {
 
-	/**
-	 * Constructor
-	 */
-	public function __construct()
-	{
-		parent::__construct();
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        parent::__construct();
 
 
 		if (class_exists('WC_Subscriptions_Order')) {
@@ -94,39 +96,73 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 	{
 
 		$order_id = method_exists($order, 'get_id') ? $order->get_id() : $order->id;
+		
+		$subscriptions = wcs_get_subscriptions_for_order($order_id);
+		
+        $subscription_count           = count( $subscriptions );
+
+        $currency = $order->get_order_currency();
+
 
 		try {
-			// Loop through order items
-			foreach ($order_items as $item_id => $item) {
+			$subscriptionData = array();
 
-				$product = $item->get_product();
+			$temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
 
-				// Or to get the simple subscription or the variation subscription product ID
-				$_product_id = $product->get_id();
+			foreach ($subscriptions as $subscription) {
+				
+				$sub_items = $subscription->get_items();
+				
+				// Loop through order items
 
-				$payload = array(
-					'merchant_id' => base64_encode($this->merchant_id),
+				foreach ($sub_items as $item_id => $item) {
 
-					'merchant_auth' => $this->get_encrypted(
-						json_encode(array('orderId' => $order_id, "subscriptionId" => $temporary_order_id . '-' . $_product_id)),
-						false
-					),
-					'endpoint' => $this->endpoint
-				);
+					$product = $item->get_product();
 
+					// Or to get the simple subscription or the variation subscription product ID
+					$_product_id = $product->get_id();
 
-				$response = Subscription_Service::debit_shopper_for_subscription($payload);
+						array_push(
+							$subscriptionData,
+							array(
 
-				$response_body = wp_remote_retrieve_body($response);
+							'subscriptionId'=>$temporary_order_id . '-' . $_product_id,
+
+							'amount'=>$product->get_price() *$item->get_quantity(),
+
+							'currency'=>$currency 
+						)
+					);
+				}
 			}
-			$order->payment_complete(  );
 
-			return true;
-		} catch (\Throwable $th) {
+            $payload = array(
+				'merchantId' => base64_encode($this->merchant_id),
+
+				'merchantAuth' => $this->get_encrypted(
+					json_encode(array('merchantId' => $this->merchant_id)),
+					false
+				),
+
+				"orderId" => (string)$order_id,
+
+				'items'=>$subscriptionData,
+
+				'endpoint' => $this->endpoint
+			);
+			file_put_contents(__DIR__.'/log.json',"\n".json_encode($payload)."\n",FILE_APPEND);
+
+            $response = Subscription_Service::debit_shopper_for_subscription($payload);
+
+            $order->payment_complete();
+
+            return true;
+
+        } catch (\Throwable $th) {
 			//throw $th;
 		}
 
-	
+
 
 		return new WP_Error('rkfl_error', __('This subscription can&#39;t be renewed automatically. The customer will have to login to their account to renew their subscription', 'woo-paystack'));
 	}

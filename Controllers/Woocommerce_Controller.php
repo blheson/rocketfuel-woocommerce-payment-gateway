@@ -101,11 +101,14 @@ class Woocommerce_Controller
 
             // file_put_contents(__DIR__ . '/log.json', "\n" . 'payload for cancel_subscription_order: -> ' . json_encode($payload) . "\n", FILE_APPEND);
             // file_put_contents(__DIR__ . '/log.json', "\n" . 'merchant: -> ' . json_encode(base64_encode($gateway->merchant_id)) . "\n", FILE_APPEND);
+            try {
 
+                $response = Subscription_Service::cancel_subscription($payload);
 
-            $response = Subscription_Service::cancel_subscription($payload);
-
-            $response_body = wp_remote_retrieve_body($response);
+                $response_body = wp_remote_retrieve_body($response);
+            } catch (\Throwable $th) {
+                //throw $th;
+            }
 
             // file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse bodty for cancel_subscription_order: -> ' . json_encode($response_body) . "\n", FILE_APPEND);
 
@@ -217,7 +220,9 @@ class Woocommerce_Controller
     }
     /**
      * Add custom order status
+     * 
      * @param string $order_status
+     * 
      * @return array 
      */
     public static function add_partial_payment_to_order_status($order_statuses)

@@ -63,9 +63,9 @@ class Webhook_Controller
 
 				$order->add_order_note($message);
 
-				// if (class_exists('WC_Subscriptions_Manager')) {
-				// 	WC_Subscriptions_Manager::process_subscription_payments_on_order($order);
-				// }
+				if (class_exists('WC_Subscriptions_Manager')) {
+					\WC_Subscriptions_Manager::process_subscription_payments_on_order($order);
+				}
 			}
 
 			$default_status = self::get_gateway()->payment_complete_order_status;
@@ -73,7 +73,7 @@ class Webhook_Controller
 			$default_status = $default_status ? $default_status : 'wc-completed';
 
 			$order->update_status($default_status);
-
+			file_put_contents(__DIR__."/log.json", "\n webhook".json_encode($body )."\n", FILE_APPEND);
 			return true;
 		}
 	}
