@@ -523,7 +523,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$response_body = wp_remote_retrieve_body($response);
 
-		file_put_contents(__DIR__ . '/log.json', "\n First Swap was loaded \n" . json_encode($response_body) . "\n Swap was loaded end \n", FILE_APPEND);
+		file_put_contents(__DIR__ . '/log.json', "\n First Swap was loaded \n" . json_encode($response_body) . "\n".$data. "\n Swap was loaded end \n", FILE_APPEND);
 
 		return true;
 	}

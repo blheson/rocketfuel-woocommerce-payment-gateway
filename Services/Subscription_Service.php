@@ -35,7 +35,7 @@ class Subscription_Service
 	 * Get UUID of the customer
 	 * @param array $data
 	 */
-	public static function debit_shopper_for_subscription($data)
+	public static function debit_shopper_for_subscription($data,$endpoint)
 	{
 
 
@@ -54,7 +54,7 @@ class Subscription_Service
 			'body' => $body
 		);
 
-		$response = wp_remote_post($data['endpoint'] . '/subscription/debit', $args);
+		$response = wp_remote_post($endpoint . '/subscription/debit', $args);
 
 		return $response;
 	}
