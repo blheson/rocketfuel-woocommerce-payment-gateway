@@ -8,6 +8,10 @@ use Rocketfuel_Gateway\Controllers\Process_Payment_Controller;
 class Rest_Controller
 {
 
+    /**
+     * Register Rest Hook
+     * @return void
+     */
     public static function register()
     {
         add_action('rest_api_init', array(__CLASS__, 'define_rest_route'));
@@ -32,6 +36,7 @@ class Rest_Controller
                 'permission_callback' => '__return_true'
             )
         );
+
         register_rest_route(
             Plugin::get_api_route_namespace(),
             'payment',
@@ -41,6 +46,7 @@ class Rest_Controller
                 'permission_callback' => '__return_true'
             )
         );
+
         register_rest_route(
             Plugin::get_api_route_namespace(),
             'check',
@@ -50,6 +56,7 @@ class Rest_Controller
                 'permission_callback' => '__return_true'
             )
         );
+
         register_rest_route(
             Plugin::get_api_route_namespace(),
             'auth',
@@ -59,6 +66,7 @@ class Rest_Controller
                 'permission_callback' => '__return_true'
             )
         );
+
         register_rest_route(
             Plugin::get_api_route_namespace(),
             'update_order',
@@ -68,6 +76,7 @@ class Rest_Controller
                 'permission_callback' => '__return_true'
             )
         );
+
         register_rest_route(
             Plugin::get_api_route_namespace(),
             'merchant_auth',
@@ -77,6 +86,7 @@ class Rest_Controller
                 'permission_callback' => '__return_true'
             )
         );
+        
         unset($gateway);
     }
    

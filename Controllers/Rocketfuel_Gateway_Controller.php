@@ -297,6 +297,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		return array('result' => $result, 'temporary_order_id' => $temporary_order_id);
 	}
+	/**
+	 * Check if product is a subscription product
+	 * @param WC_Products $product
+	 * @return bool
+	 */
 	public function is_subscription_product($product)
 	{
 		try {
@@ -334,6 +339,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		}
 		return $frequency;
 	}
+
 	/**
 	 * Parse cart items and prepare for order
 	 * @param array $items 
@@ -394,7 +400,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 				$new_array = $temp_data;
 			}
-
 			$data[] = $new_array;
 		}
 
@@ -419,6 +424,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		return $data;
 	}
+
 	/**
 	 * Update order when payment has been confirmed
 	 * @param WP_REST_REQUEST $request_data
@@ -531,7 +537,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 * Encrypt Data
 	 *
 	 * @param $to_crypt string to encrypt
-	 * @return string
+	 * @return string|false
 	 */
 	public function get_encrypted($to_crypt, $general_public_key = true)
 	{
