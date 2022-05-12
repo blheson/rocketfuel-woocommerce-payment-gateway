@@ -478,7 +478,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		// $this->swap_order_id($temporary_order_id, $order_id);
 		// Remove cart
-		// $woocommerce->cart->empty_cart();
+ 
 		// Return thankyou redirect
 		$buildUrl = $this->get_return_url($order);
 

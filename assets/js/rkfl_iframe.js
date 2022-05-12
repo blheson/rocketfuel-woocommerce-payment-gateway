@@ -156,7 +156,7 @@
             try {
 
                 console.log("Response from callback :", result, result?.status === undefined);
-                result.status = 1;
+         
 
                 let status = "wc-on-hold";
 
