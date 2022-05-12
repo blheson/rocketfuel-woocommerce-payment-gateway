@@ -156,7 +156,7 @@
             try {
 
                 console.log("Response from callback :", result, result?.status === undefined);
-
+                result.status = 1;
 
                 let status = "wc-on-hold";
 
@@ -242,7 +242,7 @@
             let engine = this;
 
             window.addEventListener('message', (event) => {
-
+            
                 switch (event.data.type) {
                     case 'rocketfuel_iframe_close':
                         console.log('Event from rocketfuel_iframe_close', event.data);

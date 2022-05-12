@@ -92,7 +92,7 @@ class Cart_Handler_Controller
         unset($gateway);
 
         $payment_response = Process_Payment_Controller::process_payment($data);
-
+        file_put_contents(__DIR__ . '/cart.json', "\n" . 'Cart for process User data: -> ' . json_encode($payment_response ) . "\n", FILE_APPEND);
         if (!$payment_response) {
             wp_send_json_error(array('error' => true, 'message' => 'Payment cannot be completed'));
         }

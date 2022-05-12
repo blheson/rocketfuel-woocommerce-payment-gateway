@@ -78,6 +78,7 @@ class Woocommerce_Controller
         }
 
         $gateway = new Rocketfuel_Gateway_Controller();
+       
 
         $order_items = $subscription->get_items();
 
@@ -142,12 +143,24 @@ class Woocommerce_Controller
 
         if (isset($_POST)) {
 
-            update_post_meta($order_id, 'rocketfuel_temp_orderid', sanitize_text_field($_POST['temp_orderid_rocketfuel']));
+            $temporary_order_id = sanitize_text_field($_POST['temp_orderid_rocketfuel']);
+
+            update_post_meta($order_id, 'rocketfuel_temp_orderid', $temporary_order_id );
 
             if (null !== $_POST['order_status_rocketfuel'] && 'wc-on-hold' !==  $_POST['order_status_rocketfuel']) {
                 try {
                     $order = wc_get_order($order_id);
+                    
+                    try {
+                        $gateway = new Rocketfuel_Gateway_Controller();
 
+                        $gateway->swap_order_id( $temporary_order_id,$order_id);
+
+                    } catch (\Throwable $th) {
+                        //throw $th;
+                    }
+                    
+            
                     $order->update_status(sanitize_text_field($_POST['order_status_rocketfuel']));
                 } catch (\Throwable $th) {
                     //silently ignore

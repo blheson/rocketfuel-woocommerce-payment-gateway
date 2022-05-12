@@ -95,6 +95,9 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 
 		// Check for trial subscription order with 0 total.
 		if ($this->order_has_subscription($order) && $order->get_total() == 0) {
+			$temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
+
+			$this->swap_order_id($temporary_order_id, $order_id);
 
 			$order->payment_complete();
 

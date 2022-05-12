@@ -201,102 +201,102 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 * Process Data and get UUID from RKFL
 	 * @return array|false 
 	 */
-	public function process_user_data()
-	{
+	// public function process_user_data()
+	// {
 
 
 
-		$temporary_order_id = md5(microtime());
+	// 	$temporary_order_id = md5(microtime());
 
-		$cart = $this->sort_cart(WC()->cart->get_cart(), $temporary_order_id);
+	// 	$cart = $this->sort_cart(WC()->cart->get_cart(), $temporary_order_id);
 
-		// file_put_contents(__DIR__ . '/log.json', "\n" . 'Cart for process User data: -> ' . json_encode($cart ) . "\n", FILE_APPEND);
+		
 
-		$merchant_cred = array(
-			'email' => $this->email,
-			'password' => $this->password
-		);
+	// 	$merchant_cred = array(
+	// 		'email' => $this->email,
+	// 		'password' => $this->password
+	// 	);
 
-		$phone = method_exists(WC()->customer, 'get_shipping_phone') ?
-			WC()->customer->get_shipping_phone() : false;
-		$zipcode = method_exists(WC()->customer, 'get_shipping_postcode') ?
-			WC()->customer->get_shipping_postcode() : false;
-		$email = method_exists(WC()->customer, 'get_email') ?
-			WC()->customer->get_email() : false;
+	// 	$phone = method_exists(WC()->customer, 'get_shipping_phone') ?
+	// 		WC()->customer->get_shipping_phone() : false;
+	// 	$zipcode = method_exists(WC()->customer, 'get_shipping_postcode') ?
+	// 		WC()->customer->get_shipping_postcode() : false;
+	// 	$email = method_exists(WC()->customer, 'get_email') ?
+	// 		WC()->customer->get_email() : false;
 
-		$country = WC()->countries->countries[method_exists(WC()->customer, 'get_shipping_country') ?
-			WC()->customer->get_shipping_country() : ''];
+	// 	$country = WC()->countries->countries[method_exists(WC()->customer, 'get_shipping_country') ?
+	// 		WC()->customer->get_shipping_country() : ''];
 
-		$state_code = method_exists(WC()->customer, 'get_shipping_state') ?
-			WC()->customer->get_shipping_state() : '';
+	// 	$state_code = method_exists(WC()->customer, 'get_shipping_state') ?
+	// 		WC()->customer->get_shipping_state() : '';
 
-		$states = $state_code ? WC()->countries->get_states($country) :  [];
+	// 	$states = $state_code ? WC()->countries->get_states($country) :  [];
 
-		$state  = !empty($states[$state_code]) ? $states[$state_code] : '';
+	// 	$state  = !empty($states[$state_code]) ? $states[$state_code] : '';
 
-		$data = array(
-			'cred' => $merchant_cred,
-			'endpoint' => $this->endpoint,
-			'body' => array(
-				'amount' => WC()->cart->total,
-				'cart' => $cart,
-				'merchant_id' => $this->merchant_id,
-				'shippingAddress' => array(
-					"phoneNo" =>  $phone ?
-						$phone : (method_exists(WC()->customer, 'get_billing_phone') ?
-							WC()->customer->get_billing_phone() : ''),
+	// 	$data = array(
+	// 		'cred' => $merchant_cred,
+	// 		'endpoint' => $this->endpoint,
+	// 		'body' => array(
+	// 			'amount' => WC()->cart->total,
+	// 			'cart' => $cart,
+	// 			'merchant_id' => $this->merchant_id,
+	// 			'shippingAddress' => array(
+	// 				"phoneNo" =>  $phone ?
+	// 					$phone : (method_exists(WC()->customer, 'get_billing_phone') ?
+	// 						WC()->customer->get_billing_phone() : ''),
 
-					"email" =>  $email ?
-						$email : (method_exists(WC()->customer, 'get_billing_email') ?
-							WC()->customer->get_billing_email() : ''),
+	// 				"email" =>  $email ?
+	// 					$email : (method_exists(WC()->customer, 'get_billing_email') ?
+	// 						WC()->customer->get_billing_email() : ''),
 
-					"address1" => method_exists(WC()->customer, 'get_shipping_address') ?
-						WC()->customer->get_shipping_address() : '',
+	// 				"address1" => method_exists(WC()->customer, 'get_shipping_address') ?
+	// 					WC()->customer->get_shipping_address() : '',
 
-					"address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
-						WC()->customer->get_shipping_address_2() : '',
+	// 				"address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
+	// 					WC()->customer->get_shipping_address_2() : '',
 
-					"state" =>  method_exists(WC()->customer, 'get_shipping_state') ?
-						WC()->customer->get_shipping_state() : '',
+	// 				"state" =>  method_exists(WC()->customer, 'get_shipping_state') ?
+	// 					WC()->customer->get_shipping_state() : '',
 
-					"city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
-						WC()->customer->get_shipping_city() : '',
+	// 				"city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
+	// 					WC()->customer->get_shipping_city() : '',
 
-					"zipcode" => $zipcode,
+	// 				"zipcode" => $zipcode,
 
-					"country" => $country,
+	// 				"country" => $country,
 
-					"landmark" => "",
+	// 				"landmark" => "",
 
-					"firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
-						WC()->customer->get_shipping_first_name() : '',
+	// 				"firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
+	// 					WC()->customer->get_shipping_first_name() : '',
 
-					"lastname" => method_exists(WC()->customer, 'get_shipping_last_name') ?
-						WC()->customer->get_shipping_last_name() : '',
-				),
+	// 				"lastname" => method_exists(WC()->customer, 'get_shipping_last_name') ?
+	// 					WC()->customer->get_shipping_last_name() : '',
+	// 			),
 
-				'currency' => get_woocommerce_currency("USD"),
+	// 			'currency' => get_woocommerce_currency("USD"),
 
-				'order' => (string)$temporary_order_id,
-				'redirectUrl' => ''
-			)
-		);
-		// file_put_contents(__DIR__ . '/log.json', "\n" . 'Carts: -> ' .  json_encode($data). "\n", FILE_APPEND);
+	// 			'order' => (string)$temporary_order_id,
+	// 			'redirectUrl' => ''
+	// 		)
+	// 	);
+	// 	file_put_contents(__DIR__ . '/gatconttrller.json', "\n" . 'rkfl gatconttrller daCarts: -> ' .  json_encode($data). "\n", FILE_APPEND);
 
-		$payment_response = Process_Payment_Controller::process_payment($data);
+	// 	$payment_response = Process_Payment_Controller::process_payment($data);
 
-		// file_put_contents(__DIR__ . '/log.json', "\n" . 'payment_response: -> ' .  json_encode($payment_response). "\n", FILE_APPEND);
+	// 	// file_put_contents(__DIR__ . '/log.json', "\n" . 'payment_response: -> ' .  json_encode($payment_response). "\n", FILE_APPEND);
 
-		if (!$payment_response && !is_string($payment_response)) {
+	// 	if (!$payment_response && !is_string($payment_response)) {
 
-			return false;
-		}
+	// 		return false;
+	// 	}
 
 
-		$result = json_decode($payment_response);
+	// 	$result = json_decode($payment_response);
 
-		return array('result' => $result, 'temporary_order_id' => $temporary_order_id);
-	}
+	// 	return array('result' => $result, 'temporary_order_id' => $temporary_order_id);
+	// }
 	/**
 	 * Check if product is a subscription product
 	 * @param WC_Products $product
@@ -476,7 +476,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
 
-		$this->swap_order_id($temporary_order_id, $order_id);
+		// $this->swap_order_id($temporary_order_id, $order_id);
 		// Remove cart
 		// $woocommerce->cart->empty_cart();
 		// Return thankyou redirect
@@ -507,6 +507,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$data = json_encode(array('tempOrderId' =>
 		$temp_order_id, 'newOrderId' => $new_order_id));
+
 
 		$order_payload = $this->get_encrypted($data, false);
 
