@@ -71,8 +71,7 @@ class Woocommerce_Controller
 
         $temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
 
-        // file_put_contents(__DIR__ . '/log.json', "\n" . 'temporary_order_id returned from cancel_subscription_order: -> ' . json_encode($temporary_order_id) . "\n", FILE_APPEND);
-
+    
         if (!$temporary_order_id) {
             return false;
         }
@@ -100,8 +99,7 @@ class Woocommerce_Controller
                 'endpoint' => $gateway->endpoint
             );
 
-            // file_put_contents(__DIR__ . '/log.json', "\n" . 'payload for cancel_subscription_order: -> ' . json_encode($payload) . "\n", FILE_APPEND);
-            // file_put_contents(__DIR__ . '/log.json', "\n" . 'merchant: -> ' . json_encode(base64_encode($gateway->merchant_id)) . "\n", FILE_APPEND);
+           
             try {
 
                 $response = Subscription_Service::cancel_subscription($payload);
@@ -111,7 +109,7 @@ class Woocommerce_Controller
                 //throw $th;
             }
 
-            // file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse bodty for cancel_subscription_order: -> ' . json_encode($response_body) . "\n", FILE_APPEND);
+   
 
             // file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse for cancel_subscription_order: -> ' . json_encode($response) . "\n", FILE_APPEND);
         }
@@ -144,21 +142,23 @@ class Woocommerce_Controller
         if (isset($_POST)) {
 
             $temporary_order_id = sanitize_text_field($_POST['temp_orderid_rocketfuel']);
+          
+            try {
+              
+                $gateway = new Rocketfuel_Gateway_Controller();
 
+                $gateway->swap_order_id( $temporary_order_id,$order_id);
+
+            } catch (\Throwable $th) {
+                //throw $th;
+            }
             update_post_meta($order_id, 'rocketfuel_temp_orderid', $temporary_order_id );
 
             if (null !== $_POST['order_status_rocketfuel'] && 'wc-on-hold' !==  $_POST['order_status_rocketfuel']) {
                 try {
                     $order = wc_get_order($order_id);
                     
-                    try {
-                        $gateway = new Rocketfuel_Gateway_Controller();
-
-                        $gateway->swap_order_id( $temporary_order_id,$order_id);
-
-                    } catch (\Throwable $th) {
-                        //throw $th;
-                    }
+                  
                     
             
                     $order->update_status(sanitize_text_field($_POST['order_status_rocketfuel']));

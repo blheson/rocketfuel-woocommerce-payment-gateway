@@ -285,7 +285,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 	// 	$payment_response = Process_Payment_Controller::process_payment($data);
 
-	// 	// file_put_contents(__DIR__ . '/log.json', "\n" . 'payment_response: -> ' .  json_encode($payment_response). "\n", FILE_APPEND);
 
 	// 	if (!$payment_response && !is_string($payment_response)) {
 

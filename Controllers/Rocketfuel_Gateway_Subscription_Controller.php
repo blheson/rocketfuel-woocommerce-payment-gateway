@@ -178,7 +178,7 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 				'items' => $subscriptionData
 
 			);
-			file_put_contents(__DIR__ . '/sub.json', "\n" . json_encode($payload) . "\n", FILE_APPEND);
+			
 
 			$response = Subscription_Service::debit_shopper_for_subscription(
 				$payload,
