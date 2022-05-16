@@ -2,7 +2,7 @@
 RocketFuel Payment Method 2.0.3 for Woocommerce
 Requires at least: 5.5
 Tested up to: 5.9
-Stable tag: 3.2.0
+Stable tag: 3.1.0.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -19,7 +19,6 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 * Go to your RocketFuel merchant account
 * Click "Edit" in the bottom left corner. A window will pop up.
 * Paste callback URL and click "Save".
-
 
 # Changelog
 

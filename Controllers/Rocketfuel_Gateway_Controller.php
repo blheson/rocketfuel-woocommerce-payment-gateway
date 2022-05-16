@@ -6,15 +6,11 @@ use Rocketfuel_Gateway\Plugin;
 
 class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 {
-
-	/**
-	 * Constructor
-	 */
 	public function __construct()
 	{
 		$this->id = 'rocketfuel_gateway';
 
-		// $this->icon = Plugin::get_url('assets/img/logso.png');
+		// $this->icon = 'rkfl.png';
 
 		$this->has_fields = false;
 
@@ -22,26 +18,9 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$this->method_description = 'Pay with Crypto using Rocketfuel';
 
-
-
-		$this->supports = array(
-			'products',
-			'refunds',
-
-			'subscriptions',
-			'multiple_subscriptions',
-			'subscription_cancellation',
-
-			'subscription_reactivation',
-
-			'subscription_payment_method_change',
-			'subscription_payment_method_change_customer',
-			'gateway_scheduled_payments'
-		);
 		$this->init_form_fields();
 
 		$this->init_settings();
-
 
 		$this->title = $this->get_option('title');
 
@@ -59,10 +38,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$this->email = $this->get_option('email');
 
 		$this->payment_complete_order_status = $this->get_option('payment_complete_order_status') ? $this->get_option('payment_complete_order_status') : 'completed';
+
+		$this->supports = array('products');
+
 		$this->merchant_id = $this->get_option('merchant_id');
 
-
-		//Hooks
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 		add_action('admin_notices', array($this, 'admin_notices'));
 		add_action('woocommerce_review_order_after_submit', array($this, 'rocketfuel_place_order'));
@@ -76,6 +56,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'stage2' => 'https://qa-app.rocketdemo.net/api',
 			'preprod' => 'https://preprod-app.rocketdemo.net/api',
 			'sandbox' => 'https://app-sandbox.rocketfuelblockchain.com/api',
+
 		);
 
 		return isset($environment_data[$environment]) ? $environment_data[$environment] : 'https://app.rocketfuelblockchain.com/api';
@@ -347,13 +328,9 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 */
 	public function sort_cart($items, $temp_orderid)
 	{
-
 		$data = array();
-
 		foreach ($items as $cart_item) {
-
-
-			$temp_data  = array(
+			$data[] = array(
 				'name' => $cart_item['data']->get_title(),
 				'id' => (string)$cart_item['product_id'],
 				'price' => $cart_item['data']->get_price(),
@@ -473,7 +450,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$order = wc_get_order($order_id);
 
-		$temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
+		$cart = $this->sort_cart(WC()->cart->get_cart());
 
 		// $this->swap_order_id($temporary_order_id, $order_id);
 		// Remove cart
@@ -481,53 +458,44 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		// Return thankyou redirect
 		$buildUrl = $this->get_return_url($order);
 
-		return array(
-			'result' => 'success',
-			'redirect' => $buildUrl
+		$merchant_cred = array(
+			'email' => $this->email,
+			'password' => $this->password
 		);
-	}
-	/**
-	 * Encrypt Merchant Id
-	 * @return string
-	 */
-	public function merchant_auth()
-	{
-		return $this->get_encrypted($this->merchant_id);
-	}
-	/**
-	 * Swap temporary order for new order Id
-	 * @param int $temp_order_id
-	 * @param int $new_order_id
-	 * @return true
-	 * 
-	 */
-	public function swap_order_id($temp_order_id, $new_order_id)
-	{
-
-		$data = json_encode(array('tempOrderId' =>
-		$temp_order_id, 'newOrderId' => $new_order_id));
 
 
 		$order_payload = $this->get_encrypted($data, false);
 
 		$merchant_id = base64_encode($this->merchant_id);
 
-		$body = wp_json_encode(array('merchantAuth' => $order_payload, 'merchantId' => $merchant_id));
+		file_put_contents(__DIR__ . '/log.json', json_encode($data), FILE_APPEND);
 
+		$payment_response = Process_Payment_Controller::process_payment($data);
 
-		$args = array(
-			'timeout'	=> 45,
-			'headers' => array('Content-Type' => 'application/json'),
-			'body' => $body
-		);
+		if (!$payment_response) {
+			return;
+		}
 
+		$result = json_decode($payment_response);
 
-		$response = wp_remote_post($this->endpoint . '/update/orderId', $args);
+		if (!isset($result->result) && !isset($result->result->url)) {
+			wc_add_notice(__('Failed to place order', 'rocketfuel-payment-gateway'), 'error');
+			return false;
+		}
+		$urlArr = explode('/', $result->result->url);
+		$uuid = $urlArr[count($urlArr) - 1];
 
+		// Remove cart
+		// $woocommerce->cart->empty_cart();
+		// Return thankyou redirect
+		// $pay_link = get_permalink(get_option(Plugin::$prefix . 'process_payment_page_id' ));
+		// $order_key = explode( 'order-received', $this->get_return_url($order))[1];
+		$buildUrl = $this->get_return_url($order) . "&uuid=" . $uuid . "&user_data=" . $user_data;
 
-		$response_code = wp_remote_retrieve_response_code($response);
+		if ($this->environment !== 'prod') {
 
-		$response_body = wp_remote_retrieve_body($response);
+			$buildUrl .= '&env=' . $this->environment;
+		}
 
 		file_put_contents(__DIR__ . '/log.json', "\n First Swap was loaded \n" . json_encode($response_body) . "\n".$data. "\n Swap was loaded end \n", FILE_APPEND);
 
@@ -539,30 +507,24 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 * @param $to_crypt string to encrypt
 	 * @return string|false
 	 */
-	public function get_encrypted($to_crypt, $general_public_key = true)
+	public function get_encrypted($to_crypt)
 	{
 
 		$out = '';
 
-		if ($general_public_key) {
-			$pub_key_path = dirname(__FILE__) . '/rf.pub';
+		$pub_key_path = dirname(__FILE__) . '/rf.pub';
 
-			if (!file_exists($pub_key_path)) {
-				return false;
-			}
-			$cert =  file_get_contents($pub_key_path);
-		} else {
-			$cert = $this->public_key;
+		if (!file_exists($pub_key_path)) {
+			return false;
 		}
-
+		$cert = file_get_contents($pub_key_path);
 
 		$public_key = openssl_pkey_get_public($cert);
 
-		$key_length = openssl_pkey_get_details($public_key);
+		$key_lenght = openssl_pkey_get_details($public_key);
 
-		$part_len = $key_length['bits'] / 8 - 11;
+		$part_len = $key_lenght['bits'] / 8 - 11;
 		$parts = str_split($to_crypt, $part_len);
-
 		foreach ($parts as $part) {
 			$encrypted_temp = '';
 			openssl_public_encrypt($part, $encrypted_temp, $public_key, OPENSSL_PKCS1_OAEP_PADDING);
@@ -570,21 +532,5 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		}
 
 		return base64_encode($out);
-	}
-	/**
-	 * Check if Rocketfuel merchant details is filled.
-	 */
-	public function admin_notices()
-	{
-
-		if ($this->enabled == 'no') {
-			return;
-		}
-
-		// Check required fields.
-		if (!($this->public_key && $this->password)) {
-			echo '<div class="error"><p>' . sprintf(__('Please enter your Rocketfuel merchant details <a href="%s">here</a> to be able to use the Rocketfuel WooCommerce plugin.', 'rocketfuel-payment-gateway'), admin_url('admin.php?page=wc-settings&tab=checkout&section=rocketfuel_gateway')) . '</p></div>';
-			return;
-		}
 	}
 }

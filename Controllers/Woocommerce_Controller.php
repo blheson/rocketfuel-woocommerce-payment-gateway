@@ -22,7 +22,7 @@ class Woocommerce_Controller
         add_filter('woocommerce_payment_gateways', array(__CLASS__, 'add_gateway_class'));
 
         add_action('init', array(__CLASS__, 'register_partial_payment_order_status'));
-
+        add_action('woocommerce_thankyou', array(__CLASS__, 'administer_thank_you_page'));
         add_filter('wc_order_statuses', array(__CLASS__, 'add_partial_payment_to_order_status'));
 
         add_action('wp_ajax_nopriv_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));
@@ -58,6 +58,7 @@ class Woocommerce_Controller
      */
     public function cancel_subscription_order($subscription)
     {
+
 
         // wcs_get_subscriptions_for_order( $order );
 
@@ -180,9 +181,7 @@ class Woocommerce_Controller
     public static function enqueue_action()
     {
 
-        if (!(is_checkout() || is_wc_endpoint_url('order-received') || is_wc_endpoint_url())) {
-            return false;
-        }
+            
 
 
         wp_enqueue_script('rkfl-script', Plugin::get_url('assets/js/rkfl.js'), array(), time());
@@ -193,16 +192,12 @@ class Woocommerce_Controller
             'cancel_url'           => ''
         );
         wp_localize_script('rkfl-script', 'wc_rkfl_context', $data);
-    }
+    
 
+    }
     public static function add_gateway_class($methods)
     {
-        if (class_exists('WC_Subscriptions_Order') && class_exists('WC_Payment_Gateway')) {
-            $methods[] = 'Rocketfuel_Gateway\Controllers\Rocketfuel_Gateway_Subscription_Controller';
-        } else {
-            $methods[] = 'Rocketfuel_Gateway\Controllers\Rocketfuel_Gateway_Controller';
-        }
-
+        $methods[] = 'Rocketfuel_Gateway\Controllers\Rocketfuel_Gateway_Controller';
         return $methods;
     }
     /**
@@ -213,7 +208,7 @@ class Woocommerce_Controller
         if (!class_exists('WC_Payment_Gateway')) {
             return;
         }
-
+        // $this->enqueue_action();
         require_once 'Rocketfuel_Gateway_Controller.php';
     }
     /**

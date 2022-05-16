@@ -1,12 +1,7 @@
 <?php
-
 namespace Rocketfuel_Gateway\Controllers;
 
 use Rocketfuel_Gateway\Plugin;
-use Rocketfuel_Gateway\Controllers\Process_Payment_Controller;
-
-class Rest_Controller
-{
 
     /**
      * Register Rest Hook
@@ -21,12 +16,10 @@ class Rest_Controller
      * Define all rest route
      * @return void
      */
-    public static function define_rest_route()
-    {
+    public static function define_rest_route(){
 
         // address for rocketfuel callback
-        $gateway = new Rocketfuel_Gateway_Controller();
-        
+       $gateway= new Rocketfuel_Gateway_Controller();
         register_rest_route(
             Plugin::get_api_route_namespace(),
             'payment',
@@ -72,7 +65,7 @@ class Rest_Controller
             'update_order',
             array(
                 'methods' => \WP_REST_Server::CREATABLE,
-                'callback' => array($gateway, 'update_order'),
+                'callback' => array( $gateway, 'update_order'),
                 'permission_callback' => '__return_true'
             )
         );
@@ -82,12 +75,11 @@ class Rest_Controller
             'merchant_auth',
             array(
                 'methods' => \WP_REST_Server::CREATABLE,
-                'callback' => array($gateway, 'merchant_auth'),
+                'callback' => array( $gateway, 'merchant_auth'),
                 'permission_callback' => '__return_true'
             )
         );
         
         unset($gateway);
     }
-   
 }
