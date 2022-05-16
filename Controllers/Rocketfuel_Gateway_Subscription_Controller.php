@@ -17,12 +17,12 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 	public function __construct()
 	{
 		parent::__construct();
-	
 
-		// if (class_exists('WC_Subscriptions_Order')) {
 
-		// 	add_action('woocommerce_scheduled_subscription_payment_' . $this->id, array($this, 'scheduled_subscription_payment'), 10, 2);
-		// }
+		if (class_exists('WC_Subscriptions_Order')) {
+
+			add_action('woocommerce_scheduled_subscription_payment_' . $this->id, array($this, 'scheduled_subscription_payment'), 10, 2);
+		}
 	}
 
 	/**
@@ -92,19 +92,40 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 	 */
 	public function process_subscription_payment($order, $amount)
 	{
-		return true; // do not allow yet
+
 		$order_id = method_exists($order, 'get_id') ? $order->get_id() : $order->id;
 
-		$auth_code  = null;
+		try {
+			// Loop through order items
+			foreach ($order_items as $item_id => $item) {
 
-		if ($auth_code) {
+				$product = $item->get_product();
 
-			$email = method_exists($order, 'get_billing_email') ? $order->get_billing_email() : $order->billing_email;
+				// Or to get the simple subscription or the variation subscription product ID
+				$_product_id = $product->get_id();
 
-			$order_amount = $amount;
+				$payload = array(
+					'merchant_id' => base64_encode($this->merchant_id),
 
+					'merchant_auth' => $this->get_encrypted(
+						json_encode(array('orderId' => $order_id, "subscriptionId" => $temporary_order_id . '-' . $_product_id)),
+						false
+					),
+					'endpoint' => $this->endpoint
+				);
+
+
+				$response = Subscription_Service::debit_shopper_for_subscription($payload);
+
+				$response_body = wp_remote_retrieve_body($response);
+			}
+			return true;
+		} catch (\Throwable $th) {
+			//throw $th;
 		}
 
-		// return new WP_Error('rkfl_error', __('This subscription can&#39;t be renewed automatically. The customer will have to login to their account to renew their subscription', 'woo-paystack'));
+	
+
+		return new WP_Error('rkfl_error', __('This subscription can&#39;t be renewed automatically. The customer will have to login to their account to renew their subscription', 'woo-paystack'));
 	}
 }

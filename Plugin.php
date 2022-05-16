@@ -4,7 +4,7 @@ namespace Rocketfuel_Gateway;
 
 use Rocketfuel_Gateway\Controllers\Activation_Controller;
 use Rocketfuel_Gateway\Controllers\Rest_Controller;
-use Rocketfuel_Gateway\Controllers\Shortcode_Controller;
+use Rocketfuel_Gateway\Controllers\Metabox_Controller;
 use Rocketfuel_Gateway\Controllers\Woocommerce_Controller;
 
 class Plugin
@@ -62,5 +62,6 @@ class Plugin
     {
         Rest_Controller::register();
         Woocommerce_Controller::register();
+      
     }
 }
