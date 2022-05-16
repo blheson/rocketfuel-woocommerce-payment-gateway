@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Woocommerce page class for Rocketfuel
  * 
