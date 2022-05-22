@@ -402,6 +402,8 @@
         }
     }
 
+    // document.querySelector("")
+    
     document.querySelector(".rocketfuel_retrigger_payment_button").addEventListener('click', (e) => {
         e.preventDefault();
 

@@ -39,7 +39,21 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$this->payment_complete_order_status = $this->get_option('payment_complete_order_status') ? $this->get_option('payment_complete_order_status') : 'completed';
 
-		$this->supports = array('products');
+		$this->supports = array(
+			'products',
+			'refunds',
+			'tokenization',
+			'subscriptions',
+			'multiple_subscriptions',
+			'subscription_cancellation',
+			'subscription_suspension',
+			'subscription_reactivation',
+			'subscription_amount_changes',
+			'subscription_date_changes',
+			'subscription_payment_method_change',
+			'subscription_payment_method_change_customer',
+		);
+
 
 		$this->merchant_id = $this->get_option('merchant_id');
 
@@ -132,7 +146,10 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			)
 		));
 	}
-
+	public function merchant_auth()
+	{
+		return $this->get_encrypted($this->merchant_id);
+	}
 	/**
 	 * Rocketfuel Place order Button
 	 * @return void
@@ -191,7 +208,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 	// 	$cart = $this->sort_cart(WC()->cart->get_cart(), $temporary_order_id);
 
-		
+
 
 	// 	$merchant_cred = array(
 	// 		'email' => $this->email,
@@ -330,7 +347,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	{
 		$data = array();
 		foreach ($items as $cart_item) {
-			$data[] = array(
+			$temp_data = array(
 				'name' => $cart_item['data']->get_title(),
 				'id' => (string)$cart_item['product_id'],
 				'price' => $cart_item['data']->get_price(),
@@ -434,7 +451,9 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		}
 
 		$data = $order->update_status($status);
-
+		
+		$order->payment_complete();
+		
 		echo json_encode(array('status' => 'success', 'message' => 'Order was updated'));
 		exit;
 	}
@@ -450,54 +469,53 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$order = wc_get_order($order_id);
 
-		$cart = $this->sort_cart(WC()->cart->get_cart());
+		// $cart = $this->sort_cart(WC()->cart->get_cart());
 
 		// $this->swap_order_id($temporary_order_id, $order_id);
 		// Remove cart
- 
+
 		// Return thankyou redirect
 		$buildUrl = $this->get_return_url($order);
-
-		$merchant_cred = array(
-			'email' => $this->email,
-			'password' => $this->password
+		return array(
+			'result' => 'success',
+			'redirect' => $buildUrl
 		);
+	}
+	/**
+	 * Swap temporary order for new order Id
+	 * @param int $temp_order_id
+	 * @param int $new_order_id
+	 * 
+	 * @return true
+	 */
+	public function swap_order_id($temp_order_id, $new_order_id)
+	{
 
+		$data = json_encode(array('tempOrderId' =>
+		$temp_order_id, 'newOrderId' => $new_order_id));
 
 		$order_payload = $this->get_encrypted($data, false);
 
 		$merchant_id = base64_encode($this->merchant_id);
 
-		file_put_contents(__DIR__ . '/log.json', json_encode($data), FILE_APPEND);
+		$body = wp_json_encode(array('merchantAuth' => $order_payload, 'merchantId' => $merchant_id));
 
-		$payment_response = Process_Payment_Controller::process_payment($data);
 
-		if (!$payment_response) {
-			return;
-		}
+		$args = array(
+			'timeout'	=> 45,
+			'headers' => array('Content-Type' => 'application/json'),
+			'body' => $body
+		);
 
-		$result = json_decode($payment_response);
 
-		if (!isset($result->result) && !isset($result->result->url)) {
-			wc_add_notice(__('Failed to place order', 'rocketfuel-payment-gateway'), 'error');
-			return false;
-		}
-		$urlArr = explode('/', $result->result->url);
-		$uuid = $urlArr[count($urlArr) - 1];
+		$response = wp_remote_post($this->endpoint . '/update/orderId', $args);
 
-		// Remove cart
-		// $woocommerce->cart->empty_cart();
-		// Return thankyou redirect
-		// $pay_link = get_permalink(get_option(Plugin::$prefix . 'process_payment_page_id' ));
-		// $order_key = explode( 'order-received', $this->get_return_url($order))[1];
-		$buildUrl = $this->get_return_url($order) . "&uuid=" . $uuid . "&user_data=" . $user_data;
 
-		if ($this->environment !== 'prod') {
+		$response_code = wp_remote_retrieve_response_code($response);
 
-			$buildUrl .= '&env=' . $this->environment;
-		}
+		$response_body = wp_remote_retrieve_body($response);
 
-		file_put_contents(__DIR__ . '/log.json', "\n First Swap was loaded \n" . json_encode($response_body) . "\n".$data. "\n Swap was loaded end \n", FILE_APPEND);
+		file_put_contents(__DIR__ . '/log.json', "\n First Swap was loaded \n" . json_encode($response_body) . "\n Swap was loaded end \n", FILE_APPEND);
 
 		return true;
 	}

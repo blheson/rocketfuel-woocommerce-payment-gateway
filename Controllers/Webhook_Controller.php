@@ -59,9 +59,15 @@ class Webhook_Controller
 			}
 
 			$default_status = self::get_gateway()->payment_complete_order_status;
+
 			$default_status = $default_status ? $default_status : 'wc-completed';
+
 			$order->update_status($default_status);
-			file_put_contents(__DIR__."/log.json", "\n webhook".json_encode($body )."\n", FILE_APPEND);
+
+			$order->payment_complete();
+
+			file_put_contents(__DIR__ . "/log.json", "\n webhook" . json_encode($body) . "\n", FILE_APPEND);
+
 			return true;
 		}
 	}

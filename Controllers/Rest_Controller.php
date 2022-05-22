@@ -2,7 +2,9 @@
 namespace Rocketfuel_Gateway\Controllers;
 
 use Rocketfuel_Gateway\Plugin;
+use Rocketfuel_Gateway\Controllers\Process_Payment_Controller;
 
+class Rest_Controller{
     /**
      * Register Rest Hook
      * @return void

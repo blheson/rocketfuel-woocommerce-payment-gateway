@@ -21,7 +21,7 @@ class Woocommerce_Controller
         add_filter('woocommerce_payment_gateways', array(__CLASS__, 'add_gateway_class'));
 
         add_action('init', array(__CLASS__, 'register_partial_payment_order_status'));
-        add_action('woocommerce_thankyou', array(__CLASS__, 'administer_thank_you_page'));
+     
         add_filter('wc_order_statuses', array(__CLASS__, 'add_partial_payment_to_order_status'));
 
         add_action('wp_ajax_nopriv_rocketfuel_process_user_data', array(__CLASS__, 'process_user_data'));

@@ -30,7 +30,7 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 	}
 	public function scheduled_subscription_payment_single($subscription_id)
 	{
-
+		file_put_contents(__DIR__ . '/sub_single.json', '$renewal_order ' . json_encode($subscription_id), FILE_APPEND);
 		$subscription = wcs_get_subscription($subscription_id);
 
 		$renewal_order = $subscription->get_last_order('all');

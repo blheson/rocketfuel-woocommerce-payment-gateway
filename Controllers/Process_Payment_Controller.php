@@ -15,7 +15,6 @@ class Process_Payment_Controller{
 		$response = self::auth( $data );
 
 
-	file_put_contents(__DIR__.'/log.json','Auth res'.json_encode($response ),FILE_APPEND);
 		if ( is_wp_error( $response ) ) {
 			return rest_ensure_response( $response );
 		}
