@@ -551,4 +551,20 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		return base64_encode($out);
 	}
+	/**
+	 * Check if Rocketfuel merchant details is filled.
+	 */
+	public function admin_notices()
+	{
+
+		if ($this->enabled == 'no') {
+			return;
+		}
+
+		// Check required fields.
+		if (!($this->public_key && $this->password)) {
+			echo '<div class="error"><p>' . sprintf(__('Please enter your Rocketfuel merchant details <a href="%s">here</a> to be able to use the Rocketfuel WooCommerce plugin.', 'rocketfuel-payment-gateway'), admin_url('admin.php?page=wc-settings&tab=checkout&section=rocketfuel_gateway')) . '</p></div>';
+			return;
+		}
+	}
 }

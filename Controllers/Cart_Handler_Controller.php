@@ -13,6 +13,80 @@ class Cart_Handler_Controller
         // add_action('wc_ajax_wc_ppec_update_shipping_costs', array($this, 'wc_ajax_update_shipping_costs'));
         add_action('wc_ajax_wc_rkfl_start_checkout', array(__CLASS__, 'rocketfuel_process_checkout'));
     }
+    public static function sort_shipping_address()
+    {
+
+        $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
+            WC()->customer->get_shipping_phone() : false;
+
+
+        if (!$phone) {
+            return null;
+        }
+
+
+
+        $zipcode = method_exists(WC()->customer, 'get_shipping_postcode') ?
+            WC()->customer->get_shipping_postcode() : false;
+
+        $email = method_exists(WC()->customer, 'get_email') ?
+            WC()->customer->get_email() : false;
+
+        $country_code = method_exists(WC()->customer, 'get_shipping_country') ?
+            WC()->customer->get_shipping_country() : '';
+
+        $country = !!$country_code ? WC()->countries->countries[$country_code] : '';
+        if (!$country) {
+            return null;
+        }
+        $state_code = method_exists(WC()->customer, 'get_shipping_state') ?
+            WC()->customer->get_shipping_state() : '';
+
+
+        $states = $state_code ? WC()->countries->get_states($country_code) :  [];
+
+
+        $state  = !empty($states[$state_code]) ? $states[$state_code] : $state_code;
+        if (!$state) {
+            return null;
+        }
+        $address1 = method_exists(WC()->customer, 'get_shipping_address') ?
+            WC()->customer->get_shipping_address() : '';
+
+        if (!$address1) {
+            return null;
+        }
+
+        $city = method_exists(WC()->customer, 'get_shipping_city') ?
+            WC()->customer->get_shipping_city() : '';
+
+        if (!$city) {
+            return null;
+        }
+
+        return array(
+            "phoneNo" =>  $phone ? $phone : (method_exists(WC()->customer, 'get_billing_phone') ?
+                WC()->customer->get_billing_phone() : ''),
+            "email" => $email ? $email : (method_exists(WC()->customer, 'get_billing_email') ?
+                WC()->customer->get_billing_email() : ''),
+            "address1" => $address1,
+            "address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
+                WC()->customer->get_shipping_address_2() : '',
+            "state" =>   $state,
+            "city" =>  $city,
+            "zipcode" => $zipcode,
+            "country" => $country,
+            "landmark" => "",
+            "firstname" => isset($_GET['shipping_firstname']) ?
+                sanitize_text_field($_GET['shipping_firstname']) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
+                    WC()->customer->get_shipping_first_name() :
+                    ''
+                ),
+            "lastname" => isset($_GET['shipping_lastname']) ?
+                sanitize_text_field($_GET['shipping_lastname']) : (method_exists(WC()->customer, 'get_shipping_last_name') ?
+                    WC()->customer->get_shipping_last_name() : ''),
+        );
+    }
     public static function process_user_data()
     {
 
@@ -28,27 +102,10 @@ class Cart_Handler_Controller
 
 
 
-        $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
-            WC()->customer->get_shipping_phone() : false;
-        $zipcode = method_exists(WC()->customer, 'get_shipping_postcode') ?
-            WC()->customer->get_shipping_postcode() : false;
-        $email = method_exists(WC()->customer, 'get_email') ?
-            WC()->customer->get_email() : false;
-
-        $country_code = method_exists(WC()->customer, 'get_shipping_country') ?
-            WC()->customer->get_shipping_country() : '';
-
-        $country = WC()->countries->countries[$country_code];
-
-        $state_code = method_exists(WC()->customer, 'get_shipping_state') ?
-            WC()->customer->get_shipping_state() : '';
 
 
-        $states = $state_code ? WC()->countries->get_states($country_code) :  [];
 
-
-        $state  = !empty($states[$state_code]) ? $states[$state_code] : $state_code;
-
+        $shipping_address = self::sort_shipping_address();
 
         $data = array(
             'cred' => $merchant_cred,
@@ -57,30 +114,7 @@ class Cart_Handler_Controller
                 'amount' => WC()->cart->total,
                 'cart' => $cart,
                 'merchant_id' => $gateway->merchant_id,
-                'shippingAddress' => array(
-                    "phoneNo" =>  $phone ? $phone : (method_exists(WC()->customer, 'get_billing_phone') ?
-                        WC()->customer->get_billing_phone() : ''),
-                    "email" => $email ? $email : (method_exists(WC()->customer, 'get_billing_email') ?
-                        WC()->customer->get_billing_email() : ''),
-                    "address1" => method_exists(WC()->customer, 'get_shipping_address') ?
-                        WC()->customer->get_shipping_address() : '',
-                    "address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
-                        WC()->customer->get_shipping_address_2() : '',
-                    "state" =>   $state,
-                    "city" =>  method_exists(WC()->customer, 'get_shipping_city') ?
-                        WC()->customer->get_shipping_city() : '',
-                    "zipcode" => $zipcode,
-                    "country" => $country,
-                    "landmark" => "",
-                    "firstname" => isset($_GET['shipping_firstname']) ?
-                        sanitize_text_field($_GET['shipping_firstname']) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
-                            WC()->customer->get_shipping_first_name() :
-                            ''
-                        ),
-                    "lastname" => isset($_GET['shipping_lastname']) ?
-                        sanitize_text_field($_GET['shipping_lastname']) : (method_exists(WC()->customer, 'get_shipping_last_name') ?
-                            WC()->customer->get_shipping_last_name() : ''),
-                ),
+                'shippingAddress' => $shipping_address,
 
                 'currency' => get_woocommerce_currency("USD"),
 
@@ -92,14 +126,17 @@ class Cart_Handler_Controller
         unset($gateway);
 
         $payment_response = Process_Payment_Controller::process_payment($data);
-       
+
         if (!$payment_response) {
             wp_send_json_error(array('error' => true, 'message' => 'Payment cannot be completed'));
         }
+        if ( is_wp_error( $payment_response ) ) {
+			return rest_ensure_response( $payment_response );
+		}
 
         $result = json_decode($payment_response);
 
-        wp_send_json_success(array('temporary_order_id'=>$temporary_order_id,'uuid'=>$result));
+        wp_send_json_success(array('temporary_order_id' => $temporary_order_id, 'uuid' => $result));
     }
     public static function rocketfuel_process_checkout()
     {

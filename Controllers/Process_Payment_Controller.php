@@ -31,6 +31,7 @@ class Process_Payment_Controller{
 	
 
 		$charge_response = self::createCharge( $result->result->access, $data );
+		
 
 		$charge_response_code = wp_remote_retrieve_response_code( $charge_response );
 
@@ -73,10 +74,11 @@ class Process_Payment_Controller{
 		'headers' => array('authorization' => "Bearer  $accessToken", 'Content-Type' => 'application/json'),
 		'body' => $body
 	);
+	
 	  
 	$response = wp_remote_post($data['endpoint'].'/hosted-page', $args);
 
-
+	file_put_contents(__DIR__ . '/log.json', "\n response \n" . json_encode($response) . "\n response\n", FILE_APPEND);
 	return $response;
     }
 }
