@@ -38,6 +38,7 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 		file_put_contents(__DIR__ . '/sub_single.json', '$renewal_order ' . json_encode($renewal_order), FILE_APPEND);
 
 		$payment_method = $renewal_order->get_payment_method();
+		file_put_contents(__DIR__ . '/sub_single.json', '$payment_method ' . json_encode($payment_method ), FILE_APPEND);
 
 		$total_amount = $renewal_order->get_total();
 
@@ -185,6 +186,7 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 				$this->endpoint
 			);
 
+			file_put_contents(__DIR__ . '/sub.json', "\n" . '##############################' . json_encode($response) . '##############################' . "\n", FILE_APPEND);
 			$order->payment_complete();
 
 			return true;
@@ -249,7 +251,7 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 					false
 				),
 
-				"orderId" => (string)$order_id,
+				"orderId" => (string)$order_id.'-'.md5(time()),
 
 				'items' => $subscriptionData
 			);
@@ -259,8 +261,13 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 			$response = Subscription_Service::debit_shopper_for_subscription($payload, $this->endpoint);
 
 			file_put_contents(__DIR__ . '/sub_single.json', "\n" . '##############################' . json_encode($response) . '##############################' . "\n", FILE_APPEND);
+if($response->statusCode === '400'){
+	return new WP_Error( 'rocketfuel_error', $response );
 
-			$order->payment_complete();
+}else{
+	$order->payment_complete();
+}
+			
 
 			return true;
 		} catch (\Throwable $th) {

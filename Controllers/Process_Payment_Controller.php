@@ -78,7 +78,7 @@ class Process_Payment_Controller{
 	  
 	$response = wp_remote_post($data['endpoint'].'/hosted-page', $args);
 
-	file_put_contents(__DIR__ . '/log.json', "\n response \n" . json_encode($response) . "\n response\n", FILE_APPEND);
+ 
 	return $response;
     }
 }

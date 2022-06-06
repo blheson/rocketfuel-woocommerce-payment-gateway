@@ -130,9 +130,9 @@ class Cart_Handler_Controller
         if (!$payment_response) {
             wp_send_json_error(array('error' => true, 'message' => 'Payment cannot be completed'));
         }
-        if ( is_wp_error( $payment_response ) ) {
-			return rest_ensure_response( $payment_response );
-		}
+        if (is_wp_error($payment_response)) {
+            return rest_ensure_response($payment_response);
+        }
 
         $result = json_decode($payment_response);
 
@@ -150,6 +150,21 @@ class Cart_Handler_Controller
 
         WC()->checkout->process_checkout();
     }
+    private static function checkProductForSub($cart)
+    {
+        $result = false;
+
+        foreach ($cart as $cart_item) {
+       
+            $_product = wc_get_product($cart_item['product_id']);
+      
+            if (class_exists('WC_Subscriptions_Product') && \WC_Subscriptions_Product::is_subscription($_product)) {
+                $result= true;
+            }
+    
+        }
+        return $result;
+    }
     /**
      * Report validation errors if any, or else save form data in session and proceed with checkout flow.
      *
@@ -164,7 +179,30 @@ class Cart_Handler_Controller
         } else {
             $error_messages = $errors->get_error_messages();
         }
+        try {
 
+
+
+ 
+            if (!empty($_POST['billing_email']) && 
+                 email_exists($_POST['billing_email']) && 
+                (
+                    !is_user_logged_in() || 
+                        (
+                            is_user_logged_in() && 
+                            wp_get_current_user()->user_email !== $_POST['billing_email'])
+                ) && self::checkProductForSub(WC()->cart->get_cart())
+            ) {
+                    $error_messages[] = 'An account is already registered with your email. Kindly login';
+                
+               
+            }
+        } catch (\Throwable $th) {
+            //throw $th;
+            $error_messages = $th->getMessage();
+        }
+
+   
         if (empty($error_messages)) {
             self::set_customer_data($_POST); // phpcs:ignore WordPress.Security.NonceVerification.Missing
             self::start_checkout(false);
