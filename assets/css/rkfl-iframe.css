@@ -165,7 +165,7 @@ h3.indicate_text {
     cursor: pointer;
     max-width: 200px;
     text-align: center;
-    display: flex;
+    display: none;
     justify-content: center;
 }
  

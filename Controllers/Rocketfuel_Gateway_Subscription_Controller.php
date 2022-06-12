@@ -174,7 +174,7 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 					false
 				),
 
-				"orderId" => (string)$order_id,
+				"orderId" => (string)$order_id.'-'.md5(time()),
 
 				'items' => $subscriptionData
 

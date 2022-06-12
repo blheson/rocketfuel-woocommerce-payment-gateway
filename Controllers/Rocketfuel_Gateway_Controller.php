@@ -35,6 +35,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$this->password = $this->get_option('password');
 
+		$this->button_text = $this->get_option('button_text');
+
 		$this->email = $this->get_option('email');
 
 		$this->payment_complete_order_status = $this->get_option('payment_complete_order_status') ? $this->get_option('payment_complete_order_status') : 'completed';
@@ -61,6 +63,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		add_action('admin_notices', array($this, 'admin_notices'));
 		add_action('woocommerce_review_order_after_submit', array($this, 'rocketfuel_place_order'));
 	}
+
 	public function get_endpoint($environment)
 	{
 
@@ -143,7 +146,13 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'default' => '',
 				'css' => 'display:none'
 				// 'desc_tip'      => true,
-			)
+			),
+			'button_text' => array(
+				'title' => __('Button Text', 'rocketfuel-payment-gateway'),
+				'type' => 'text',
+				'default' => 'Pay With Crypto',
+
+			),
 		));
 	}
 	public function merchant_auth()
@@ -160,18 +169,17 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			echo '<span style="color:red">' . __('Vendor should fill in the settings page to start using Rocketfuel', 'rocketfuel-payment-gateway') . '</span>';
 			return;
 		}
-		$uuid = '';
-		$result = null;
+		wp_enqueue_script('wc-gateway-rkfl-script');
+		
+		wp_enqueue_script('wc-gateway-rkfl-payment-buttons');
+
+
 		$temp_orderid_rocketfuel = '';
 
 ?>
 
-		<link rel="stylesheet" href="<?php echo esc_url(Plugin::get_url('assets/css/rkfl_iframe.css')) ?>">
-
-		<div>
-
-			<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button">Pay with Rocketfuel</div>
-		</div>
+ 
+		<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button"><?php echo esc_html($this->button_text); ?></div>
 
 
 		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
@@ -187,13 +195,11 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		<input type="hidden" name="environment_rocketfuel" value="<?php echo  esc_attr($this->environment); ?>">
 
-
-		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl_iframe.js?ver=' . microtime())); ?>">
+		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl-iframe.js?ver=' . microtime())); ?>">
 		</script>
 
-
 <?php
-
+ 
 	}
 	/**
 	 * Process Data and get UUID from RKFL
@@ -451,9 +457,9 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		}
 
 		$data = $order->update_status($status);
-		
+
 		$order->payment_complete();
-		
+
 		echo json_encode(array('status' => 'success', 'message' => 'Order was updated'));
 		exit;
 	}

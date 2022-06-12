@@ -7,7 +7,8 @@
       iFrameId: 'Rocketfuel',
       iframeUrl: {
         prod: `https://iframe.rocketfuelblockchain.com`,
-        stage2: `https://qa-iframe.rocketdemo.net/`,
+//         stage2: `https://qa-iframe.rocketdemo.net/`,
+        stage2: `http://192.168.0.181:8080/`,
         local: `http://localhost:8080`,
         preprod: `https://preprod-iframe.rocketdemo.net/`,
         dev: `https://dev-iframe.rocketdemo.net/`,

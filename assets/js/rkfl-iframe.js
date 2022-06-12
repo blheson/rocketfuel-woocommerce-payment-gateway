@@ -1,6 +1,6 @@
 ; (function ($, window, document) {
     'use strict';
-
+ 
     // if (document.getElementById('place_order'))
     //     document.getElementById('place_order').style.display = 'none';
     var selector = '#rocketfuel_retrigger_payment_button';
@@ -401,12 +401,14 @@
 
         }
     }
+  
 
     // document.querySelector("")
     
     document.querySelector(".rocketfuel_retrigger_payment_button").addEventListener('click', (e) => {
+      
         e.preventDefault();
-
+     
         if (e.target.dataset.disable === 'true') {
             return;
         }
@@ -416,6 +418,7 @@
         RocketfuelPaymentEngine.init();
 
     })
+    
     document.querySelector('input[name=payment_status_rocketfuel]').value = localStorage.getItem('payment_status_rocketfuel');
 
 
