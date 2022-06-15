@@ -70,8 +70,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$environment_data = array(
 			'prod' => 'https://app.rocketfuelblockchain.com/api',
 			'dev' => 'https://dev-app.rocketdemo.net/api',
-		
-			// 'stage2'> 'http://192.168.0.181:8080/',
 			'stage2' => 'https://qa-app.rocketdemo.net/api',
 			'preprod' => 'https://preprod-app.rocketdemo.net/api',
 			'sandbox' => 'https://app-sandbox.rocketfuelblockchain.com/api',
@@ -526,30 +524,37 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		return true;
 	}
-	/**
+
+		/**
 	 * Encrypt Data
 	 *
 	 * @param $to_crypt string to encrypt
 	 * @return string|false
 	 */
-	public function get_encrypted($to_crypt)
+	public function get_encrypted($to_crypt, $general_public_key = true)
 	{
 
 		$out = '';
 
-		$pub_key_path = dirname(__FILE__) . '/rf.pub';
+		if ($general_public_key) {
+			$pub_key_path = dirname(__FILE__) . '/rf.pub';
 
-		if (!file_exists($pub_key_path)) {
-			return false;
+			if (!file_exists($pub_key_path)) {
+				return false;
+			}
+			$cert =  file_get_contents($pub_key_path);
+		} else {
+			$cert = $this->public_key;
 		}
-		$cert = file_get_contents($pub_key_path);
+
 
 		$public_key = openssl_pkey_get_public($cert);
 
-		$key_lenght = openssl_pkey_get_details($public_key);
+		$key_length = openssl_pkey_get_details($public_key);
 
-		$part_len = $key_lenght['bits'] / 8 - 11;
+		$part_len = $key_length['bits'] / 8 - 11;
 		$parts = str_split($to_crypt, $part_len);
+
 		foreach ($parts as $part) {
 			$encrypted_temp = '';
 			openssl_public_encrypt($part, $encrypted_temp, $public_key, OPENSSL_PKCS1_OAEP_PADDING);
