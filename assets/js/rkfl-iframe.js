@@ -83,7 +83,7 @@
 
             if (!result.success) {
 
-                document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = 'Pay with Rocketfuel';
+                document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = document.getElementById('rocketfuel_retrigger_payment_button').dataset.rkflButtonText;
 
                 // Error messages may be preformatted in which case response structure will differ
                 var messages = result.data ? result.data.messages : result.messages;
@@ -226,7 +226,7 @@
             document.getElementById('rocketfuel_retrigger_payment_button').dataset.disable = false;
 
 
-            document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = 'Pay with Rocketfuel';
+            document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = document.getElementById('rocketfuel_retrigger_payment_button').dataset.rkflButtonText;
 
         },
         prepareProgressMessage: function () {
@@ -262,7 +262,7 @@
 
                         engine.watchIframeShow = false;
 
-                        document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = 'Pay with Rocketfuel';
+                        document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = document.getElementById('rocketfuel_retrigger_payment_button').dataset.rkflButtonText;
                         document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 0.5;
 
 

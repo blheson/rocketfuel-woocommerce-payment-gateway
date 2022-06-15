@@ -126,7 +126,7 @@ class Cart_Handler_Controller
         unset($gateway);
 
         $payment_response = Process_Payment_Controller::process_payment($data);
-
+ 
         if (!$payment_response) {
             wp_send_json_error(array('error' => true, 'message' => 'Payment cannot be completed'));
         }

@@ -70,6 +70,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$environment_data = array(
 			'prod' => 'https://app.rocketfuelblockchain.com/api',
 			'dev' => 'https://dev-app.rocketdemo.net/api',
+		
+			// 'stage2'> 'http://192.168.0.181:8080/',
 			'stage2' => 'https://qa-app.rocketdemo.net/api',
 			'preprod' => 'https://preprod-app.rocketdemo.net/api',
 			'sandbox' => 'https://app-sandbox.rocketfuelblockchain.com/api',
@@ -150,7 +152,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'button_text' => array(
 				'title' => __('Button Text', 'rocketfuel-payment-gateway'),
 				'type' => 'text',
-				'default' => 'Pay With Crypto',
+				'default' => 'Pay with Crypto',
 
 			),
 		));
@@ -178,9 +180,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 ?>
 
- 
-		<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button"><?php echo esc_html($this->button_text); ?></div>
-
+  
+<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button" data-rkfl-button-text="<?php echo esc_attr($this->button_text); ?>"><?php echo esc_html($this->button_text); ?></div>
 
 		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
 
