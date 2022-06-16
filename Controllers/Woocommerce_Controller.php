@@ -187,7 +187,7 @@ class Woocommerce_Controller
 
       
 
-        wp_enqueue_style('wc-gateway-ppec-frontend', Plugin::get_url('assets/css/rkfl-iframe.css'), array(), Plugin::get_ver());
+        wp_enqueue_style('wc-gateway-rkfl-frontend', Plugin::get_url('assets/css/rkfl-iframe.css'), array(), Plugin::get_ver());
 
         $data                    = array(
             'start_checkout_nonce' => wp_create_nonce('_wc_rkfl_start_checkout_nonce'),

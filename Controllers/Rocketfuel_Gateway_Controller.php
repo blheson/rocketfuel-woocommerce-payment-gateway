@@ -35,7 +35,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$this->password = $this->get_option('password');
 
-		$this->button_text = $this->get_option('button_text');
+		$this->button_text = $this->get_option('button_text') ? $this->get_option('button_text') : 'Pay with Crypto';
 
 		$this->email = $this->get_option('email');
 
@@ -151,7 +151,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 				'title' => __('Button Text', 'rocketfuel-payment-gateway'),
 				'type' => 'text',
 				'default' => 'Pay with Crypto',
-
+				'required' => true,
 			),
 		));
 	}
@@ -170,7 +170,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			return;
 		}
 		wp_enqueue_script('wc-gateway-rkfl-script');
-		
+
 		wp_enqueue_script('wc-gateway-rkfl-payment-buttons');
 
 
@@ -178,8 +178,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 ?>
 
-  
-<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button" data-rkfl-button-text="<?php echo esc_attr($this->button_text); ?>"><?php echo esc_html($this->button_text); ?></div>
+
+		<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button" data-rkfl-button-text="<?php echo esc_attr($this->button_text); ?>"><?php echo esc_html($this->button_text); ?></div>
 
 		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
 
@@ -198,7 +198,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		</script>
 
 <?php
- 
+
 	}
 	/**
 	 * Process Data and get UUID from RKFL
@@ -525,7 +525,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		return true;
 	}
 
-		/**
+	/**
 	 * Encrypt Data
 	 *
 	 * @param $to_crypt string to encrypt
