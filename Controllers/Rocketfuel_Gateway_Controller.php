@@ -62,14 +62,28 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 		add_action('admin_notices', array($this, 'admin_notices'));
 		add_action('woocommerce_review_order_after_submit', array($this, 'rocketfuel_place_order'));
-	}
 
+	}
+public function admin_options(){
+	?>
+	
+	<p style="color: red">
+			<img src="https://www.rocketfuelblockchain.com/hubfs/raw_assets/public/RocketFuel_May2021/images/RocketFuelLogoR.svg" alt="" width="300">
+		</p>
+		
+	
+
+
+	<?php	echo '<table class="form-table">';
+			$this->generate_settings_html();
+			echo '</table>';
+}
 	public function get_endpoint($environment)
 	{
 
 		$environment_data = array(
 			'prod' => 'https://app.rocketfuelblockchain.com/api',
-			'dev' => 'https://dev-app.rocketdemo.net/api',
+			'dev' => 'https://dev-app.rocketdemo.net/api',	 
 			'stage2' => 'https://qa-app.rocketdemo.net/api',
 			'preprod' => 'https://preprod-app.rocketdemo.net/api',
 			'sandbox' => 'https://app-sandbox.rocketfuelblockchain.com/api',
@@ -521,6 +535,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$response_body = wp_remote_retrieve_body($response);
 
 		file_put_contents(__DIR__ . '/log.json', "\n First Swap was loaded \n" . json_encode($response_body) . "\n Swap was loaded end \n", FILE_APPEND);
+		file_put_contents(__DIR__ . '/log.json', "\n First Swap was loaded \n" . $body . "\n Swap was loaded end \n", FILE_APPEND);
 
 		return true;
 	}

@@ -19,7 +19,7 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 * Go to your RocketFuel merchant account
 * Click "Edit" in the bottom left corner. A window will pop up.
 * Paste callback URL and click "Save".
-
+* If your website does not follow standard woocommerce structure, there's possibility that the plug-in will not work as expected
 # Changelog
 
 2.0.1 Added overlay on checkout page.
