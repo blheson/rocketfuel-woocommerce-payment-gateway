@@ -30,24 +30,20 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 	}
 	public function scheduled_subscription_payment_single($subscription_id)
 	{
-		file_put_contents(__DIR__ . '/sub_single.json', '$renewal_order ' . json_encode($subscription_id), FILE_APPEND);
+	 
 		$subscription = wcs_get_subscription($subscription_id);
 
 		$renewal_order = $subscription->get_last_order('all');
 
-		file_put_contents(__DIR__ . '/sub_single.json', '$renewal_order ' . json_encode($renewal_order), FILE_APPEND);
+ 
 
 		$payment_method = $renewal_order->get_payment_method();
-		file_put_contents(__DIR__ . '/sub_single.json', '$payment_method ' . json_encode($payment_method ), FILE_APPEND);
-
+ 
 		$total_amount = $renewal_order->get_total();
 
 		// Make sure gateways are setup
 		WC()->payment_gateways();
-
-		file_put_contents(__DIR__ . '/sub_single.json', 'it is called ' . json_encode($subscription_id), FILE_APPEND);
-
-		file_put_contents(__DIR__ . '/sub_single.json', '$subscription->is_manual() ' . json_encode($subscription->is_manual()), FILE_APPEND);
+ 
 
 
 		$response = $this->process_single_subscription_payment($subscription, $renewal_order, $total_amount);
@@ -74,7 +70,7 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 	 */
 	public function scheduled_subscription_payment($amount_to_charge, $renewal_order)
 	{
-		file_put_contents(__DIR__ . '/sub.json', 'it is called', FILE_APPEND);
+		 
 		$response = $this->process_subscription_payment($renewal_order, $amount_to_charge);
 
 		if (is_wp_error($response)) {
@@ -186,7 +182,7 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 				$this->endpoint
 			);
 
-			file_put_contents(__DIR__ . '/sub.json', "\n" . '##############################' . json_encode($response) . '##############################' . "\n", FILE_APPEND);
+		 
 			$order->payment_complete();
 
 			return true;
@@ -256,11 +252,10 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 				'items' => $subscriptionData
 			);
 
-			file_put_contents(__DIR__ . '/sub_single.json', "\n" . json_encode($payload) . "\n", FILE_APPEND);
-
+	 
 			$response = Subscription_Service::debit_shopper_for_subscription($payload, $this->endpoint);
 
-			file_put_contents(__DIR__ . '/sub_single.json', "\n" . '##############################' . json_encode($response) . '##############################' . "\n", FILE_APPEND);
+		 
 if($response->statusCode === '400'){
 	return new WP_Error( 'rocketfuel_error', $response );
 

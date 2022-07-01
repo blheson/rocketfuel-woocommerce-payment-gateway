@@ -66,8 +66,7 @@ class Webhook_Controller
 
 			$order->payment_complete();
 
-			file_put_contents(__DIR__ . "/log.json", "\n webhook" . json_encode($body) . "\n", FILE_APPEND);
-
+			
 			return true;
 		}
 	}

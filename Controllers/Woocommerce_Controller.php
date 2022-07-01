@@ -110,28 +110,9 @@ class Woocommerce_Controller
                 //throw $th;
             }
 
-
-
-            // file_put_contents(__DIR__ . '/log.json', "\n" . 'Respponse for cancel_subscription_order: -> ' . json_encode($response) . "\n", FILE_APPEND);
+ 
         }
     }
-    // /**
-    //  * Check order details before submit
-    //  * 
-    //  */
-    // public function checkout_create_order()
-    // {
-
-
-    //     if (isset($_POST['payment_method']) && $_POST['payment_method'] === 'rocketfuel_gateway' && $_POST['payment_status_rocketfuel'] !== 'complete') {
-
-    //         $error_text = __("Rocketfuel Error: Payment not confirmed", "woocommerce");
-
-    //         throw new \Exception($error_text);
-
-    //         return false;
-    //     }
-    // }
 
     /**
      * Keep Temporary order_id for webhook
