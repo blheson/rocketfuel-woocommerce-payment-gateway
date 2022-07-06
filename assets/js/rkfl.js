@@ -9,8 +9,7 @@
       iframeUrl: {
         prod: `https://iframe.rocketfuelblockchain.com`,
         stage2: `https://qa-iframe.rocketdemo.net/`,
-        stage2: `http://192.168.0.181:8080/`,
-        local: `http://localhost:8080`,
+        local: `http://192.168.0.181:8080/`,
         preprod: `https://preprod-iframe.rocketdemo.net/`,
         dev: `https://dev-iframe.rocketdemo.net/`,
         sandbox: `https://iframe-sandbox.rocketfuelblockchain.com`,
@@ -134,7 +133,10 @@
     setLocalStorage('access', rkflToken.result.access);
     setLocalStorage('refresh', rkflToken.result.refresh);
     setLocalStorage('rkfl_token', rkflToken.result.rkflToken);
-    setLocalStorage('rkfl_status',rkflToken.result.status);
+    setLocalStorage('rkfl_status', rkflToken.result.status);
+    if (data.isSSO) {
+      setLocalStorage('rkfl_isSSO_status', data.isSSO);
+    }
 
     console.log("rkflToken.result.rkflToken", rkflToken.result)
     this.rkflToken = rkflToken;
@@ -332,7 +334,7 @@
     } catch (error) {
       console.error(error)
     }
-   
+
     return {
       ...iframeResp, ...{
         result: {
@@ -340,144 +342,146 @@
           refresh: iframeLoginResp.result?.refresh,
           status: iframeLoginResp.result?.status,
 
-          rkflToken:iframeResp.result.rkflToken
+          rkflToken: iframeResp.result.rkflToken
         }
       }
     }
   }
 
-    function showOverlay(iframe) {
-      if (iframe && !this.isOverlay) {
-        document.getElementById("iframeWrapper").appendChild(iframe)
-        document.body.classList.add('blur-body');
-        var styleElem = document.head.appendChild(document.createElement("style"));
+  function showOverlay(iframe) {
+    if (iframe && !this.isOverlay) {
+      document.getElementById("iframeWrapper").appendChild(iframe)
+      document.body.classList.add('blur-body');
+      var styleElem = document.head.appendChild(document.createElement("style"));
 
-        styleElem.innerHTML = ".blur-body:before {content: ''; width: 100%; position: fixed !important; background: #000000; height: 100%; z-index: 214748364 !important; opacity: 0.5; top: 0px !important; }";
+      styleElem.innerHTML = ".blur-body:before {content: ''; width: 100%; position: fixed !important; background: #000000; height: 100%; z-index: 214748364 !important; opacity: 0.5; top: 0px !important; }";
 
-        this.isOverlay = true;
-      } else {
-        setTimeout(function () {
-          showOverlay(window.iframeInfo.iframe);
-        }, 1000)
-      }
+      this.isOverlay = true;
+    } else {
+      setTimeout(function () {
+        showOverlay(window.iframeInfo.iframe);
+      }, 1000)
+    }
+  }
+
+  function closeOverlay(iframeInfo) {
+    isOverlay = false;
+    document.getElementById(iframeInfo.iFrameId).remove();
+    document.body.classList.remove('blur-body');
+  }
+
+  function checkExtension() {
+    return typeof rocketfuel === "object";
+  }
+
+  function testIfValidURL(str) {
+    // const pattern = new RegExp('^https?:\\/\\/' + // protocol
+    //   '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+    //   '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+    //   '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+    //   '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+    //   '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+
+    // return !!pattern.test(str);
+    if (str.includes('https') || str.includes('http')) {
+      return true;
+    }
+    return false;
+  }
+
+  function sendCartToIframe(iframe, iframeInfo) {
+    if (iframe) {
+      iframeInfo.iframeData.token = localStorage.getItem('rkfl_token') || null;
+      iframeInfo.iframeData.merchantAuth = localStorage.getItem('merchant_auth') || null;
+      iframeInfo.iframeData.access = getLocaLStorage('access') || null;
+      iframeInfo.iframeData.refresh = getLocaLStorage('refresh') || null;
+      iframeInfo.iframeData.status = getLocaLStorage('rkfl_status') || null;
+      iframeInfo.iframeData.isSSO = getLocaLStorage('rkfl_isSSO_status') || null;
+
+      iframe.contentWindow.postMessage(
+        {
+          type: "rocketfuel_send_cart",
+          data: iframeInfo.iframeData,
+        },
+        "*"
+      );
+    }
+  }
+
+  function createIFrame(iframeInfo, rocketFuelDefaultOptions) {
+    let iframe = document.createElement("iframe");
+    iframe.title = iframeInfo.iFrameId;
+    iframe.id = iframeInfo.iFrameId;
+    iframe.style.display = "none";
+    iframe.style.border = 0;
+    iframe.style.width = "365px";
+    iframe.src = iframeInfo.iframeUrl[rocketFuelDefaultOptions.environment];
+
+    iframe.onload = async function () {
+      iframe.style.display = "block";
+      sendCartToIframe(iframe, iframeInfo);
+    };
+    return iframe;
+  }
+
+  //Make the DIV element draggagle:
+  //     dragElement();
+  document.addEventListener('DOMContentLoaded', dragElement);
+  function dragElement() {
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    let iframeWrapper = document.createElement("div");
+    let iframeWrapperHeader = document.createElement("div");
+    iframeWrapper.id = "iframeWrapper";
+    iframeWrapperHeader.id = "iframeWrapperHeader"
+    document.querySelector('body').appendChild(iframeWrapper).appendChild(iframeWrapperHeader);
+
+    document.getElementById("iframeWrapper").style.cssText = "width: 365px; position: fixed; z-index: 2147483647 !important ; top: 10px; right: 10px; box-shadow: 0px 4px 7px rgb(0 0 0 / 30%);";
+    document.getElementById("iframeWrapperHeader").style.cssText = "padding: 10px; cursor: move; z-index: 10; position: absolute; width: 35%; height: 62px; left: 50px"
+
+    document.getElementById("iframeWrapperHeader").onmousedown = dragMouseDown;
+
+    function dragMouseDown(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // get the mouse cursor position at startup:
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      // call a function whenever the cursor moves:
+      document.onmousemove = elementDrag;
     }
 
-    function closeOverlay(iframeInfo) {
-      isOverlay = false;
-      document.getElementById(iframeInfo.iFrameId).remove();
-      document.body.classList.remove('blur-body');
+    function elementDrag(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // calculate the new cursor position:
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      // set the element's new position:
+      iframeWrapper.style.top = (iframeWrapper.offsetTop - pos2) + "px";
+      iframeWrapper.style.left = (iframeWrapper.offsetLeft - pos1) + "px";
     }
 
-    function checkExtension() {
-      return typeof rocketfuel === "object";
+    function closeDragElement() {
+      /* stop moving when mouse button is released:*/
+      document.onmouseup = null;
+      document.onmousemove = null;
     }
-
-    function testIfValidURL(str) {
-      // const pattern = new RegExp('^https?:\\/\\/' + // protocol
-      //   '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-      //   '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-      //   '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-      //   '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-      //   '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
-
-      // return !!pattern.test(str);
-      if (str.includes('https') || str.includes('http')) {
-        return true;
-      }
-      return false;
+    function getRkflToken(data) {
+      return data
     }
-
-    function sendCartToIframe(iframe, iframeInfo) {
-      if (iframe) {
-        iframeInfo.iframeData.token = localStorage.getItem('rkfl_token') || null;
-        iframeInfo.iframeData.merchantAuth = localStorage.getItem('merchant_auth') || null;
-        iframeInfo.iframeData.access = getLocaLStorage('access') || null;
-        iframeInfo.iframeData.refresh = getLocaLStorage('refresh') || null;
-        iframeInfo.iframeData.status = getLocaLStorage('rkfl_status') || null;
-
-        iframe.contentWindow.postMessage(
-          {
-            type: "rocketfuel_send_cart",
-            data: iframeInfo.iframeData,
-          },
-          "*"
-        );
-      }
-    }
-
-    function createIFrame(iframeInfo, rocketFuelDefaultOptions) {
-      let iframe = document.createElement("iframe");
-      iframe.title = iframeInfo.iFrameId;
-      iframe.id = iframeInfo.iFrameId;
-      iframe.style.display = "none";
-      iframe.style.border = 0;
-      iframe.style.width = "365px";
-      iframe.src = iframeInfo.iframeUrl[rocketFuelDefaultOptions.environment];
-
-      iframe.onload = async function () {
-        iframe.style.display = "block";
-        sendCartToIframe(iframe, iframeInfo);
-      };
-      return iframe;
-    }
-
-    //Make the DIV element draggagle:
-    //     dragElement();
-    document.addEventListener('DOMContentLoaded', dragElement);
-    function dragElement() {
-      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-      let iframeWrapper = document.createElement("div");
-      let iframeWrapperHeader = document.createElement("div");
-      iframeWrapper.id = "iframeWrapper";
-      iframeWrapperHeader.id = "iframeWrapperHeader"
-      document.querySelector('body').appendChild(iframeWrapper).appendChild(iframeWrapperHeader);
-
-      document.getElementById("iframeWrapper").style.cssText = "width: 365px; position: fixed; z-index: 2147483647 !important ; top: 10px; right: 10px; box-shadow: 0px 4px 7px rgb(0 0 0 / 30%);";
-      document.getElementById("iframeWrapperHeader").style.cssText = "padding: 10px; cursor: move; z-index: 10; position: absolute; width: 35%; height: 62px; left: 50px"
-
-      document.getElementById("iframeWrapperHeader").onmousedown = dragMouseDown;
-
-      function dragMouseDown(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // get the mouse cursor position at startup:
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        // call a function whenever the cursor moves:
-        document.onmousemove = elementDrag;
-      }
-
-      function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // calculate the new cursor position:
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        // set the element's new position:
-        iframeWrapper.style.top = (iframeWrapper.offsetTop - pos2) + "px";
-        iframeWrapper.style.left = (iframeWrapper.offsetLeft - pos1) + "px";
-      }
-
-      function closeDragElement() {
-        /* stop moving when mouse button is released:*/
-        document.onmouseup = null;
-        document.onmousemove = null;
-      }
-      function getRkflToken(data) {
-        return data
-      }
-
-    }
-  }) ();
-  function removeLocalStorage() {
-    localStorage.removeItem('access');
-    localStorage.removeItem('refresh');
-    localStorage.removeItem('rkfl_token');
-    localStorage.removeItem('merchant_auth');
-  localStorage.removeItem('rkfl_status');
 
   }
-  removeLocalStorage();
+})();
+function removeLocalStorage() {
+  localStorage.removeItem('access');
+  localStorage.removeItem('refresh');
+  localStorage.removeItem('rkfl_token');
+  localStorage.removeItem('merchant_auth');
+  localStorage.removeItem('rkfl_status');
+  localStorage.removeItem('rkfl_isSSO_status');
+
+}
+removeLocalStorage();
