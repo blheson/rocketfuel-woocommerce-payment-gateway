@@ -10,14 +10,16 @@ class Cart_Handler_Controller
     public static function register()
     {
 
-        // add_action('wc_ajax_wc_ppec_update_shipping_costs', array($this, 'wc_ajax_update_shipping_costs'));
+   
         add_action('wc_ajax_wc_rkfl_start_checkout', array(__CLASS__, 'rocketfuel_process_checkout'));
     }
     public static function sort_shipping_address()
     {
 
-        $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
-            WC()->customer->get_shipping_phone() : false;
+        // $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
+        //     WC()->customer->get_shipping_phone() : false;
+            $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
+            WC()->customer->get_shipping_phone() : ( method_exists(WC()->customer, 'get_billing_phone')?WC()->customer->get_billing_phone():false);
 
 
         if (!$phone) {
