@@ -162,8 +162,8 @@ class Woocommerce_Controller
     {
 
 
-//   wp_enqueue_script('wc-gateway-rkfl-script', Plugin::get_url('assets/js/rkfl.js'), array(), time());
-        wp_register_script('wc-gateway-rkfl-script', 'https://d3rpjm0wf8u2co.cloudfront.net/static/rkfl.js', array(), Plugin::get_ver());
+  wp_enqueue_script('wc-gateway-rkfl-script', Plugin::get_url('assets/js/rkfl.js'), array(), time());
+        // wp_register_script('wc-gateway-rkfl-script', 'https://d3rpjm0wf8u2co.cloudfront.net/static/rkfl.js', array(), Plugin::get_ver());
         wp_register_script('wc-gateway-rkfl-iframe', Plugin::get_url('assets/js/rkfl-iframe.js'), array(), Plugin::get_ver());
 
       
