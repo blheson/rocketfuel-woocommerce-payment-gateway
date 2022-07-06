@@ -182,7 +182,13 @@ class Woocommerce_Controller
     }
     public static function add_gateway_class($methods)
     {
-        $methods[] = 'Rocketfuel_Gateway\Controllers\Rocketfuel_Gateway_Controller';
+       
+        if ( class_exists( 'WC_Subscriptions_Order' ) && class_exists( 'WC_Payment_Gateway_CC' ) ) {
+            $methods[] = 'Rocketfuel_Gateway\Controllers\Rocketfuel_Gateway_Subscription_Controller';
+        } else {
+            $methods[] = 'Rocketfuel_Gateway\Controllers\Rocketfuel_Gateway_Controller';
+        }
+    
         return $methods;
     }
     /**

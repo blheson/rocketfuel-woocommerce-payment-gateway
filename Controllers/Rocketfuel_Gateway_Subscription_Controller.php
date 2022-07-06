@@ -25,7 +25,7 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 
 			add_action('woocommerce_scheduled_subscription_payment_' . $this->id, array($this, 'scheduled_subscription_payment'), 10, 2);
 
-			add_action('woocommerce_scheduled_subscription_payment', array($this, 'scheduled_subscription_payment_single'), 10, 2);
+			// add_action('woocommerce_scheduled_subscription_payment', array($this, 'scheduled_subscription_payment_single'), 10, 2);
 		}
 	}
 	public function scheduled_subscription_payment_single($subscription_id)
@@ -181,9 +181,14 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 				$payload,
 				$this->endpoint
 			);
+			$charge_response_code = wp_remote_retrieve_response_code( $response );
 
+			$wp_remote_retrieve_body = wp_remote_retrieve_body( $response);
+			if ($charge_response_code == '200') {
+				$order->payment_complete();
+			}
 		 
-			$order->payment_complete();
+			
 
 			return true;
 		} catch (\Throwable $th) {
