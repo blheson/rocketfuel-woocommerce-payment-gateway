@@ -73,6 +73,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'stage2' => 'https://qa-app.rocketdemo.net/api',
 			'preprod' => 'https://preprod-app.rocketdemo.net/api',
 			'sandbox' => 'https://app-sandbox.rocketfuelblockchain.com/api',
+			'local' => 'https://e661-102-89-41-62.ngrok.io/api',
 
 		);
 
@@ -106,7 +107,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 					'dev' => 'Development',
 					'stage2' => 'QA',
 					'preprod' => 'Pre-Production',
-					'sandbox' => 'Sandbox'
+					'sandbox' => 'Sandbox',
+					'local'=>'local'
 				)
 			),
 			'description' => array(
