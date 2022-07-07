@@ -77,13 +77,13 @@ class Cart_Handler_Controller
             "zipcode" => $zipcode,
             "country" => $country,
             "landmark" => "",
-            "firstname" => isset($_GET['shipping_firstname']) ?
-                sanitize_text_field($_GET['shipping_firstname']) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
+            "firstname" => isset($_GET['firstname']) ?
+                sanitize_text_field($_GET['firstname']) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
                     WC()->customer->get_shipping_first_name() :
                     ''
                 ),
-            "lastname" => isset($_GET['shipping_lastname']) ?
-                sanitize_text_field($_GET['shipping_lastname']) : (method_exists(WC()->customer, 'get_shipping_last_name') ?
+            "lastname" => isset($_GET['lastname']) ?
+                sanitize_text_field($_GET['lastname']) : (method_exists(WC()->customer, 'get_shipping_last_name') ?
                     WC()->customer->get_shipping_last_name() : ''),
         );
     }
@@ -103,9 +103,17 @@ class Cart_Handler_Controller
 
 
 
+        // var_dump($_GET);
+   
 
-
+     
         $shipping_address = self::sort_shipping_address();
+        $to_encrypt = array(
+            'email' => isset($_GET['email'])?$_GET['email']:(!is_null($shipping_address )?$shipping_address['email']:''),
+            'firstName' => isset($_GET['firstname'])?$_GET['firstname']:(!is_null($shipping_address )?$shipping_address['firstname']:''),
+            'lastName' => isset($_GET['lastname'])?$_GET['lastname']:(!is_null($shipping_address )?$shipping_address['lastname']:''),
+        );
+        $encrypted_req = $gateway->get_encrypted(json_encode($to_encrypt));
 
         $data = array(
             'cred' => $merchant_cred,
@@ -126,7 +134,7 @@ class Cart_Handler_Controller
         unset($gateway);
 
         $payment_response = Process_Payment_Controller::process_payment($data);
- 
+
         if (!$payment_response) {
             wp_send_json_error(array('error' => true, 'message' => 'Payment cannot be completed'));
         }
@@ -134,9 +142,7 @@ class Cart_Handler_Controller
             return rest_ensure_response($payment_response);
         }
 
-        $result = json_decode($payment_response);
-
-        wp_send_json_success(array('temporary_order_id' => $temporary_order_id, 'uuid' => $result));
+        wp_send_json_success(array('encrypted_req' => $encrypted_req, 'temporary_order_id' => $temporary_order_id, 'uuid' => $payment_response));
     }
     public static function rocketfuel_process_checkout()
     {
@@ -155,13 +161,12 @@ class Cart_Handler_Controller
         $result = false;
 
         foreach ($cart as $cart_item) {
-       
+
             $_product = wc_get_product($cart_item['product_id']);
-      
+
             if (class_exists('WC_Subscriptions_Product') && \WC_Subscriptions_Product::is_subscription($_product)) {
-                $result= true;
+                $result = true;
             }
-    
         }
         return $result;
     }
@@ -183,26 +188,23 @@ class Cart_Handler_Controller
 
 
 
- 
-            if (!empty($_POST['billing_email']) && 
-                 email_exists($_POST['billing_email']) && 
-                (
-                    !is_user_logged_in() || 
-                        (
-                            is_user_logged_in() && 
-                            wp_get_current_user()->user_email !== $_POST['billing_email'])
+
+            if (
+                !empty($_POST['billing_email']) &&
+                email_exists($_POST['billing_email']) &&
+                (!is_user_logged_in() ||
+                    (is_user_logged_in() &&
+                        wp_get_current_user()->user_email !== $_POST['billing_email'])
                 ) && self::checkProductForSub(WC()->cart->get_cart())
             ) {
-                    $error_messages[] = 'An account is already registered with your email. Kindly login';
-                
-               
+                $error_messages[] = 'An account is already registered with your email. Kindly login';
             }
         } catch (\Throwable $th) {
             //throw $th;
             $error_messages = $th->getMessage();
         }
 
-   
+
         if (empty($error_messages)) {
             self::set_customer_data($_POST); // phpcs:ignore WordPress.Security.NonceVerification.Missing
             self::start_checkout(false);

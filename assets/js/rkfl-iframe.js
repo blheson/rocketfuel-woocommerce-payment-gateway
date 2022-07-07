@@ -1,6 +1,6 @@
 ; (function ($, window, document) {
     'use strict';
- 
+
     // if (document.getElementById('place_order'))
     //     document.getElementById('place_order').style.display = 'none';
     var selector = '#rocketfuel_retrigger_payment_button';
@@ -13,6 +13,8 @@
         url: new URL(window.location.href),
         watchIframeShow: false,
         rkflConfig: null,
+        encryptedReq:null,
+        accessToken: '',
         paymentResponse: '',
         // Show error notice at top of checkout form, or else within button container
         showError: function (errorMessage, selector) {
@@ -50,17 +52,20 @@
         getUUID: async function () {
 
 
-            let firstname = document.getElementById('shipping_first_name')?.value;
-            let lastname = document.getElementById('shipping_last_name')?.value;
+            let firstname = document.getElementById('billing_first_name')?.value || document.getElementById('shipping_first_name')?.value;
+            let lastname = document.getElementById('billing_last_name')?.value || document.getElementById('shipping_last_name')?.value;
+            let email = document.getElementById('billing_email')?.value || document.getElementById('shipping_email')?.value;
 
             let url = wc_rkfl_context.start_checkout_url;
             // let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
-
+            if (email) {
+                url += '&email=' + email;
+            }
             if (lastname) {
-                url += '&shipping_lastname=' + lastname;
+                url += '&lastname=' + lastname;
             }
             if (firstname) {
-                url += '&shipping_firstname=' + firstname;
+                url += '&firstname=' + firstname;
             }
             var data = $('form.checkout')
                 .add($('<input type="hidden" name="nonce" /> ')
@@ -100,7 +105,7 @@
                 }
 
                 return null;
-                
+
             }
 
             let uuid = result.data?.uuid?.result?.uuid;
@@ -111,7 +116,11 @@
 
 
             RocketfuelPaymentEngine.order_id = result.data.temporary_order_id;
-
+            RocketfuelPaymentEngine.access_token = result.data?.uuid?.access_token;
+            // RocketfuelPaymentEngine.encryptedReq = result.data?.encrypted_req;
+           
+            document.querySelector('input[name=encrypted_req_rocketfuel]').value = result.data?.encrypted_req;
+            
             document.querySelector('input[name=temp_orderid_rocketfuel]').value = result.data.temporary_order_id;
 
             console.log("res", uuid);
@@ -125,7 +134,7 @@
             return environment || 'prod';
         },
         getUserData: function () {
-
+ 
             let user_data = {
 
                 first_name: document.getElementById('billing_first_name') ? document.getElementById('billing_first_name').value : null,
@@ -134,7 +143,8 @@
 
                 email: document.getElementById('billing_email') ? document.getElementById('billing_email').value : null,
 
-                merchant_auth: document.querySelector('input[name=merchant_auth_rocketfuel]') ? document.querySelector('input[name=merchant_auth_rocketfuel]').value : null
+                merchant_auth: document.querySelector('input[name=merchant_auth_rocketfuel]') ? document.querySelector('input[name=merchant_auth_rocketfuel]').value : null,
+                encrypted_req: document.querySelector('input[name=encrypted_req_rocketfuel]') ? document.querySelector('input[name=encrypted_req_rocketfuel]').value  : null
             }
 
             if (!user_data) return false;
@@ -156,7 +166,7 @@
             try {
 
                 console.log("Response from callback :", result, result?.status === undefined);
-         
+
 
                 let status = "wc-on-hold";
 
@@ -242,7 +252,7 @@
             let engine = this;
 
             window.addEventListener('message', (event) => {
-            
+
                 switch (event.data.type) {
                     case 'rocketfuel_iframe_close':
                         console.log('Event from rocketfuel_iframe_close', event.data);
@@ -250,7 +260,7 @@
 
                         // engine.prepareRetrigger();
                         document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 1;
-                        
+
                         if (event.data.paymentCompleted === 1) {
                             engine.triggerPlaceOrder();
                         } else {
@@ -275,7 +285,7 @@
                             console.log('Payment response has been recorded');
 
                             engine.paymentResponse = event.data.response
-                            
+
                             engine.updateOrder(engine.paymentResponse);
 
                         }
@@ -296,6 +306,10 @@
                     location.reload();
                     reject();
                 }
+                let uuid = await this.getUUID(); //set uuid
+                if (!uuid) {
+                    return;
+                }
                 let userData = RocketfuelPaymentEngine.getUserData();
                 let payload, response, rkflToken;
 
@@ -303,41 +317,42 @@
                     environment: RocketfuelPaymentEngine.getEnvironment()
                 });
 
-                let uuid = await this.getUUID(); //set uuid
-                if (!uuid) {
-                    return;
-                }
+              
                 RocketfuelPaymentEngine.rkflConfig = {
                     uuid,
                     callback: RocketfuelPaymentEngine.updateOrder,
                     environment: RocketfuelPaymentEngine.getEnvironment()
                 }
-
-                if (userData.first_name && userData.email) {
+                if (userData.encrypted_req || (userData.first_name && userData.email)) {
+                    // payload = { //change this
+                    //     firstName: userData.first_name,
+                    //     lastName: userData.last_name,
+                    //     email: userData.email,
+                    //     merchantAuth: userData.merchant_auth,
+                    //     kycType: 'null',
+                    //     kycDetails: {
+                    //         'DOB': "01-01-1990"
+                    //     }
+                    // }
                     payload = {
-                        firstName: userData.first_name,
-                        lastName: userData.last_name,
-                        email: userData.email,
+                        encryptedReq: userData.encrypted_req,
                         merchantAuth: userData.merchant_auth,
-                        kycType: 'null',
-                        kycDetails: {
-                            'DOB': "01-01-1990"
-                        }
                     }
-
                     try {
                         console.log('details', userData.email, localStorage.getItem('rkfl_email'), payload);
 
-                        if (userData.email !== localStorage.getItem('rkfl_email')) { //remove signon details when email is different
-                            localStorage.removeItem('rkfl_token');
-                            localStorage.removeItem('access');
+                        // if (userData.email !== localStorage.getItem('rkfl_email')) { //remove signon details when email is different
+                        //     localStorage.removeItem('rkfl_token');
+                        //     localStorage.removeItem('access');
 
-                        }
+                        // }
 
                         rkflToken = localStorage.getItem('rkfl_token');
 
                         if (!rkflToken && payload.merchantAuth) {
-
+                            payload.accessToken = RocketfuelPaymentEngine.access_token;
+                            payload.isSSO = true;
+                            // payload = data.encryptedReq
                             response = await RocketfuelPaymentEngine.rkfl.rkflAutoSignUp(payload, RocketfuelPaymentEngine.getEnvironment());
 
 
@@ -401,14 +416,14 @@
 
         }
     }
-  
+
 
     // document.querySelector("")
-    
+
     document.querySelector(".rocketfuel_retrigger_payment_button").addEventListener('click', (e) => {
-      
+
         e.preventDefault();
-     
+
         if (e.target.dataset.disable === 'true') {
             return;
         }
@@ -418,7 +433,7 @@
         RocketfuelPaymentEngine.init();
 
     })
-    
+
     document.querySelector('input[name=payment_status_rocketfuel]').value = localStorage.getItem('payment_status_rocketfuel');
 
 

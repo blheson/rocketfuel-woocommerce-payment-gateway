@@ -10,6 +10,7 @@
         prod: `https://iframe.rocketfuelblockchain.com`,
         stage2: `https://qa-iframe.rocketdemo.net/`,
         local: `http://192.168.0.181:8080/`,
+
         preprod: `https://preprod-iframe.rocketdemo.net/`,
         dev: `https://dev-iframe.rocketdemo.net/`,
         sandbox: `https://iframe-sandbox.rocketfuelblockchain.com`,
@@ -19,7 +20,7 @@
     this.domain = {
       prod: `https://app.rocketfuelblockchain.com/api`,
       stage2: `https://qa-app.rocketdemo.net/api`,
-      local: `http://localhost:3001/api`,
+      local: `http://e661-102-89-41-62.ngrok.io/api`,
       preprod: `https://preprod-app.rocketdemo.net/api`,
       dev: 'https://dev-app.rocketdemo.net/api',
       sandbox: `https://app-sandbox.rocketfuelblockchain.com/api`,
@@ -128,15 +129,20 @@
     return purchaseResp;
   }
   this.RocketFuel.prototype.rkflAutoSignUp = async function (data, env) {
+    if (data.isSSO) {
+      setLocalStorage('rkfl_isSSO_status', data.isSSO); // added for iframe discretion
+      delete data.isSSO
+    }
+
+
+console.log({data})
     const rkflToken = await autoSignUp(data, this.domain, env)
 
     setLocalStorage('access', rkflToken.result.access);
     setLocalStorage('refresh', rkflToken.result.refresh);
     setLocalStorage('rkfl_token', rkflToken.result.rkflToken);
     setLocalStorage('rkfl_status', rkflToken.result.status);
-    if (data.isSSO) {
-      setLocalStorage('rkfl_isSSO_status', data.isSSO);
-    }
+
 
     console.log("rkflToken.result.rkflToken", rkflToken.result)
     this.rkflToken = rkflToken;
@@ -296,17 +302,26 @@
 
   async function autoSignUp(rocketFuelDefaultOptions, domainInfo, env) {
     var myHeaders = new Headers();
-    myHeaders.append("authorization", "Bearer " + null);
+    myHeaders.append("authorization", "Bearer " + (rocketFuelDefaultOptions.accessToken || null));
     myHeaders.append('Content-Type', 'application/json');
+    // myHeaders.append('is-sso', true);
     // myHeaders.append("cache-control", "no-cache");
+    delete rocketFuelDefaultOptions.accessToken
+    let payload = rocketFuelDefaultOptions, endpoint = 'autosignup';
+
+    if (rocketFuelDefaultOptions.encryptedReq) {
+      payload = { encryptedReq: rocketFuelDefaultOptions.encryptedReq };
+      endpoint = 'sso';
+    }
+
     var requestOptions = {
       method: "POST",
       headers: myHeaders,
       redirect: "follow",
-      body: JSON.stringify(rocketFuelDefaultOptions)
+      body: JSON.stringify(payload)
     };
     const apiDomain = domainInfo[env];
-    let resp = await fetch(`${apiDomain}/auth/autosignup`, requestOptions);
+    let resp = await fetch(`${apiDomain}/auth/${endpoint}`, requestOptions);
 
 
 
@@ -314,38 +329,28 @@
     const iframeResp = JSON.parse(rkflres);
 
 
-    var requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      redirect: "follow",
-      body: JSON.stringify({
-        rkflToken: iframeResp.result.rkflToken,
-        merchantAuth: rocketFuelDefaultOptions.merchantAuth,
-        skipMerchantAuth: true
-      })
-    };
-    let iframeLoginResp = {};
-    try {
-      const loginResp = await fetch(`${apiDomain}/auth/autologin`, requestOptions)
-      let loginResult = await loginResp.text()
-      iframeLoginResp = JSON.parse(loginResult);
-      console.log({ iframeLoginResp })
+    // var requestOptions = {
+    //   method: "POST",
+    //   headers: myHeaders,
+    //   redirect: "follow",
+    //   body: JSON.stringify({
+    //     rkflToken: iframeResp.result.rkflToken,
+    //     merchantAuth: rocketFuelDefaultOptions.merchantAuth,
+    //     skipMerchantAuth: true
+    //   })
+    // };
+    // let iframeLoginResp = {};
+    // try {
+    //   const loginResp = await fetch(`${apiDomain}/auth/autologin`, requestOptions)
+    //   let loginResult = await loginResp.text()
+    //   iframeLoginResp = JSON.parse(loginResult);
+    //   console.log({ iframeLoginResp })
 
-    } catch (error) {
-      console.error(error)
-    }
+    // } catch (error) {
+    //   console.error(error)
+    // }
 
-    return {
-      ...iframeResp, ...{
-        result: {
-          access: iframeLoginResp.result?.access,
-          refresh: iframeLoginResp.result?.refresh,
-          status: iframeLoginResp.result?.status,
-
-          rkflToken: iframeResp.result.rkflToken
-        }
-      }
-    }
+    return iframeResp;
   }
 
   function showOverlay(iframe) {
