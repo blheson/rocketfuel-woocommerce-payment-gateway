@@ -9,7 +9,7 @@
       iframeUrl: {
         prod: `https://iframe.rocketfuelblockchain.com`,
         stage2: `https://qa-iframe.rocketdemo.net/`,
-        local: `http://192.168.0.181:8080/`,
+        local: `http://192.168.0.181:8081/`,
 
         preprod: `https://preprod-iframe.rocketdemo.net/`,
         dev: `https://dev-iframe.rocketdemo.net/`,
@@ -20,7 +20,7 @@
     this.domain = {
       prod: `https://app.rocketfuelblockchain.com/api`,
       stage2: `https://qa-app.rocketdemo.net/api`,
-      local: `http://e661-102-89-41-62.ngrok.io/api`,
+      local: `http://a525-102-89-34-112.ngrok.io/api`,
       preprod: `https://preprod-app.rocketdemo.net/api`,
       dev: 'https://dev-app.rocketdemo.net/api',
       sandbox: `https://app-sandbox.rocketfuelblockchain.com/api`,
@@ -135,16 +135,18 @@
     }
 
 
-console.log({data})
-    const rkflToken = await autoSignUp(data, this.domain, env)
+
+    const rkflToken = await autoSignUp(data, this.domain, env);
 
     setLocalStorage('access', rkflToken.result.access);
     setLocalStorage('refresh', rkflToken.result.refresh);
-    setLocalStorage('rkfl_token', rkflToken.result.rkflToken);
+    if (rkflToken.result.rkflToken) {
+      setLocalStorage('rkfl_token', rkflToken.result.rkflToken);
+    }
+
     setLocalStorage('rkfl_status', rkflToken.result.status);
 
 
-    console.log("rkflToken.result.rkflToken", rkflToken.result)
     this.rkflToken = rkflToken;
 
     if (data && data.merchantAuth) {
@@ -304,7 +306,7 @@ console.log({data})
     var myHeaders = new Headers();
     myHeaders.append("authorization", "Bearer " + (rocketFuelDefaultOptions.accessToken || null));
     myHeaders.append('Content-Type', 'application/json');
-    // myHeaders.append('is-sso', true);
+    myHeaders.append('merchant-auth', rocketFuelDefaultOptions.merchantAuth);
     // myHeaders.append("cache-control", "no-cache");
     delete rocketFuelDefaultOptions.accessToken
     let payload = rocketFuelDefaultOptions, endpoint = 'autosignup';
