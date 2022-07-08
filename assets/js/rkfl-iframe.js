@@ -1,6 +1,6 @@
 ; (function ($, window, document) {
     'use strict';
- 
+
     // if (document.getElementById('place_order'))
     //     document.getElementById('place_order').style.display = 'none';
     var selector = '#rocketfuel_retrigger_payment_button';
@@ -76,10 +76,13 @@
                 },
                 body: data
             });
-
+            let result = {};
             let rawresult = await response.text();
+           
+            if (rawresult) {
+                result = JSON.parse(rawresult);
+            }
 
-            let result = JSON.parse(rawresult);
 
             if (!result.success) {
 
@@ -100,7 +103,7 @@
                 }
 
                 return null;
-                
+
             }
 
             let uuid = result.data?.uuid?.result?.uuid;
@@ -156,7 +159,7 @@
             try {
 
                 console.log("Response from callback :", result, result?.status === undefined);
-         
+
 
                 let status = "wc-on-hold";
 
@@ -242,7 +245,7 @@
             let engine = this;
 
             window.addEventListener('message', (event) => {
-            
+
                 switch (event.data.type) {
                     case 'rocketfuel_iframe_close':
                         console.log('Event from rocketfuel_iframe_close', event.data);
@@ -250,7 +253,7 @@
 
                         // engine.prepareRetrigger();
                         document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 1;
-                        
+
                         if (event.data.paymentCompleted === 1) {
                             engine.triggerPlaceOrder();
                         } else {
@@ -275,7 +278,7 @@
                             console.log('Payment response has been recorded');
 
                             engine.paymentResponse = event.data.response
-                            
+
                             engine.updateOrder(engine.paymentResponse);
 
                         }
@@ -401,14 +404,14 @@
 
         }
     }
-  
+
 
     // document.querySelector("")
-    
+
     document.querySelector(".rocketfuel_retrigger_payment_button").addEventListener('click', (e) => {
-      
+
         e.preventDefault();
-     
+
         if (e.target.dataset.disable === 'true') {
             return;
         }
@@ -418,7 +421,7 @@
         RocketfuelPaymentEngine.init();
 
     })
-    
+
     document.querySelector('input[name=payment_status_rocketfuel]').value = localStorage.getItem('payment_status_rocketfuel');
 
 

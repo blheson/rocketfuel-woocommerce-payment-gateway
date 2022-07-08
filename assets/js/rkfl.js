@@ -9,7 +9,7 @@
       iframeUrl: {
         prod: `https://iframe.rocketfuelblockchain.com`,
         stage2: `https://qa-iframe.rocketdemo.net/`,
-        local: `http://192.168.0.181:8081/`,
+        local: `http://192.168.0.181:8080/`,
 
         preprod: `https://preprod-iframe.rocketdemo.net/`,
         dev: `https://dev-iframe.rocketdemo.net/`,
@@ -20,7 +20,7 @@
     this.domain = {
       prod: `https://app.rocketfuelblockchain.com/api`,
       stage2: `https://qa-app.rocketdemo.net/api`,
-      local: `http://a525-102-89-34-112.ngrok.io/api`,
+      local: `http://0c69-102-89-33-42.ngrok.io/api`,
       preprod: `https://preprod-app.rocketdemo.net/api`,
       dev: 'https://dev-app.rocketdemo.net/api',
       sandbox: `https://app-sandbox.rocketfuelblockchain.com/api`,
@@ -306,7 +306,7 @@
     var myHeaders = new Headers();
     myHeaders.append("authorization", "Bearer " + (rocketFuelDefaultOptions.accessToken || null));
     myHeaders.append('Content-Type', 'application/json');
-    myHeaders.append('merchant-auth', rocketFuelDefaultOptions.merchantAuth);
+    // myHeaders.append('merchant-auth', rocketFuelDefaultOptions.merchantAuth);
     // myHeaders.append("cache-control", "no-cache");
     delete rocketFuelDefaultOptions.accessToken
     let payload = rocketFuelDefaultOptions, endpoint = 'autosignup';
