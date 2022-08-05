@@ -294,7 +294,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 								'merchantSubscriptionId' => (string) $temp_orderid . '-' . $cart_item['product_id'],
 
-								'autoRenewal' => false
+								'autoRenewal' => true
 							)
 						);
 					} else {
