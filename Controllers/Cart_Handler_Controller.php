@@ -10,7 +10,7 @@ class Cart_Handler_Controller
     public static function register()
     {
 
-   
+
         add_action('wc_ajax_wc_rkfl_start_checkout', array(__CLASS__, 'rocketfuel_process_checkout'));
     }
     public static function sort_shipping_address()
@@ -18,8 +18,8 @@ class Cart_Handler_Controller
 
         // $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
         //     WC()->customer->get_shipping_phone() : false;
-            $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
-            WC()->customer->get_shipping_phone() : ( method_exists(WC()->customer, 'get_billing_phone')?WC()->customer->get_billing_phone():false);
+        $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
+            WC()->customer->get_shipping_phone() : (method_exists(WC()->customer, 'get_billing_phone') ? WC()->customer->get_billing_phone() : false);
 
 
         if (!$phone) {
@@ -79,14 +79,12 @@ class Cart_Handler_Controller
             "zipcode" => $zipcode,
             "country" => $country,
             "landmark" => "",
-            "firstname" => isset($_GET['shipping_firstname']) ?
-                sanitize_text_field($_GET['shipping_firstname']) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
-                    WC()->customer->get_shipping_first_name() :
-                    ''
-                ),
-            "lastname" => isset($_GET['shipping_lastname']) ?
-                sanitize_text_field($_GET['shipping_lastname']) : (method_exists(WC()->customer, 'get_shipping_last_name') ?
-                    WC()->customer->get_shipping_last_name() : ''),
+            "firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
+                WC()->customer->get_shipping_first_name() : (isset($_GET['shipping_firstname']) ?
+                    sanitize_text_field($_GET['shipping_firstname']) : ''),
+            "lastname" => method_exists(WC()->customer, 'get_shipping_last_name') ?
+                WC()->customer->get_shipping_last_name() : (isset($_GET['shipping_lastname']) ?
+                    sanitize_text_field($_GET['shipping_lastname']) : ''),
         );
     }
     public static function process_user_data()
@@ -128,7 +126,7 @@ class Cart_Handler_Controller
         unset($gateway);
 
         $payment_response = Process_Payment_Controller::process_payment($data);
- 
+
         if (!$payment_response) {
             wp_send_json_error(array('error' => true, 'message' => 'Payment cannot be completed'));
         }
@@ -157,13 +155,12 @@ class Cart_Handler_Controller
         $result = false;
 
         foreach ($cart as $cart_item) {
-       
+
             $_product = wc_get_product($cart_item['product_id']);
-      
+
             if (class_exists('WC_Subscriptions_Product') && \WC_Subscriptions_Product::is_subscription($_product)) {
-                $result= true;
+                $result = true;
             }
-    
         }
         return $result;
     }
@@ -185,26 +182,23 @@ class Cart_Handler_Controller
 
 
 
- 
-            if (!empty($_POST['billing_email']) && 
-                 email_exists($_POST['billing_email']) && 
-                (
-                    !is_user_logged_in() || 
-                        (
-                            is_user_logged_in() && 
-                            wp_get_current_user()->user_email !== $_POST['billing_email'])
+
+            if (
+                !empty($_POST['billing_email']) &&
+                email_exists($_POST['billing_email']) &&
+                (!is_user_logged_in() ||
+                    (is_user_logged_in() &&
+                        wp_get_current_user()->user_email !== $_POST['billing_email'])
                 ) && self::checkProductForSub(WC()->cart->get_cart())
             ) {
-                    $error_messages[] = 'An account is already registered with your email. Kindly login';
-                
-               
+                $error_messages[] = 'An account is already registered with your email. Kindly login';
             }
         } catch (\Throwable $th) {
             //throw $th;
             $error_messages = $th->getMessage();
         }
 
-   
+
         if (empty($error_messages)) {
             self::set_customer_data($_POST); // phpcs:ignore WordPress.Security.NonceVerification.Missing
             self::start_checkout(false);
