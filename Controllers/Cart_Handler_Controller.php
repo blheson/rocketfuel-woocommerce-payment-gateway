@@ -79,14 +79,14 @@ class Cart_Handler_Controller
             "zipcode" => $zipcode,
             "country" => $country,
             "landmark" => "",
-            "firstname" => isset($_GET['firstname']) ?
-                sanitize_text_field($_GET['firstname']) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
+            "firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
                     WC()->customer->get_shipping_first_name() :
-                    ''
-                ),
-            "lastname" => isset($_GET['lastname']) ?
-                sanitize_text_field($_GET['lastname']) : (method_exists(WC()->customer, 'get_shipping_last_name') ?
-                    WC()->customer->get_shipping_last_name() : ''),
+                    (isset($_GET['firstname']) ?
+                    sanitize_text_field($_GET['firstname']) : ''),
+            "lastname" =>method_exists(WC()->customer, 'get_shipping_last_name') ?
+            WC()->customer->get_shipping_first_name() :
+            (isset($_GET['lastname']) ?
+            sanitize_text_field($_GET['lastname']) : ''),
         );
     }
     public static function process_user_data()
