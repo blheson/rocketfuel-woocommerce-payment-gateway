@@ -306,7 +306,7 @@
     var myHeaders = new Headers();
     myHeaders.append("authorization", "Bearer " + (rocketFuelDefaultOptions.accessToken || null));
     myHeaders.append('Content-Type', 'application/json');
-    myHeaders.append('merchant-auth', rocketFuelDefaultOptions.merchantAuth);
+    // myHeaders.append('merchant-auth', rocketFuelDefaultOptions.merchantAuth);
     // myHeaders.append("cache-control", "no-cache");
     delete rocketFuelDefaultOptions.accessToken
     let payload = rocketFuelDefaultOptions, endpoint = 'autosignup';

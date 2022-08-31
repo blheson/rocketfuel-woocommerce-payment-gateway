@@ -10,7 +10,7 @@ class Cart_Handler_Controller
     public static function register()
     {
 
-
+   
         add_action('wc_ajax_wc_rkfl_start_checkout', array(__CLASS__, 'rocketfuel_process_checkout'));
     }
     public static function sort_shipping_address()
@@ -18,8 +18,8 @@ class Cart_Handler_Controller
 
         // $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
         //     WC()->customer->get_shipping_phone() : false;
-        $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
-            WC()->customer->get_shipping_phone() : (method_exists(WC()->customer, 'get_billing_phone') ? WC()->customer->get_billing_phone() : false);
+            $phone = method_exists(WC()->customer, 'get_shipping_phone') ?
+            WC()->customer->get_shipping_phone() : ( method_exists(WC()->customer, 'get_billing_phone')?WC()->customer->get_billing_phone():false);
 
 
         if (!$phone) {
@@ -79,12 +79,14 @@ class Cart_Handler_Controller
             "zipcode" => $zipcode,
             "country" => $country,
             "landmark" => "",
-            "firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
-                WC()->customer->get_shipping_first_name() : (isset($_GET['shipping_firstname']) ?
-                    sanitize_text_field($_GET['shipping_firstname']) : ''),
-            "lastname" => method_exists(WC()->customer, 'get_shipping_last_name') ?
-                WC()->customer->get_shipping_last_name() : (isset($_GET['shipping_lastname']) ?
-                    sanitize_text_field($_GET['shipping_lastname']) : ''),
+            "firstname" => isset($_GET['firstname']) ?
+                sanitize_text_field($_GET['firstname']) : (method_exists(WC()->customer, 'get_shipping_first_name') ?
+                    WC()->customer->get_shipping_first_name() :
+                    ''
+                ),
+            "lastname" => isset($_GET['lastname']) ?
+                sanitize_text_field($_GET['lastname']) : (method_exists(WC()->customer, 'get_shipping_last_name') ?
+                    WC()->customer->get_shipping_last_name() : ''),
         );
     }
     public static function process_user_data()
@@ -103,9 +105,17 @@ class Cart_Handler_Controller
 
 
 
+        // var_dump($_GET);
+   
 
-
+     
         $shipping_address = self::sort_shipping_address();
+        $to_encrypt = array(
+            'email' => isset($_GET['email'])?$_GET['email']:(!is_null($shipping_address )?$shipping_address['email']:''),
+            'firstName' => isset($_GET['firstname'])?$_GET['firstname']:(!is_null($shipping_address )?$shipping_address['firstname']:''),
+            'lastName' => isset($_GET['lastname'])?$_GET['lastname']:(!is_null($shipping_address )?$shipping_address['lastname']:''),
+        );
+        $encrypted_req = $gateway->get_encrypted(json_encode($to_encrypt));
 
         $data = array(
             'cred' => $merchant_cred,
@@ -134,9 +144,7 @@ class Cart_Handler_Controller
             return rest_ensure_response($payment_response);
         }
 
-        $result = json_decode($payment_response);
-
-        wp_send_json_success(array('temporary_order_id' => $temporary_order_id, 'uuid' => $result));
+        wp_send_json_success(array('encrypted_req' => $encrypted_req, 'temporary_order_id' => $temporary_order_id, 'uuid' => $payment_response));
     }
     public static function rocketfuel_process_checkout()
     {

@@ -23,7 +23,7 @@ class Rocketfuel_Gateway_Subscription_Controller extends Rocketfuel_Gateway_Cont
 
 		if (class_exists('WC_Subscriptions_Order')) {
 
-			add_action('woocommerce_scheduled_subscription_payment_' . $this->id, array($this, 'scheduled_subscription_payment'), 10, 2);
+			// add_action('woocommerce_scheduled_subscription_payment_' . $this->id, array($this, 'scheduled_subscription_payment'), 10, 2);
 
 			// add_action('woocommerce_scheduled_subscription_payment', array($this, 'scheduled_subscription_payment_single'), 10, 2);
 		}

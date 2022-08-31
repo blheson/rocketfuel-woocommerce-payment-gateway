@@ -72,6 +72,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'dev' => 'https://dev-app.rocketdemo.net/api',
 			'stage2' => 'https://qa-app.rocketdemo.net/api',
 			'preprod' => 'https://preprod-app.rocketdemo.net/api',
+			'local' => 'http://e661-102-89-41-62.ngrok.io/api',
 			'sandbox' => 'https://app-sandbox.rocketfuelblockchain.com/api',
 			'local' => 'http://localhost:3001/api',
 
@@ -184,7 +185,9 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
         <div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button" data-rkfl-button-text="<?php echo esc_attr($this->button_text); ?>"><?php echo esc_html($this->button_text); ?></div>
 
 		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
-
+		<input type="hidden" name="encrypted_req_rocketfuel" value="">
+		 
+		
 		<input type="hidden" name="payment_status_rocketfuel" value="pending">
 
 		<input type="hidden" name="payment_complete_order_status" value="<?php echo esc_attr($this->payment_complete_order_status); ?>">
@@ -291,7 +294,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 								'merchantSubscriptionId' => (string) $temp_orderid . '-' . $cart_item['product_id'],
 
-								'autoRenewal' => false
+								'autoRenewal' => true
 							)
 						);
 					} else {

@@ -1,12 +1,14 @@
-# RocketFuel - RocketFuel Payment Method for Woocommerce
-RocketFuel Payment Method 3.2.1 for Woocommerce
-Requires at least: 5.5
-Tested up to: 5.9
-Stable tag: 3.2.1
+== RocketFuel - RocketFuel Payment Method for Woocommerce ==
+RocketFuel Payment Method 3.2.1.6 for Woocommerce
+Requires at least: 5.8
+Tested up to: 6.0
+Requires PHP: 7.2
+Stable tag: 3.2.1.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
-
-# Install
+== Description ==
+Accept Crypto payment anywhere
+== Install ==
 
 
 * Go to your shop admin panel.
@@ -19,8 +21,8 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 * Go to your RocketFuel merchant account
 * Click "Edit" in the bottom left corner. A window will pop up.
 * Paste callback URL and click "Save".
-* If your website does not follow standard woocommerce structure, there's possibility that the plug-in will not work as expected
-# Changelog
+* If your website theme does not follow standard woocommerce structure, there's possibility that the plug-in will not work as expected
+== Changelog ==
 
 2.0.1 Added overlay on checkout page.
 2.0.2 Allow admin to set order status for payment confirmation
@@ -47,3 +49,6 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 3.1.0.2 Zero shipping removed
 3.2.0 Add Subscription support
 3.2.1 Add support for custom place order button text
+3.2.1.3 Support for new wordpress version
+3.2.1.6 BUG FIX: Fix hidden place order button
+3.2.1.7 BUG FIX: SSO
