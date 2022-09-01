@@ -97,7 +97,9 @@
                 var messages = result.data ? result.data.messages : result.messages;
 
                 console.log("Messages from start checkout", messages);
-
+if(!messages){
+return null
+}
                 if ('string' === typeof messages) {
                     this.showError(messages);
                 } else {
@@ -340,6 +342,8 @@
                     payload = {
                         encryptedReq: userData.encrypted_req,
                         merchantAuth: userData.merchant_auth,
+                        email:  userData.email,
+                       
                     }
                     try {
                         console.log('details', userData.email, localStorage.getItem('rkfl_email'), payload);

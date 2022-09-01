@@ -20,7 +20,7 @@
     this.domain = {
       prod: `https://app.rocketfuelblockchain.com/api`,
       stage2: `https://qa-app.rocketdemo.net/api`,
-      local: `http://0c69-102-89-33-42.ngrok.io/api`,
+      local: `http://eba6-102-89-44-184.ngrok.io/api`,
       preprod: `https://preprod-app.rocketdemo.net/api`,
       dev: 'https://dev-app.rocketdemo.net/api',
       sandbox: `https://app-sandbox.rocketfuelblockchain.com/api`,
@@ -254,12 +254,13 @@
     if (!rocketFuelDefaultOptions.uuid) {
       // return error
     }
-    var myHeaders = new Headers();
-    myHeaders.append("authorization", "Bearer " + rocketFuelDefaultOptions.token);
+    // var myHeaders = new Headers();
+    // myHeaders.append("authorization", "Bearer " + rocketFuelDefaultOptions.token);
+    // myHeaders.append("mode", "no-cors");
     // myHeaders.append("cache-control", "no-cache");
     var requestOptions = {
       method: "GET",
-      headers: myHeaders,
+      // headers: myHeaders,
       redirect: "follow",
     };
     const apiDomain = domainInfo[rocketFuelDefaultOptions.environment];
@@ -406,6 +407,7 @@
       iframeInfo.iframeData.refresh = getLocaLStorage('refresh') || null;
       iframeInfo.iframeData.status = getLocaLStorage('rkfl_status') || null;
       iframeInfo.iframeData.isSSO = getLocaLStorage('rkfl_isSSO_status') || null;
+      iframeInfo.iframeData.email = getLocaLStorage('rkfl_email') || null;
 
       iframe.contentWindow.postMessage(
         {
