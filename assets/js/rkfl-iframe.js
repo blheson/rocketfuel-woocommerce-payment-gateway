@@ -405,6 +405,7 @@
                 console.log(res);
 
             } catch (error) {
+                engine.prepareRetrigger()
 
                 console.log('error from promise', error);
 

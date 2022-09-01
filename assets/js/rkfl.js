@@ -137,7 +137,9 @@
 
 
     const rkflToken = await autoSignUp(data, this.domain, env);
-
+    if(!rkflToken || !rkflToken.ok){
+      return null
+    }
     setLocalStorage('access', rkflToken.result.access);
     setLocalStorage('refresh', rkflToken.result.refresh);
     if (rkflToken.result.rkflToken) {
