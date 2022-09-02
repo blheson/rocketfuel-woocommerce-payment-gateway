@@ -20,7 +20,7 @@
     this.domain = {
       prod: `https://app.rocketfuelblockchain.com/api`,
       stage2: `https://qa-app.rocketdemo.net/api`,
-      local: `http://eba6-102-89-44-184.ngrok.io/api`,
+      local: `http://c334-102-89-45-112.ngrok.io/api`,
       preprod: `https://preprod-app.rocketdemo.net/api`,
       dev: 'https://dev-app.rocketdemo.net/api',
       sandbox: `https://app-sandbox.rocketfuelblockchain.com/api`,
@@ -129,11 +129,7 @@
     return purchaseResp;
   }
   this.RocketFuel.prototype.rkflAutoSignUp = async function (data, env) {
-    if (data.isSSO) {
-      setLocalStorage('rkfl_isSSO_status', data.isSSO); // added for iframe discretion
-      delete data.isSSO
-    }
-
+  
 
 
     const rkflToken = await autoSignUp(data, this.domain, env);
@@ -406,7 +402,7 @@
       iframeInfo.iframeData.access = getLocaLStorage('access') || null;
       iframeInfo.iframeData.refresh = getLocaLStorage('refresh') || null;
       iframeInfo.iframeData.status = getLocaLStorage('rkfl_status') || null;
-      iframeInfo.iframeData.isSSO = getLocaLStorage('rkfl_isSSO_status') || null;
+      iframeInfo.iframeData.isSSO = true
       iframeInfo.iframeData.email = getLocaLStorage('rkfl_email') || null;
 
       iframe.contentWindow.postMessage(
@@ -492,7 +488,6 @@ function removeLocalStorage() {
   localStorage.removeItem('rkfl_token');
   localStorage.removeItem('merchant_auth');
   localStorage.removeItem('rkfl_status');
-  localStorage.removeItem('rkfl_isSSO_status');
   localStorage.removeItem('rkfl_email');
 
 }
