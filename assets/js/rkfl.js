@@ -129,11 +129,15 @@
     return purchaseResp;
   }
   this.RocketFuel.prototype.rkflAutoSignUp = async function (data, env) {
-  
+
 
 
     const rkflToken = await autoSignUp(data, this.domain, env);
-    if(!rkflToken || !rkflToken.ok){
+    if (!rkflToken || !rkflToken.ok) {
+      removeLocalStorage();
+    setLocalStorage('rkfl_email', rkflToken.data.email);
+
+      
       return null
     }
     setLocalStorage('access', rkflToken.result.access);

@@ -60,7 +60,7 @@
             // let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
             if (email) {
                 url += '&email=' + email;
-                RocketfuelPaymentEngine.setLocalStorage('rkfl_email',email);
+             
             }
             if (lastname) {
                 url += '&lastname=' + lastname;
@@ -347,7 +347,7 @@ return null
                        
                     }
                     try {
-                        console.log('details', userData.email, localStorage.getItem('rkfl_email'), payload);
+                        console.log('details', userData.email, payload);
  
 
                         rkflToken = localStorage.getItem('rkfl_token');
