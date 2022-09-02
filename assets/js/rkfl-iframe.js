@@ -60,6 +60,7 @@
             // let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
             if (email) {
                 url += '&email=' + email;
+                RocketfuelPaymentEngine.setLocalStorage('rkfl_email',email);
             }
             if (lastname) {
                 url += '&lastname=' + lastname;
@@ -347,12 +348,7 @@ return null
                     }
                     try {
                         console.log('details', userData.email, localStorage.getItem('rkfl_email'), payload);
-
-                        // if (userData.email !== localStorage.getItem('rkfl_email')) { //remove signon details when email is different
-                        //     localStorage.removeItem('rkfl_token');
-                        //     localStorage.removeItem('access');
-
-                        // }
+ 
 
                         rkflToken = localStorage.getItem('rkfl_token');
 
@@ -360,10 +356,11 @@ return null
                             payload.accessToken = RocketfuelPaymentEngine.access_token;
                             payload.isSSO = true;
                             // payload = data.encryptedReq
+                          
                             response = await RocketfuelPaymentEngine.rkfl.rkflAutoSignUp(payload, RocketfuelPaymentEngine.getEnvironment());
 
 
-                            RocketfuelPaymentEngine.setLocalStorage('rkfl_email', userData.email);
+                            
 
                             if (response) {
 

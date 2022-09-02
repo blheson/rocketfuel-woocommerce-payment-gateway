@@ -493,6 +493,7 @@ function removeLocalStorage() {
   localStorage.removeItem('merchant_auth');
   localStorage.removeItem('rkfl_status');
   localStorage.removeItem('rkfl_isSSO_status');
+  localStorage.removeItem('rkfl_email');
 
 }
 removeLocalStorage();
