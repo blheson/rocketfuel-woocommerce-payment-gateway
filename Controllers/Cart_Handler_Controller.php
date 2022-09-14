@@ -84,7 +84,7 @@ class Cart_Handler_Controller
                     (isset($_GET['firstname']) ?
                     sanitize_text_field($_GET['firstname']) : ''),
             "lastname" =>method_exists(WC()->customer, 'get_shipping_last_name') ?
-            WC()->customer->get_shipping_first_name() :
+            WC()->customer->get_shipping_last_name() :
             (isset($_GET['lastname']) ?
             sanitize_text_field($_GET['lastname']) : ''),
         );
