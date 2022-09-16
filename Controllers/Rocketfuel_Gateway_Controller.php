@@ -61,7 +61,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 		add_action('admin_notices', array($this, 'admin_notices'));
-		add_action('woocommerce_review_order_after_submit', array($this, 'rocketfuel_place_order'));
+		// add_action('woocommerce_review_order_after_submit', array($this, 'rocketfuel_place_order'));
+		add_action('woocommerce_review_order_before_submit', array($this, 'rocketfuel_place_order'));
 	}
 
 	public function get_endpoint($environment)
@@ -109,7 +110,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 					'stage2' => 'QA',
 					'preprod' => 'Pre-Production',
 					'sandbox' => 'Sandbox',
-					'local'=>'local'
+					'local' => 'local'
 				)
 			),
 			'description' => array(
@@ -168,12 +169,13 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 */
 	public function rocketfuel_place_order()
 	{
+		// $0.style.setProperty('visibility', 'hidden', true ? 'important' : '');
 		if (!$this->password || !$this->email) {
 			echo '<span style="color:red">' . __('Vendor should fill in the settings page to start using Rocketfuel', 'rocketfuel-payment-gateway') . '</span>';
 			return;
 		}
 		wp_enqueue_script('wc-gateway-rkfl-script');
-		
+
 		wp_enqueue_script('wc-gateway-rkfl-payment-buttons');
 
 
@@ -181,29 +183,33 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 ?>
 
-  
-        <div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button" data-rkfl-button-text="<?php echo esc_attr($this->button_text); ?>"><?php echo esc_html($this->button_text); ?></div>
-
-		<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
-		<input type="hidden" name="encrypted_req_rocketfuel" value="">
-		 
-		
-		<input type="hidden" name="payment_status_rocketfuel" value="pending">
-
-		<input type="hidden" name="payment_complete_order_status" value="<?php echo esc_attr($this->payment_complete_order_status); ?>">
 
 
-		<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel); ?>">
+		<div>
+			<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button" data-rkfl-button-text="<?php echo esc_attr($this->button_text); ?>"><?php echo esc_html($this->button_text); ?></div>
+			<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">
+			<input type="hidden" name="encrypted_req_rocketfuel" value="">
 
-		<input type="hidden" name="order_status_rocketfuel" value="wc-on-hold">
 
-		<input type="hidden" name="environment_rocketfuel" value="<?php echo  esc_attr($this->environment); ?>">
+			<input type="hidden" name="payment_status_rocketfuel" value="pending">
 
-		<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl-iframe.js?ver=' . microtime())); ?>">
-		</script>
+			<input type="hidden" name="payment_complete_order_status" value="<?php echo esc_attr($this->payment_complete_order_status); ?>">
+
+
+			<input type="hidden" name="temp_orderid_rocketfuel" value="<?php echo esc_attr($temp_orderid_rocketfuel); ?>">
+
+			<input type="hidden" name="order_status_rocketfuel" value="wc-on-hold">
+
+			<input type="hidden" name="environment_rocketfuel" value="<?php echo  esc_attr($this->environment); ?>">
+
+			<script src="<?php echo esc_url(Plugin::get_url('assets/js/rkfl-iframe.js?ver=' . microtime())); ?>">
+			</script>
+
+		</div>
+
 
 <?php
- 
+
 	}
 
 	/**
@@ -430,7 +436,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		return true;
 	}
 
-		/**
+	/**
 	 * Encrypt Data
 	 *
 	 * @param $to_crypt string to encrypt
