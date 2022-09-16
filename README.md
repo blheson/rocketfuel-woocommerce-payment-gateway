@@ -53,3 +53,4 @@ Accept Crypto payment anywhere
 3.2.1.6 BUG FIX: Fix hidden place order button
 3.2.1.7 BUG FIX: SSO
 3.2.1.8 Fix same name in shipping address
+3.2.1.9 Fix place order button conflict with other payment method
