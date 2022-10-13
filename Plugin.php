@@ -43,7 +43,7 @@ class Plugin
      */
     public static function get_ver()
     {
-        return ROCKETFUEL_VER;
+        return ROCKETFUEL_VER || time();
     }
     public static function get_prefix()
     {
