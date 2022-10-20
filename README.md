@@ -3,7 +3,7 @@ RocketFuel Payment Method 3.2.1.6 for Woocommerce
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.2
-Stable tag: 3.2.1.10
+Stable tag: 3.2.1.11
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 == Description ==
@@ -55,3 +55,4 @@ Accept Crypto payment anywhere
 3.2.1.8 Fix same name in shipping address
 3.2.1.9 Fix place order button conflict with other payment method
 3.2.1.10 FIX: JS script not loading 
+3.2.1.11 FIX: Status from Iframe

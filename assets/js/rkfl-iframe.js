@@ -186,7 +186,7 @@ return null
                     status = "wc-partial-payment";
                 }
 
-                if (result_status === 1 || result.status === "completed") {
+                if (result_status === 1 ) {
 
                     status = document.querySelector('input[name=payment_complete_order_status]')?.value || 'wc-processing';
 
