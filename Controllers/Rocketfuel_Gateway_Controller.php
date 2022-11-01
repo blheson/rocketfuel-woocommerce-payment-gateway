@@ -429,7 +429,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 		$response = wp_remote_post($this->endpoint . '/update/orderId', $args);
 
-
+file_put_contents(__DIR__.'/log.json',"\nSwapper \n".json_encode($response ),FILE_APPEND);
 		$response_code = wp_remote_retrieve_response_code($response);
 
 		$response_body = wp_remote_retrieve_body($response);

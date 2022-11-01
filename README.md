@@ -21,7 +21,9 @@ Accept Crypto payment anywhere
 * Go to your RocketFuel merchant account
 * Click "Edit" in the bottom left corner. A window will pop up.
 * Paste callback URL and click "Save".
-* If your website theme does not follow standard woocommerce structure, there's possibility that the plug-in will not work as expected
+* If your website theme does not follow standard woocommerce structure, there's possibility that the plug-in will not work as 
+
+expected
 == Changelog ==
 
 2.0.1 Added overlay on checkout page.
@@ -55,4 +57,4 @@ Accept Crypto payment anywhere
 3.2.1.8 Fix same name in shipping address
 3.2.1.9 Fix place order button conflict with other payment method
 3.2.1.10 FIX: JS script not loading 
-3.2.1.11 FIX: Status from Iframe
+3.2.1.11 FIX: Iframe drag 
