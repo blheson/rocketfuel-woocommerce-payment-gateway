@@ -1,15 +1,16 @@
-== RocketFuel - RocketFuel Payment Method for Woocommerce ==
-RocketFuel Payment Method 3.2.1.6 for Woocommerce
+=== RocketFuel - RocketFuel Payment Method for Woocommerce ===
+Contributors: rockectfuel
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.2
-Stable tag: 3.2.1.11
+Stable tag: 3.2.1.12
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
+
 == Description ==
 Accept Crypto payment anywhere
-== Install ==
 
+== Install ==
 
 * Go to your shop admin panel.
 * Go to "Plugins" -> "Add Plugins".
@@ -21,11 +22,19 @@ Accept Crypto payment anywhere
 * Go to your RocketFuel merchant account
 * Click "Edit" in the bottom left corner. A window will pop up.
 * Paste callback URL and click "Save".
-* If your website theme does not follow standard woocommerce structure, there's possibility that the plug-in will not work as 
+* If your website theme does not follow standard woocommerce structure, there's possibility that the plug-in will not work as expected
 
-expected
+== Screenshots ==
+
+1. banner-1544x500.png	
+2. icon-128x128.png
+
+== Frequently Asked Questions ==
+
+= Where can I find Rocketfuel documentation and user guides? =
+For help setting up and configuring Rocketfuel, please refer to [Getting Started](https://docs.rocketfuelblockchain.com).
+
 == Changelog ==
-
 2.0.1 Added overlay on checkout page.
 2.0.2 Allow admin to set order status for payment confirmation
       Allow users to trigger iframe after closing
