@@ -4,7 +4,7 @@ namespace Rocketfuel_Gateway;
 
 use Rocketfuel_Gateway\Controllers\Activation_Controller;
 use Rocketfuel_Gateway\Controllers\Rest_Controller;
-use Rocketfuel_Gateway\Controllers\Shortcode_Controller;
+use Rocketfuel_Gateway\Controllers\Metabox_Controller;
 use Rocketfuel_Gateway\Controllers\Woocommerce_Controller;
 
 class Plugin
@@ -13,6 +13,7 @@ class Plugin
 
     /**
      * Get the plugin's absolute path
+     * Comes with trailing slash
      *
      * @return string
      *
@@ -33,7 +34,17 @@ class Plugin
     {
         return plugin_dir_url(__FILE__) . $url;
     }
-
+/**
+     * Get the plugin's version
+     *
+     * @return string
+     *
+     * @since 1.0.0
+     */
+    public static function get_ver()
+    {
+        return ROCKETFUEL_VER || time();
+    }
     public static function get_prefix()
     {
         return self::$prefix;
@@ -51,5 +62,6 @@ class Plugin
     {
         Rest_Controller::register();
         Woocommerce_Controller::register();
+      
     }
 }

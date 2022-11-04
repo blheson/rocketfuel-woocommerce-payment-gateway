@@ -2,18 +2,24 @@
 namespace Rocketfuel_Gateway\Controllers;
 
 use Rocketfuel_Gateway\Plugin;
+use Rocketfuel_Gateway\Controllers\Process_Payment_Controller;
 
 class Rest_Controller{
-  
-    public static function register(){
-        add_action('rest_api_init',array(__CLASS__,'define_rest_route'));
+    /**
+     * Register Rest Hook
+     * @return void
+     */
+    public static function register()
+    {
+        add_action('rest_api_init', array(__CLASS__, 'define_rest_route'));
+       
     }
     /**
      * Define all rest route
      * @return void
      */
     public static function define_rest_route(){
-       
+
         // address for rocketfuel callback
        $gateway= new Rocketfuel_Gateway_Controller();
         register_rest_route(
@@ -25,7 +31,8 @@ class Rest_Controller{
                 'permission_callback' => '__return_true'
             )
         );
-          register_rest_route(
+
+        register_rest_route(
             Plugin::get_api_route_namespace(),
             'payment',
             array(
@@ -34,6 +41,7 @@ class Rest_Controller{
                 'permission_callback' => '__return_true'
             )
         );
+
         register_rest_route(
             Plugin::get_api_route_namespace(),
             'check',
@@ -43,6 +51,7 @@ class Rest_Controller{
                 'permission_callback' => '__return_true'
             )
         );
+
         register_rest_route(
             Plugin::get_api_route_namespace(),
             'auth',
@@ -52,6 +61,7 @@ class Rest_Controller{
                 'permission_callback' => '__return_true'
             )
         );
+
         register_rest_route(
             Plugin::get_api_route_namespace(),
             'update_order',
@@ -61,6 +71,17 @@ class Rest_Controller{
                 'permission_callback' => '__return_true'
             )
         );
+
+        register_rest_route(
+            Plugin::get_api_route_namespace(),
+            'merchant_auth',
+            array(
+                'methods' => \WP_REST_Server::CREATABLE,
+                'callback' => array( $gateway, 'merchant_auth'),
+                'permission_callback' => '__return_true'
+            )
+        );
+        
         unset($gateway);
     }
 }
