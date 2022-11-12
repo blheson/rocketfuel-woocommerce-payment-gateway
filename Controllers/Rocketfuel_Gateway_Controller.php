@@ -488,3 +488,4 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 
 	}
 }
+

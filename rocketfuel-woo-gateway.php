@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( rocketfuel_check_woocommerce_is_active() ) {
-    define( 'ROCKETFUEL_VER', '3.2.1.14' );
+    define( 'ROCKETFUEL_VER', '3.2.1.15' );
     
     require_once plugin_dir_path( __FILE__ ) . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
     Plugin::init( __FILE__ );

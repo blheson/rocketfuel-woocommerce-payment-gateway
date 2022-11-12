@@ -161,7 +161,7 @@ return null
         triggerPlaceOrder: function () {
             // document.getElementById('place_order').style.display = 'inherit';
             console.log('Trigger is calling');
-
+            $('button[type=submit]').click();
             $('form.checkout').trigger('submit');
 
             // document.getElementById('place_order').style.display = 'none';
