@@ -442,11 +442,12 @@
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     let iframeWrapper = document.createElement("div");
     let iframeWrapperHeader = document.createElement("div");
+    iframeWrapper.style.cssText = "width: 365px; position: fixed; z-index: 2147483647 !important ; top: 10px; right: 10px; box-shadow: 0px 4px 7px rgb(0 0 0 / 30%);"
     iframeWrapper.id = "iframeWrapper";
     iframeWrapperHeader.id = "iframeWrapperHeader"
     document.querySelector('body').appendChild(iframeWrapper).appendChild(iframeWrapperHeader);
 
-    document.getElementById("iframeWrapper").style.cssText = "width: 365px; position: fixed; z-index: 2147483647 !important ; top: 10px; right: 10px; box-shadow: 0px 4px 7px rgb(0 0 0 / 30%);";
+    // document.getElementById("iframeWrapper").style.cssText = "width: 365px; position: fixed; z-index: 2147483647 !important ; top: 10px; right: 10px; box-shadow: 0px 4px 7px rgb(0 0 0 / 30%);";
   
     document.getElementById("iframeWrapperHeader").style.cssText = "padding: 10px; cursor: move; z-index: 10; position: absolute; width: 100%; height: 10px; left: 50px"
 
@@ -486,6 +487,12 @@
     }
 
   }
+  if(document.getElementById("iframeWrapper")){
+    document.getElementById("iframeWrapper").style.cssText = "width: 365px; position: fixed; z-index: 2147483647 !important ; top: 10px; right: 10px; box-shadow: 0px 4px 7px rgb(0 0 0 / 30%);";
+  }else{
+    console.log('document.getElementById("iframeWrapper")','not found')
+  }
+     
 })();
 function removeLocalStorage() {
   localStorage.removeItem('access');
@@ -497,3 +504,4 @@ function removeLocalStorage() {
 
 }
 removeLocalStorage();
+console.log('[ PLUGIN_VERSION ]', 'v3.2.1.17')
