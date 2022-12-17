@@ -13,7 +13,7 @@
         url: new URL(window.location.href),
         watchIframeShow: false,
         rkflConfig: null,
-        encryptedReq:null,
+        encryptedReq: null,
         accessToken: '',
         paymentResponse: '',
         // Show error notice at top of checkout form, or else within button container
@@ -60,7 +60,7 @@
             // let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
             if (email) {
                 url += '&email=' + email;
-             
+
             }
             if (lastname) {
                 url += '&lastname=' + lastname;
@@ -84,23 +84,29 @@
             });
             let result = {};
             let rawresult = await response.text();
-           
+
             if (rawresult) {
-                result = JSON.parse(rawresult);
+                try {
+                    result = JSON.parse(rawresult);
+                } catch (error) {
+                    result.messages = ['Error parsing request'];
+                    console.error(' ERROR_PARSE_GUUID', { error });
+                }
+
             }
 
 
             if (!result.success) {
 
                 document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = document.getElementById('rocketfuel_retrigger_payment_button').dataset.rkflButtonText;
-
+ 
                 // Error messages may be preformatted in which case response structure will differ
-                var messages = result.data ? result.data.messages : result.messages;
+                var messages = result.data ? result.data.messages: result.messages;
 
-                console.log("Messages from start checkout", messages);
-if(!messages){
-return null
-}
+                console.log("Messages from start checkout", {result});
+                if (!messages) {
+                    messages = ['Gateway request error'];
+                }
                 if ('string' === typeof messages) {
                     this.showError(messages);
                 } else {
@@ -117,6 +123,8 @@ return null
             let uuid = result.data?.uuid?.result?.uuid;
 
             if (!uuid) {
+                this.showError(['Could not generate invoice']);
+
                 return false;
             }
 
@@ -124,9 +132,9 @@ return null
             RocketfuelPaymentEngine.order_id = result.data.temporary_order_id;
             RocketfuelPaymentEngine.access_token = result.data?.uuid?.access_token;
             // RocketfuelPaymentEngine.encryptedReq = result.data?.encrypted_req;
-           
+
             document.querySelector('input[name=encrypted_req_rocketfuel]').value = result.data?.encrypted_req;
-            
+
             document.querySelector('input[name=temp_orderid_rocketfuel]').value = result.data.temporary_order_id;
 
             console.log("res", uuid);
@@ -140,7 +148,7 @@ return null
             return environment || 'prod';
         },
         getUserData: function () {
- 
+
             let user_data = {
 
                 first_name: document.getElementById('billing_first_name') ? document.getElementById('billing_first_name').value : null,
@@ -150,7 +158,7 @@ return null
                 email: document.getElementById('billing_email') ? document.getElementById('billing_email').value : null,
 
                 merchant_auth: document.querySelector('input[name=merchant_auth_rocketfuel]') ? document.querySelector('input[name=merchant_auth_rocketfuel]').value : null,
-                encrypted_req: document.querySelector('input[name=encrypted_req_rocketfuel]') ? document.querySelector('input[name=encrypted_req_rocketfuel]').value  : null
+                encrypted_req: document.querySelector('input[name=encrypted_req_rocketfuel]') ? document.querySelector('input[name=encrypted_req_rocketfuel]').value : null
             }
 
             if (!user_data) return false;
@@ -186,7 +194,7 @@ return null
                     status = "wc-partial-payment";
                 }
 
-                if (result_status === 1 ) {
+                if (result_status === 1) {
 
                     status = document.querySelector('input[name=payment_complete_order_status]')?.value || 'wc-processing';
 
@@ -323,7 +331,7 @@ return null
                     environment: RocketfuelPaymentEngine.getEnvironment()
                 });
 
-              
+
                 RocketfuelPaymentEngine.rkflConfig = {
                     uuid,
                     callback: RocketfuelPaymentEngine.updateOrder,
@@ -343,12 +351,12 @@ return null
                     payload = {
                         encryptedReq: userData.encrypted_req,
                         merchantAuth: userData.merchant_auth,
-                        email:  userData.email,
-                       
+                        email: userData.email,
+
                     }
                     try {
                         console.log('details', userData.email, payload);
- 
+
 
                         rkflToken = localStorage.getItem('rkfl_token');
 
@@ -356,11 +364,11 @@ return null
                             payload.accessToken = RocketfuelPaymentEngine.access_token;
                             payload.isSSO = true;
                             // payload = data.encryptedReq
-                          
+
                             response = await RocketfuelPaymentEngine.rkfl.rkflAutoSignUp(payload, RocketfuelPaymentEngine.getEnvironment());
 
 
-                            
+
 
                             if (response) {
 

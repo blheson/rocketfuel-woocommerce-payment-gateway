@@ -487,11 +487,6 @@
     }
 
   }
-  if(document.getElementById("iframeWrapper")){
-    document.getElementById("iframeWrapper").style.cssText = "width: 365px; position: fixed; z-index: 2147483647 !important ; top: 10px; right: 10px; box-shadow: 0px 4px 7px rgb(0 0 0 / 30%);";
-  }else{
-    console.log('document.getElementById("iframeWrapper")','not found')
-  }
      
 })();
 function removeLocalStorage() {

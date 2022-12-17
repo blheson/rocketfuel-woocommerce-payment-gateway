@@ -134,26 +134,60 @@ class Cart_Handler_Controller{
         );
 
         unset($gateway);
-
-        $payment_response = Process_Payment_Controller::process_payment( $data );
-
-        if ( ! $payment_response ) {
-            wp_send_json_error( array(
+        $error_message = 'Payment cannot be completed';
+        try {
+            $payment_response = Process_Payment_Controller::process_payment( $data );
+            if ( is_wp_error( $payment_response ) ) {
+                return rest_ensure_response( $payment_response );
+            }
+        
+            if ( ! $payment_response ) {
+                return wp_send_json_error( array(
+                    'error' => true,
+                    'messages' => [$error_message]
+                )
+            );
+       
+    
+            }
+     
+             if (  (isset($payment_response->error) && $payment_response->error === true) ) {
+                // file_put_contents(__DIR__.'/log.json','the error',FILE_APPEND);
+                try{
+                       wp_send_json_error( array(
+                        'error' => true,
+                        'messages' => [isset( $payment_response->message ) ? $payment_response->message :$error_message],
+                        'data' => isset( $payment_response->data ) ? $payment_response->data :null
+                    )
+                );
+                }catch(\Error $e){
+        
+                       wp_send_json_error( array(
+                        'error' => true,
+                        'messages' => ['Fatal Request Error'],
+                        'data' => null
+                    )
+                    );
+                }
+            
+            }
+         
+             wp_send_json_success( array( 
+                    'encrypted_req' => $encrypted_req,
+                    'temporary_order_id' => $temporary_order_id,
+                    'uuid' => $payment_response
+                )
+            );
+        } catch (\Throwable $th) {
+         
+            return   wp_send_json_error( array(
                 'error' => true,
-                'message' => 'Payment cannot be completed'
+                'messages' => ['Fatal Request Error'],
+                'data' => null
             )
-        );
+            );
         }
-        if ( is_wp_error( $payment_response ) ) {
-            return rest_ensure_response( $payment_response );
-        }
-
-        wp_send_json_success( array( 
-            'encrypted_req' => $encrypted_req,
-            'temporary_order_id' => $temporary_order_id,
-            'uuid' => $payment_response
-        )
-    );
+ 
     }
     public static function rocketfuel_process_checkout() {
 
