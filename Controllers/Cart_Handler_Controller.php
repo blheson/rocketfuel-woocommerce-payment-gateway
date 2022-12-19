@@ -93,19 +93,93 @@ class Cart_Handler_Controller{
                 WC()->customer->get_shipping_last_name() : $lastname,
         );
     }
+    public static function get_posts( $parsed_args ){
+
+        $get_posts = new \WP_Query($parsed_args );
+ 
+        return $get_posts;
+        // return $get_posts->query( $parsed_args );
+    
+    }
     public static function process_user_data(){
 
-
         $temporary_order_id = md5( microtime() );
+
+        $email = isset($_GET['email'])? sanitize_email( wp_unslash($_GET['email']) ) :'';
+
+        $_rkfl_partial_payment_cache= get_option('rkfl_partial_payment_cache_'.$email);
+
         $gateway = new Rocketfuel_Gateway_Controller();
-        $cart = $gateway->sort_cart( WC()->cart->get_cart(), $temporary_order_id );
 
         $merchant_cred = array(
             'email' => $gateway->email,
             'password' => $gateway->password
         );
 
-        $email = isset($_GET['email'])? sanitize_email( wp_unslash($_GET['email']) ) :'';
+       if( $_rkfl_partial_payment_cache && isset( $_rkfl_partial_payment_cache['temporary_order_id'] ) ){
+                
+                $query = self::get_posts( array(
+                    'post_type' => 'shop_order',
+                    'post_status' => 'any',
+                    'meta_value' => $_rkfl_partial_payment_cache['temporary_order_id'],
+                    // 'meta_value' => '6cd5534aa12b6d6df71e6d735e9b2ae9',
+                ));
+
+                if( count( $query->posts ) > 0 ){ // if order exists
+                    delete_option('rkfl_partial_payment_cache_'.$email);
+                }else{
+                    var_dump($query->posts,'======================',$query->request,'======================','$posts $posts');
+                
+                    $url = $gateway->get_configured_endpoint()."/purchase/transaction/partials/".$gateway->get_merchant_id()."?offerId=".$_rkfl_partial_payment_cache['temporary_order_id']."&hostedPageId=".$_rkfl_partial_payment_cache['temporary_order_id'];
+
+                    $auth_pass = Process_Payment_Controller::auth(
+                        array('cred'=>$merchant_cred)
+                    );
+                    if ( is_wp_error( $auth_pass ) ) {
+                        return rest_ensure_response( $auth_pass );
+                    }
+            
+                    $response_code = wp_remote_retrieve_response_code( $auth_pass );
+            
+                    $response_body = wp_remote_retrieve_body( $auth_pass );
+            
+                    $result = json_decode( $response_body );
+            
+                    if ( $response_code != '200' ) {
+                        $error_message = 'Authorization cannot be completed';
+            
+                        wc_add_notice( __($error_message, 'rocketfuel-payment-gateway' ), 'error' );
+                        return wp_send_json_error( array(
+                            'error' => true,
+                            'messages' => [$error_message]
+                        )
+                     
+                    }
+                    $args = array(
+                        'timeout'	 => 200,
+                        'headers' => array( 'Content-Type' => 'application/json','authorization'=>'Bearer auth' )
+                    );
+    
+                    $result = wp_remote_get(  $url,$args );
+
+                    var_dump($_rkfl_partial_payment_cache,'======================', $url);
+
+                }
+               
+
+              
+            }
+
+            wp_die('test');
+       
+
+    //    $temporary_order_id = get_post_meta($order_id, 'rocketfuel_temp_orderid', true);
+
+     
+        $cart = $gateway->sort_cart( WC()->cart->get_cart(), $temporary_order_id );
+
+    
+       
         $firstname =isset($_GET['firstname'])? sanitize_text_field( wp_unslash($_GET['firstname']) ) : '';
         $lastname = isset($_GET['lastname'])? sanitize_text_field( wp_unslash( $_GET['lastname']) ) : '';
 
@@ -154,12 +228,12 @@ class Cart_Handler_Controller{
              if (  (isset($payment_response->error) && $payment_response->error === true) ) {
                 // file_put_contents(__DIR__.'/log.json','the error',FILE_APPEND);
                 try{
-                       wp_send_json_error( array(
-                        'error' => true,
-                        'messages' => [isset( $payment_response->message ) ? $payment_response->message :$error_message],
-                        'data' => isset( $payment_response->data ) ? $payment_response->data :null
-                    )
-                );
+                        wp_send_json_error( array(
+                            'error' => true,
+                            'messages' => [isset( $payment_response->message ) ? $payment_response->message :$error_message],
+                            'data' => isset( $payment_response->data ) ? $payment_response->data : null
+                        )
+                    );
                 }catch(\Error $e){
         
                        wp_send_json_error( array(
@@ -171,6 +245,12 @@ class Cart_Handler_Controller{
                 }
             
             }
+            update_option( 'rkfl_partial_payment_cache_'.$email, 
+                array(
+                    'temporary_order_id' => $temporary_order_id,
+                    'uuid'=>$payment_response->result->uuid
+                ),
+            false );
          
              wp_send_json_success( array( 
                     'encrypted_req' => $encrypted_req,

@@ -122,8 +122,15 @@ class Woocommerce_Controller
         if (isset($_POST)) {
 
             $temporary_order_id = sanitize_text_field($_POST['temp_orderid_rocketfuel']);
+            $email = sanitize_text_field($_POST['billing_email']);
 
             try {
+                
+                file_put_contents(__DIR__.'/log.json',"\n".'rkfl_partial_payment_cache_'.$email,FILE_APPEND);
+
+                delete_option( 'rkfl_partial_payment_cache_'.$email);
+                
+                file_put_contents(__DIR__.'/log.json',json_encode($_POST)."\n\n",FILE_APPEND);
 
                 $gateway = new Rocketfuel_Gateway_Controller();
 
