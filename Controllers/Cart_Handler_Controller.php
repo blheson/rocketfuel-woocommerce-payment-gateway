@@ -181,10 +181,10 @@ class Cart_Handler_Controller{
         } catch (\Throwable $th) {
          
             return   wp_send_json_error( array(
-                'error' => true,
-                'messages' => ['Fatal Request Error'],
-                'data' => null
-            )
+                    'error' => true,
+                    'messages' => ['Fatal Request Error'],
+                    'data' => null
+                )
             );
         }
  
