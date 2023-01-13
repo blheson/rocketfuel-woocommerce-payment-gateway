@@ -32,7 +32,7 @@ AQIDAQAB
 
         return base64_encode($out);
     }
-    echo get_encrypted(json_encode(['email'=>'bb@gmail.com']));
+    // echo get_encrypted(json_encode(['email'=>'bb@gmail.com']));
 
 
 
@@ -40,3 +40,29 @@ AQIDAQAB
 
 
     // I3qCtrErS7OBYKaxMVCYzzP/jCK6EDU5B0OmnJH825JE21EQXqe9l+u31voceuCKjr2MYstj8pqLwbN/SkfAHOz35YPNYQokxNfZgazVOtE1w+9pHM7k9Eehyl2w+S/GvsmJp730/AbfL5mKkzR8jdRxFfJVBS5+/Z6hZuDqqIdBSxEnAw8AMIPRIiAG/OSZAhWvX2SAUVLd00zZXaPyGMT/pVrNfzRfbJkVKvc2W4dSbeDNTM2ASSFlAQs55e0yUCgnAqYm014JL+/dAdQ9p/QqUtj5f46kzFYJ4r0YqyAvevwpGGB0nlsU0CymnngNJ2gmGgR7YtyhpP5zyo83ow== bb@gmail.com
+
+$rest = [[
+        "id"=> "167112521",
+    "key"=> 0.8894154765240705,
+    "num"=> 0,
+    "name"=> "111",
+    "price"=> 1,
+    "quantity"=> 11,
+    "totalPrice"=> 11,
+    "localAmount"=> 1,
+    "statusRefund"=> [
+            "pending"=> 0,
+        "success"=> 0,
+        "rejected"=> 0
+    ],
+    "localCurrency"=> "USD"
+]];
+
+$result=array_map(function($element){
+
+return $element['id'];
+},$rest);
+
+array_search()
+
+var_dump($result);

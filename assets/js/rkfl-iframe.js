@@ -49,7 +49,7 @@
             $(document.body).trigger('checkout_error');
         }
         ,
-        getUUID: async function () {
+        getUUID: async function (partial_tx_check=true) {
 
 
             let firstname = document.getElementById('billing_first_name')?.value || document.getElementById('shipping_first_name')?.value;
@@ -71,6 +71,14 @@
             var data = $('form.checkout')
                 .add($('<input type="hidden" name="nonce" /> ')
                     .attr('value', wc_rkfl_context.start_checkout_nonce)
+                ).add($('<input type="hidden" name="rkfl_checkout_firstname" /> ')
+                    .attr('value', firstname)
+                ).add($('<input type="hidden" name="rkfl_checkout_lastname" /> ')
+                    .attr('value', lastname)
+                ).add($('<input type="hidden" name="rkfl_checkout_email" /> ')
+                    .attr('value', email)
+                ).add($('<input type="hidden" name="rkfl_checkout_partial_tx_check" /> ')
+                    .attr('value', partial_tx_check)
                 )
                 .serialize();
             let response = await fetch(url, {
@@ -121,6 +129,7 @@
             }
 
             let uuid = result.data?.uuid?.result?.uuid;
+            let is_partial = result.data?.is_partial;
 
             if (!uuid) {
                 this.showError(['Could not generate invoice']);
@@ -139,7 +148,7 @@
 
             console.log("res", uuid);
 
-            return uuid;
+            return {uuid,is_partial};
 
         },
         getEnvironment: function () {
@@ -320,10 +329,18 @@
                     location.reload();
                     reject();
                 }
-                let uuid = await this.getUUID(); //set uuid
+                let {uuid, is_partial} = await this.getUUID(); //set uuid
                 if (!uuid) {
-                    return;
+                    reject();
                 }
+                
+                if(is_partial){
+                   const user_agreed =  await user_agree_to_partial_payment();
+                   if(!user_agree){
+                    let {uuid, is_partial} = await this.getUUID(false); //set uuid
+                   }
+                }
+
                 let userData = RocketfuelPaymentEngine.getUserData();
                 let payload, response, rkflToken;
 
