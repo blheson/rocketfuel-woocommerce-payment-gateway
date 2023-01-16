@@ -106,8 +106,8 @@
 
             if (!result.success) {
 
-                document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = document.getElementById('rocketfuel_retrigger_payment_button').dataset.rkflButtonText;
-
+                // document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = document.getElementById('rocketfuel_retrigger_payment_button').dataset.rkflButtonText;
+                RocketfuelPaymentEngine.prepareRetrigger(); 
                 // Error messages may be preformatted in which case response structure will differ
                 var messages = result.data ? result.data.messages : result.messages;
 
@@ -242,7 +242,7 @@
             document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
 
             let checkIframe = setInterval(() => {
-
+console.log('retrying');
                 if (RocketfuelPaymentEngine.rkfl.iframeInfo.iframe) {
 
                     RocketfuelPaymentEngine.rkfl.initPayment();
@@ -536,7 +536,7 @@
                 console.log(res);
 
             } catch (error) {
-                engine.prepareRetrigger()
+                engine.prepareRetrigger();
 
                 console.log('error from promise', error);
 
