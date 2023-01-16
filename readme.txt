@@ -3,7 +3,7 @@ Contributors: rockectfuel
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.2
-Stable tag: 3.2.1.18
+Stable tag: 3.2.1.19
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -67,3 +67,4 @@ For help setting up and configuring Rocketfuel, please refer to [Getting Started
 3.2.1.9 Fix place order button conflict with other payment method
 3.2.1.10 FIX: JS script not loading 
 3.2.1.11 FIX: Iframe drag 
+3.2.1.19 Feature: Add partial payment enhancement

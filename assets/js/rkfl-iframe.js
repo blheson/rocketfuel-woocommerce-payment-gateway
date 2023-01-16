@@ -49,7 +49,7 @@
             $(document.body).trigger('checkout_error');
         }
         ,
-        getUUID: async function (partial_tx_check=true) {
+        getUUID: async function (partial_tx_check = true) {
 
 
             let firstname = document.getElementById('billing_first_name')?.value || document.getElementById('shipping_first_name')?.value;
@@ -57,17 +57,17 @@
             let email = document.getElementById('billing_email')?.value || document.getElementById('shipping_email')?.value;
 
             let url = wc_rkfl_context.start_checkout_url;
-            // let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
-            if (email) {
-                url += '&email=' + email;
+            // // let url = document.querySelector('input[name=admin_url_rocketfuel]').value;
+            // if (email) {
+            //     url += '&email=' + email;
 
-            }
-            if (lastname) {
-                url += '&lastname=' + lastname;
-            }
-            if (firstname) {
-                url += '&firstname=' + firstname;
-            }
+            // }
+            // if (lastname) {
+            //     url += '&lastname=' + lastname;
+            // }
+            // if (firstname) {
+            //     url += '&firstname=' + firstname;
+            // }
             var data = $('form.checkout')
                 .add($('<input type="hidden" name="nonce" /> ')
                     .attr('value', wc_rkfl_context.start_checkout_nonce)
@@ -107,11 +107,11 @@
             if (!result.success) {
 
                 document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = document.getElementById('rocketfuel_retrigger_payment_button').dataset.rkflButtonText;
- 
-                // Error messages may be preformatted in which case response structure will differ
-                var messages = result.data ? result.data.messages: result.messages;
 
-                console.log("Messages from start checkout", {result});
+                // Error messages may be preformatted in which case response structure will differ
+                var messages = result.data ? result.data.messages : result.messages;
+
+                console.log("Messages from start checkout", { result });
                 if (!messages) {
                     messages = ['Gateway request error'];
                 }
@@ -129,7 +129,7 @@
             }
 
             let uuid = result.data?.uuid?.result?.uuid;
-            let is_partial = result.data?.is_partial;
+            let isPartial = result.data?.is_partial;
 
             if (!uuid) {
                 this.showError(['Could not generate invoice']);
@@ -148,7 +148,7 @@
 
             console.log("res", uuid);
 
-            return {uuid,is_partial};
+            return { uuid, isPartial };
 
         },
         getEnvironment: function () {
@@ -322,26 +322,131 @@
         setLocalStorage: function (key, value) {
             localStorage.setItem(key, value);
         },
+        createElementAbstract: {
+            partialPaymentNotificationModal: function () {
+                //UNDERLAY
+                const rkflPaymentPartialAlertModalUnderlay = document.createElement('div');
+                rkflPaymentPartialAlertModalUnderlay.style.cssText = 'background: #00000070;position: fixed;top: 0;right: 0;height: 100%;width: 100%;'
+
+                //MODAL
+                const rkflPaymentPartialAlertModal = document.createElement('div');
+                rkflPaymentPartialAlertModal.style.cssText = 'max-width: 400px; margin: auto; background: rgb(255, 255, 255); padding: 20px; margin-top: 20vh;'
+
+                //MODAL CONTENT
+                const rkflPaymentPartialAlertModalContent = document.createElement('div');
+                rkflPaymentPartialAlertModalContent.innerText = 'You have already made partial payment on this order item. Are you sure to continue payment on the existing order?';
+
+                //MODAL CONTENT BUTTON
+                const rkflPaymentPartialAlertModalContentButton = document.createElement('div');
+                rkflPaymentPartialAlertModalContentButton.style.cssText = 'display: flex; justify-content: space-around; margin-top: 20px; text-align: center; font-size: 14px;';
+
+                //MODAL CONTENT BUTTON REJECT
+                const rkflButtonReject = document.createElement('span');
+                rkflButtonReject.innerText = 'No';
+                rkflButtonReject.style.cssText = 'border: 2px solid #f0833c; padding: 6px 15px;width:120px;cursor:pointer';
+
+                //MODAL CONTENT BUTTON ACCEPT
+                const rkflButtonAccept = document.createElement('span');
+                rkflButtonAccept.innerText = 'Yes, Continue';
+                rkflButtonAccept.style.cssText = 'background:#f0833c; padding: 6px 15px;color:#fff;width:120px;cursor:pointer';
+
+                return {
+                    rkflPaymentPartialAlertModalUnderlay,
+                    rkflPaymentPartialAlertModal,
+                    rkflPaymentPartialAlertModalContent,
+                    rkflPaymentPartialAlertModalContentButton,
+                    rkflButtonReject,
+                    rkflButtonAccept
+                }
+            },
+            clearAppendedDom:(element)=>{
+                element.remove();
+            }
+        },
+        userAgreeToPartialPayment: function () {
+            return new Promise((resolve, reject) =>{
+                try {
+                    const {   
+                        rkflPaymentPartialAlertModalUnderlay,
+                        rkflPaymentPartialAlertModal,
+                        rkflPaymentPartialAlertModalContent,
+                        rkflPaymentPartialAlertModalContentButton,
+                        rkflButtonReject,
+                        rkflButtonAccept 
+                    } = RocketfuelPaymentEngine.createElementAbstract.partialPaymentNotificationModal();
+
+                    rkflButtonReject.addEventListener('click', () => {
+                        RocketfuelPaymentEngine.createElementAbstract.clearAppendedDom(rkflPaymentPartialAlertModalUnderlay)
+                        resolve(false)
+                    });
+
+
+                    rkflButtonAccept.addEventListener('click', () => {
+                        RocketfuelPaymentEngine.createElementAbstract.clearAppendedDom(rkflPaymentPartialAlertModalUnderlay)
+
+                        resolve(true)
+                    });
+
+                    //APPEND ACTIONS
+                    rkflPaymentPartialAlertModalContentButton.appendChild(rkflButtonReject);
+                    rkflPaymentPartialAlertModalContentButton.appendChild(rkflButtonAccept);
+
+                    rkflPaymentPartialAlertModal.appendChild(rkflPaymentPartialAlertModalContent);
+                    rkflPaymentPartialAlertModal.appendChild(rkflPaymentPartialAlertModalContentButton);
+
+
+                    rkflPaymentPartialAlertModalUnderlay.appendChild(rkflPaymentPartialAlertModal);
+                    document.body.appendChild(rkflPaymentPartialAlertModalUnderlay);
+
+                } catch (error) {
+                    console.log(error.message)
+                    resolve(false)
+                }
+            })
+        },
         initRocketFuel: async function () {
 
             return new Promise(async (resolve, reject) => {
-                if (!RocketFuel) {
+
+                if ( !RocketFuel ) {
+
                     location.reload();
                     reject();
+
                 }
-                let {uuid, is_partial} = await this.getUUID(); //set uuid
-                if (!uuid) {
+        
+                let { uuid, isPartial } = await this.getUUID(); //set uuid
+
+                if ( !uuid ) {
+
                     reject();
+
                 }
+               
+                document.getElementById('rocketfuel_retrigger_payment_button').dataset.disable = true;
+             
+                if ( isPartial ) {
+
+                    const userAgreed = await this.userAgreeToPartialPayment();
+              
+                    if ( ! userAgreed ) {
+
+                        const result = await this.getUUID(false); //set uuid
                 
-                if(is_partial){
-                   const user_agreed =  await user_agree_to_partial_payment();
-                   if(!user_agree){
-                    let {uuid, is_partial} = await this.getUUID(false); //set uuid
-                   }
-                }
+                        uuid = result.uuid;
+                        console.log({uuid},'User did not agree');
+
+                        // isPartial = result.isPartial;
+
+                    }else{
+                        console.log( {uuid}, 'User did agree' );
+                    }
+
+                } 
+
 
                 let userData = RocketfuelPaymentEngine.getUserData();
+
                 let payload, response, rkflToken;
 
                 RocketfuelPaymentEngine.rkfl = new RocketFuel({
@@ -454,7 +559,8 @@
 
         e.preventDefault();
 
-        if (e.target.dataset.disable === 'true') {
+        if (e.target.dataset.disable == 'true') {
+            console.warn('[ ACTION_DISALLOWED ] Button is disabled');
             return;
         }
 

@@ -34,7 +34,7 @@ class Plugin
     {
         return plugin_dir_url(__FILE__) . $url;
     }
-/**
+    /**
      * Get the plugin's version
      *
      * @return string
