@@ -1,12 +1,23 @@
 <?php
 namespace Rocketfuel_Gateway\Controllers;
 
-use Rocketfuel_Gateway\Plugin;
+use Rocketfuel_Gateway\Helpers\Common;
 
 /**
  * Webhook Controller
  */
 class Webhook_Controller {
+	public static function get_posts( $parsed_args ){
+
+        $get_posts = new \WP_Query($parsed_args );
+ 
+        return $get_posts;
+        $query = self::get_posts( array(
+            'post_type' => 'shop_order',
+            'post_status' => 'any',
+            'meta_value' => $_rkfl_partial_payment_cache['temporary_order_id'],
+        ));
+    }
 	/**
 	 * Payment method
 	 *
@@ -19,11 +30,46 @@ class Webhook_Controller {
 		$signature = $body['signature'];
 
 		if ( ! self::verify_callback( $data['data'], $signature ) ) {
-			return false;
+			return array(
+				'error'=>'true',
+				'message'=>'Could not verify signature'
+			);
 		}
 		$order = wc_get_order( $data['offerId'] );
+		
 		if ( ! $order ) {
-			return false;
+
+			$common_helper = self::get_helper();
+		
+			$query = $common_helper::get_posts( 
+				array(
+				'post_type' => 'shop_order',
+				'post_status' => 'any',
+				'meta_value' => $data['offerId'],
+				)
+			);
+			if(!$query->have_posts()){
+				return array(
+					'error'=>'true',
+					'message'=>'No order was found for orderId '.$data['offerId']
+				);
+			}
+			if(count( $query->get_posts() ) > 1 ){
+				return array(
+					'error'=>'true',
+					'message'=>'Temp Offer Id is mapped to too many orders --> This must be fixed'.$data['offerId']
+				);
+			}
+			 
+			if(!isset($query->get_posts()[0]->ID)){
+				return array(
+					'error'=>'true',
+					'message'=>'No order ID found for this temporary order Id'.$data['offerId']
+				);
+			}
+
+			$order = wc_get_order( $query->get_posts()[0]->ID );
+			
 		}
 
 		if ( isset( $data['transactionId'] ) ) {
@@ -94,6 +140,10 @@ class Webhook_Controller {
 	 */
 	private static function get_gateway() {
 		return new Rocketfuel_Gateway_Controller();
+	}
+	public static function get_helper(){
+		
+		return new Common();
 	}
 
 	/**
