@@ -93,30 +93,210 @@ class Cart_Handler_Controller{
                 WC()->customer->get_shipping_last_name() : $lastname,
         );
     }
+    public static function get_posts( $parsed_args ){
+
+        $get_posts = new \WP_Query($parsed_args );
+ 
+        return $get_posts;
+      
+    }
+    public static function compare_cart_partial_tx( $external_tx_info ){
+   
+        $external_cart_info = $external_tx_info->check;
+
+        if( !is_array( $external_cart_info ) ){
+            return false;
+        }
+
+        if( $external_tx_info->nativeAmount < WC()->cart->total ){
+			                       
+                        file_put_contents(__DIR__.'/partial_log.json',"
+                        \n      compare result native amount is less than total", FILE_APPEND);
+            return false;
+        }
+        
+        if( count( $external_cart_info ) !== count( WC()->cart->get_cart() ) ){
+                
+                        file_put_contents(__DIR__.'/partial_log.json',"
+                        \n      compare result native product count disparity", FILE_APPEND);
+            return false;
+
+        }
+      
+        $external_cart_id_array = array_map( function( $element ){
+      
+            return $element->id;
+
+        }, $external_cart_info );
+
+  
+        $flag_incompatible_cart_product = false;
+
+        foreach( WC()->cart->get_cart() as  $cart_item ){
+
+            $is_product_present = array_search( (string)$cart_item['product_id'],$external_cart_id_array);    
+
+            if( $is_product_present === false ){
+                
+                        file_put_contents(__DIR__.'/partial_log.json',"
+                        \n      compare result product Id not fouind", FILE_APPEND);
+                $flag_incompatible_cart_product = true;
+            
+            }
+
+        }
+
+        if( $flag_incompatible_cart_product === true ){
+
+            return false;
+        
+        }
+
+        return true;
+    }
     public static function process_user_data(){
 
-
         $temporary_order_id = md5( microtime() );
+
+        $email = isset ($_POST['rkfl_checkout_email'] ) ? sanitize_email( wp_unslash( $_POST['rkfl_checkout_email'] ) ) : '';
+
+        $partial_payment_cache_key = 'rkfl_partial_payment_cache_'.$email;
+
+        $_rkfl_partial_payment_cache = get_option($partial_payment_cache_key);
+        
+        file_put_contents(__DIR__.'/partial_log.json',"
+                   \n      rkfl_partial_payment_cache".
+                  json_encode( $_rkfl_partial_payment_cache ),FILE_APPEND);
         $gateway = new Rocketfuel_Gateway_Controller();
-        $cart = $gateway->sort_cart( WC()->cart->get_cart(), $temporary_order_id );
 
         $merchant_cred = array(
             'email' => $gateway->email,
             'password' => $gateway->password
         );
 
-        $email = isset($_GET['email'])? sanitize_email( wp_unslash($_GET['email']) ) :'';
-        $firstname =isset($_GET['firstname'])? sanitize_text_field( wp_unslash($_GET['firstname']) ) : '';
-        $lastname = isset($_GET['lastname'])? sanitize_text_field( wp_unslash( $_GET['lastname']) ) : '';
+        $firstname =isset($_POST['rkfl_checkout_firstname']) ? sanitize_text_field( wp_unslash($_POST['rkfl_checkout_firstname']) ) : '';
+
+        $lastname = isset($_POST['rkfl_checkout_lastname']) ? sanitize_text_field( wp_unslash( $_POST['rkfl_checkout_lastname']) ) : '';
 
         $shipping_address = self::sort_shipping_address();
+        
         $to_encrypt = array(
             'email' => isset( $email ) ? $email : ( ! is_null( $shipping_address ) ? $shipping_address['email'] : '' ),
+
             'firstName' => isset( $firstname ) ? $firstname : ( ! is_null( $shipping_address ) ? $shipping_address['firstname'] : '' ),
+
             'lastName' => isset( $lastname ) ? $lastname : ( ! is_null( $shipping_address ) ? $shipping_address['lastname'] : '' ),
         );
+        
         $encrypted_req = $gateway->get_encrypted( json_encode( $to_encrypt ) );
 
+
+       if( 
+        $_POST['rkfl_checkout_partial_tx_check'] && 
+        $_rkfl_partial_payment_cache && 
+        isset( $_rkfl_partial_payment_cache['temporary_order_id'] ) ){
+                
+                $query = self::get_posts( array(
+                    'post_type' => 'shop_order',
+                    'post_status' => 'any',
+                    'meta_value' => $_rkfl_partial_payment_cache['temporary_order_id'],
+                ));
+                file_put_contents(__DIR__.'/partial_log.json',"
+                \n      Howm= many was gotten".
+                count( $query->posts ) ,FILE_APPEND);
+            
+                if( count( $query->posts ) > 0 ){ 
+                    // if order exists
+
+                    delete_option('rkfl_partial_payment_cache_'.$email);
+
+                }else{
+
+                    $auth_pass = Process_Payment_Controller::auth(
+                        array(
+                            'cred' => $merchant_cred,
+                            'endpoint' => $gateway->endpoint
+                            )
+                    );
+
+      
+                    if ( is_wp_error( $auth_pass ) ) {
+                        wp_send_json_success( rest_ensure_response( $auth_pass ) );
+                    }
+            
+                    $response_code = wp_remote_retrieve_response_code( $auth_pass );
+            
+                    $response_body = wp_remote_retrieve_body( $auth_pass );
+            
+                    $result = json_decode( $response_body );
+
+                
+                    
+                    if ( $response_code != '200' ) {
+                        $error_message = 'Authorization cannot be completed';
+            
+                        wc_add_notice( __($error_message, 'rocketfuel-payment-gateway' ), 'error' );
+
+                                return wp_send_json_error( array(
+                                    'error' => true,
+                                    'messages' => [$error_message]
+                                )
+                            );
+                     
+                    }
+    $rkfl_access_token = $result->result->access;
+                    
+                    $args = array(
+                        'timeout' => 200,
+                        'headers' => array( 'Content-Type' => 'application/json','authorization'=>'Bearer '.$rkfl_access_token )
+                    );
+         
+                    $url = $gateway->get_configured_endpoint()."/purchase/transaction/partials/".$gateway->get_merchant_id()."?offerId=".$_rkfl_partial_payment_cache['temporary_order_id']."&hostedPageId=".$_rkfl_partial_payment_cache['uuid'];
+                    file_put_contents(__DIR__.'/partial_log.json',"
+                    \n      What url for partial" .
+                    $url  ,FILE_APPEND);
+                    $result = wp_remote_get(  $url,$args );
+
+                    $response_code = wp_remote_retrieve_response_code( $result );
+     
+			 
+                    if ( (int)$response_code === 200 ) {
+                        
+                        // $error_message = 'Could not retrieve Partial Payment';
+            
+                        // wc_add_notice( __( $error_message, 'rocketfuel-payment-gateway' ), 'error' );
+
+                        $response_string = wp_remote_retrieve_body( $result );
+					  
+ $response_body =  json_decode( $response_string);
+                    
+                  
+                
+                        if( isset( $response_body->result->tx ) && !is_null( $response_body->result->tx ) && (int)$response_body->result->tx->status === 101 && (int)$response_body->result->paymentLinkStatus === 1 && self::compare_cart_partial_tx($response_body->result->tx)){
+    
+                            wp_send_json_success( array( 
+                                'is_partial'=> true,
+                                'encrypted_req' => $encrypted_req,
+                                'temporary_order_id' => $temporary_order_id,
+                                'uuid' => array(
+                                    'access_token' => $rkfl_access_token,
+                                    'result' => array(
+                                        'uuid' => $response_body->result->tx->hostedPageId
+                                    )
+                                )
+                            ) );
+    
+                        }
+                     
+                    } 
+                  
+           
+                }
+                             
+        }
+     
+        $cart = $gateway->sort_cart( WC()->cart->get_cart(), $temporary_order_id );
+       
         $data = array(
             'cred' => $merchant_cred,
             'endpoint' => $gateway->endpoint,
@@ -125,16 +305,16 @@ class Cart_Handler_Controller{
                 'cart' => $cart,
                 'merchant_id' => $gateway->merchant_id,
                 'shippingAddress' => $shipping_address,
-
                 'currency' => get_woocommerce_currency("USD"),
-
                 'order' => (string)$temporary_order_id,
                 'redirectUrl' => ''
             )
         );
 
-        unset($gateway);
+        unset( $gateway );
+
         $error_message = 'Payment cannot be completed';
+        
         try {
             $payment_response = Process_Payment_Controller::process_payment( $data );
             if ( is_wp_error( $payment_response ) ) {
@@ -154,12 +334,12 @@ class Cart_Handler_Controller{
              if (  (isset($payment_response->error) && $payment_response->error === true) ) {
                 // file_put_contents(__DIR__.'/log.json','the error',FILE_APPEND);
                 try{
-                       wp_send_json_error( array(
-                        'error' => true,
-                        'messages' => [isset( $payment_response->message ) ? $payment_response->message :$error_message],
-                        'data' => isset( $payment_response->data ) ? $payment_response->data :null
-                    )
-                );
+                        wp_send_json_error( array(
+                            'error' => true,
+                            'messages' => [isset( $payment_response->message ) ? $payment_response->message :$error_message],
+                            'data' => isset( $payment_response->data ) ? $payment_response->data : null
+                        )
+                    );
                 }catch(\Error $e){
         
                        wp_send_json_error( array(
@@ -171,6 +351,19 @@ class Cart_Handler_Controller{
                 }
             
             }
+// 			{"temporary_order_id":"84f7809bde45a1b6de15ae93a6e4bf4a","uuid":"2219ab84-f8b4-45d6-abb9-1c9da38a461e"}
+            update_option( 'rkfl_partial_payment_cache_'.$email, 
+                array(
+                    'temporary_order_id' => $temporary_order_id,
+                    'uuid'=>$payment_response->result->uuid
+                ),
+            false );
+// 			    update_option( 'rkfl_partial_payment_cache_'.$email, 
+//                 array(
+//                     'temporary_order_id' => '84f7809bde45a1b6de15ae93a6e4bf4a',
+//                     'uuid'=>'2219ab84-f8b4-45d6-abb9-1c9da38a461e'
+//                 ),
+//             false );
          
              wp_send_json_success( array( 
                     'encrypted_req' => $encrypted_req,
@@ -180,7 +373,7 @@ class Cart_Handler_Controller{
             );
         } catch (\Throwable $th) {
          
-            return   wp_send_json_error( array(
+            return  wp_send_json_error( array(
                     'error' => true,
                     'messages' => ['Fatal Request Error'],
                     'data' => null

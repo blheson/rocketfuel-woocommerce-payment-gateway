@@ -10,7 +10,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	{
 		$this->id = 'rocketfuel_gateway';
 
-
 		$this->has_fields = false;
 
 		$this->method_title = 'Rocketfuel';
@@ -55,15 +54,17 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 			'subscription_payment_method_change_customer',
 		);
 
-
 		$this->merchant_id = $this->get_option('merchant_id');
 
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+		
 		add_action('admin_notices', array($this, 'admin_notices'));
 	 
 		add_action('woocommerce_review_order_before_submit', array($this, 'rocketfuel_place_order'));
 	}
-
+	public function get_configured_endpoint(){
+		return $this->endpoint;
+	}
 	public function get_endpoint( $environment )
 	{
 
@@ -161,6 +162,10 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	public function merchant_auth()
 	{
 		return $this->get_encrypted($this->merchant_id);
+	}
+	public function get_merchant_id()
+	{
+		return $this->merchant_id;
 	}
 	/**
 	 * Rocketfuel Place order Button

@@ -67,3 +67,4 @@ For help setting up and configuring Rocketfuel, please refer to [Getting Started
 3.2.1.9 Fix place order button conflict with other payment method
 3.2.1.10 FIX: JS script not loading 
 3.2.1.11 FIX: Iframe drag 
+3.2.1.19 Feature: Add partial payment enhancement
