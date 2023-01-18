@@ -9,19 +9,19 @@ class Rest_Controller{
      * Register Rest Hook
      * @return void
      */
-    public static function register()
-    {
+    public static function register(){
         add_action('rest_api_init', array(__CLASS__, 'define_rest_route'));
-       
+
     }
     /**
      * Define all rest route
+     * 
      * @return void
      */
     public static function define_rest_route(){
 
         // address for rocketfuel callback
-       $gateway= new Rocketfuel_Gateway_Controller();
+        $gateway = new Rocketfuel_Gateway_Controller();
         register_rest_route(
             Plugin::get_api_route_namespace(),
             'payment',
@@ -57,8 +57,10 @@ class Rest_Controller{
             'auth',
             array(
                 'methods' => \WP_REST_Server::CREATABLE,
-                'callback' => array('Rocketfuel_Gateway\Controllers\Process_Payment_Controller', 'auth'),
-                'permission_callback' => '__return_true'
+                'callback' => array(
+                    'Rocketfuel_Gateway\Controllers\Process_Payment_Controller',
+                    'auth' )
+                    ,'permission_callback' => '__return_true'
             )
         );
 
@@ -67,7 +69,9 @@ class Rest_Controller{
             'update_order',
             array(
                 'methods' => \WP_REST_Server::CREATABLE,
-                'callback' => array( $gateway, 'update_order'),
+                'callback' => array( 
+                    $gateway, 
+                    'update_order' ),
                 'permission_callback' => '__return_true'
             )
         );
@@ -77,11 +81,10 @@ class Rest_Controller{
             'merchant_auth',
             array(
                 'methods' => \WP_REST_Server::CREATABLE,
-                'callback' => array( $gateway, 'merchant_auth'),
-                'permission_callback' => '__return_true'
+                'callback' => array( $gateway, 'merchant_auth' ),
+                'permission_callback' => '__return_true',
             )
         );
-        
-        unset($gateway);
+        unset( $gateway );
     }
 }

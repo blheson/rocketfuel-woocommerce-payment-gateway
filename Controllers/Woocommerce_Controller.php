@@ -48,7 +48,7 @@ class Woocommerce_Controller
     public static function hide_order_button_html()
     {
         $style = 'style="display:none"';
-        $button_text = apply_filters('woocommerce_order_button_text', __('Placess order', 'woocommerce'));
+        $button_text = apply_filters('woocommerce_order_button_text', __('Places order', 'woocommerce'));
         $button = '<button type="submit" name="woocommerce_checkout_place_order" id="place_order" value="Place order" data-value="Place order" class="button alt" ' . $style . '>' . $button_text . '</button>';
         return $button;
     }
@@ -109,8 +109,6 @@ class Woocommerce_Controller
             } catch (\Throwable $th) {
                 //throw $th;
             }
-
- 
         }
     }
 
@@ -134,16 +132,14 @@ class Woocommerce_Controller
                 //throw $th;
             }
             update_post_meta($order_id, 'rocketfuel_temp_orderid', $temporary_order_id);
-
-            if (null !== $_POST['order_status_rocketfuel'] && 'wc-on-hold' !==  $_POST['order_status_rocketfuel']) {
+            $order_status_rocketfuel = isset($_POST['order_status_rocketfuel']) ? sanitize_text_field(wp_unslash($_POST['order_status_rocketfuel'])) : null;
+            if (null !== $order_status_rocketfuel  && 'wc-on-hold' !== $order_status_rocketfuel) {
                 try {
                     $order = wc_get_order($order_id);
 
-
-
-
-                    $order->update_status(sanitize_text_field($_POST['order_status_rocketfuel']));
+                    $order->update_status($order_status_rocketfuel);
                 } catch (\Throwable $th) {
+                    return false;
                     //silently ignore
                 }
             }
@@ -162,11 +158,11 @@ class Woocommerce_Controller
     {
 
 
-  wp_enqueue_script('wc-gateway-rkfl-script', Plugin::get_url('assets/js/rkfl.js'), array(), time());
+        wp_enqueue_script('wc-gateway-rkfl-script', Plugin::get_url('assets/js/rkfl.js'), array(), time());
         // wp_register_script('wc-gateway-rkfl-script', 'https://d3rpjm0wf8u2co.cloudfront.net/static/rkfl.js', array(), Plugin::get_ver());
         wp_register_script('wc-gateway-rkfl-iframe', Plugin::get_url('assets/js/rkfl-iframe.js'), array(), Plugin::get_ver());
 
-      
+
 
         wp_enqueue_style('wc-gateway-rkfl-frontend', Plugin::get_url('assets/css/rkfl-iframe.css'), array(), Plugin::get_ver());
 
@@ -182,13 +178,13 @@ class Woocommerce_Controller
     }
     public static function add_gateway_class($methods)
     {
-       
-        if ( class_exists( 'WC_Subscriptions_Order' ) && class_exists( 'WC_Payment_Gateway_CC' ) ) {
+
+        if (class_exists('WC_Subscriptions_Order') && class_exists('WC_Payment_Gateway_CC')) {
             $methods[] = 'Rocketfuel_Gateway\Controllers\Rocketfuel_Gateway_Subscription_Controller';
         } else {
             $methods[] = 'Rocketfuel_Gateway\Controllers\Rocketfuel_Gateway_Controller';
         }
-    
+
         return $methods;
     }
     /**
