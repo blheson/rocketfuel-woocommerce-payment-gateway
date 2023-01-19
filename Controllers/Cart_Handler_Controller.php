@@ -192,7 +192,7 @@ class Cart_Handler_Controller{
 
 
        if( 
-        $_POST['rkfl_checkout_partial_tx_check'] && 
+        ($_POST['rkfl_checkout_partial_tx_check'] == 'true') && 
         $_rkfl_partial_payment_cache && 
         isset( $_rkfl_partial_payment_cache['temporary_order_id'] ) ){
                 
@@ -244,7 +244,7 @@ class Cart_Handler_Controller{
                             );
                      
                     }
-    $rkfl_access_token = $result->result->access;
+            $rkfl_access_token = $result->result->access;
                     
                     $args = array(
                         'timeout' => 200,
@@ -268,7 +268,7 @@ class Cart_Handler_Controller{
 
                         $response_string = wp_remote_retrieve_body( $result );
 					  
- $response_body =  json_decode( $response_string);
+            $response_body =  json_decode( $response_string);
                     
                   
                 
