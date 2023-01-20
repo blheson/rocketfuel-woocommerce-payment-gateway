@@ -12,11 +12,6 @@ class Webhook_Controller {
         $get_posts = new \WP_Query($parsed_args );
  
         return $get_posts;
-        $query = self::get_posts( array(
-            'post_type' => 'shop_order',
-            'post_status' => 'any',
-            'meta_value' => $_rkfl_partial_payment_cache['temporary_order_id'],
-        ));
     }
 	/**
 	 * Payment method
