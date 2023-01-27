@@ -1,0 +1,5 @@
+Test fresh 
+test temp order allocated to an email and allocated to an order-> should be deleted
+test temp order allocated to an email but no alloaated to an order
+    test it with partials valid
+    test it with partials invalid
