@@ -173,7 +173,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 	 */
 	public function rocketfuel_place_order()
 	{
-		if (!$this->password || !$this->email) {
+		if (!$this->get_merchant_id() || !$this->password || !$this->email) {
 			echo '<span style="color:red">' . esc_html(__('Vendor should fill in the settings page to start using Rocketfuel', 'rocketfuel-payment-gateway')) . '</span>';
 			return;
 		}
