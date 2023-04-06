@@ -185,9 +185,6 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway
 		$temp_orderid_rocketfuel = '';
 
 ?>
-
-
-
 		<div>
 			<div id="rocketfuel_retrigger_payment_button" class="rocketfuel_retrigger_payment_button" data-rkfl-button-text="<?php echo esc_attr($this->button_text); ?>"><?php echo esc_html($this->button_text); ?></div>
 			<input type="hidden" name="merchant_auth_rocketfuel" value="<?php echo esc_attr($this->merchant_auth()); ?>">

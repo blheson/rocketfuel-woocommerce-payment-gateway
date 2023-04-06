@@ -22,7 +22,7 @@ class Cart_Handler_Controller
             )
         );
     }
-    public static function sort_shipping_address()
+    public static function sort_shipping_address_raw()
     {
 
 
@@ -30,9 +30,9 @@ class Cart_Handler_Controller
             WC()->customer->get_shipping_phone() : (method_exists(WC()->customer, 'get_billing_phone') ? WC()->customer->get_billing_phone() : false);
 
 
-        if (!$phone) {
-            return null;
-        }
+        // if (!$phone) {
+        //     return null;
+        // }
 
 
 
@@ -46,9 +46,9 @@ class Cart_Handler_Controller
             WC()->customer->get_shipping_country() : '';
 
         $country = !!$country_code ? WC()->countries->countries[$country_code] : '';
-        if (!$country) {
-            return null;
-        }
+        // if (!$country) {
+        //     return null;
+        // }
         $state_code = method_exists(WC()->customer, 'get_shipping_state') ?
             WC()->customer->get_shipping_state() : '';
 
@@ -57,22 +57,22 @@ class Cart_Handler_Controller
 
 
         $state  = !empty($states[$state_code]) ? $states[$state_code] : $state_code;
-        if (!$state) {
-            return null;
-        }
+        // if (!$state) {
+        //     return null;
+        // }
         $address1 = method_exists(WC()->customer, 'get_shipping_address') ?
             WC()->customer->get_shipping_address() : '';
 
-        if (!$address1) {
-            return null;
-        }
+        // if (!$address1) {
+        //     return null;
+        // }
 
         $city = method_exists(WC()->customer, 'get_shipping_city') ?
             WC()->customer->get_shipping_city() : '';
 
-        if (!$city) {
-            return null;
-        }
+        // if (!$city) {
+        //     return null;
+        // }
         $firstname = isset($_GET['firstname']) ?
             sanitize_text_field(wp_unslash($_GET['firstname'])) : '';
 
@@ -98,6 +98,153 @@ class Cart_Handler_Controller
                 WC()->customer->get_shipping_last_name() : $lastname,
         );
     }
+    public static function sort_billing_address_raw()
+    {
+
+        $phone = method_exists(WC()->customer, 'get_billing_phone') ?
+            WC()->customer->get_billing_phone() : (method_exists(WC()->customer, 'get_shipping_phone') ? WC()->customer->get_shipping_phone() : false);
+
+
+        // if (!$phone) {
+        //     return null;
+        // }
+
+
+
+        $zipcode = method_exists(WC()->customer, 'get_billing_postcode') ?
+            WC()->customer->get_billing_postcode() : false;
+
+        $email = method_exists(WC()->customer, 'get_email') ?
+            WC()->customer->get_email() : false;
+
+        $country_code = method_exists(WC()->customer, 'get_billing_country') ?
+            WC()->customer->get_billing_country() : '';
+
+        $country = !!$country_code ? WC()->countries->countries[$country_code] : '';
+        // if (!$country) {
+        //     return null;
+        // }
+        $state_code = method_exists(WC()->customer, 'get_billing_state') ?
+            WC()->customer->get_billing_state() : '';
+
+
+        $states = $state_code ? WC()->countries->get_states($country_code) :  [];
+
+
+        $state  = !empty($states[$state_code]) ? $states[$state_code] : $state_code;
+        // if (!$state) {
+        //     return null;
+        // }
+        $address1 = method_exists(WC()->customer, 'get_billing_address') ?
+            WC()->customer->get_billing_address() : '';
+
+        // if (!$address1) {
+        //     return null;
+        // }
+
+        $city = method_exists(WC()->customer, 'get_billing_city') ?
+            WC()->customer->get_billing_city() : '';
+
+        // if (!$city) {
+        //     return null;
+        // }
+        $firstname = isset($_GET['firstname']) ?
+            sanitize_text_field(wp_unslash($_GET['firstname'])) : '';
+
+        $lastname = isset($_GET['lastname']) ?
+            sanitize_text_field(wp_unslash($_GET['lastname'])) : '';
+
+        return array(
+            "phoneNo" =>  $phone ? $phone : (method_exists(WC()->customer, 'get_billing_phone') ?
+                WC()->customer->get_billing_phone() : ''),
+            "email" => $email ? $email : (method_exists(WC()->customer, 'get_billing_email') ?
+                WC()->customer->get_billing_email() : ''),
+            "address1" => $address1,
+            "address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
+                WC()->customer->get_shipping_address_2() : '',
+            "state" =>   $state,
+            "city" =>  $city,
+            "zipcode" => $zipcode,
+            "country" => $country,
+            "landmark" => "",
+            "firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
+                WC()->customer->get_shipping_first_name() : $firstname,
+            "lastname" => method_exists(WC()->customer, 'get_shipping_last_name') ?
+                WC()->customer->get_shipping_last_name() : $lastname,
+        );
+    }
+    public static function sort_shipping_address()
+    {
+
+        $shipping_raw = self::sort_shipping_address_raw();
+
+        if (!$shipping_raw['phone']) {
+            return null;
+        }
+
+        if (!$shipping_raw['country']) {
+            return null;
+        }
+
+        if (!$shipping_raw['state']) {
+            return null;
+        }
+
+        if (!$shipping_raw['address1']) {
+            return null;
+        }
+
+        if (!$shipping_raw['city']) {
+            return null;
+        }
+
+        return  $shipping_raw;
+        return array(
+            "phoneNo" =>  $phone ? $phone : (method_exists(WC()->customer, 'get_billing_phone') ?
+                WC()->customer->get_billing_phone() : ''),
+            "email" => $email ? $email : (method_exists(WC()->customer, 'get_billing_email') ?
+                WC()->customer->get_billing_email() : ''),
+            "address1" => $address1,
+            "address2" =>  method_exists(WC()->customer, 'get_shipping_address_2') ?
+                WC()->customer->get_shipping_address_2() : '',
+            "state" =>   $state,
+            "city" =>  $city,
+            "zipcode" => $zipcode,
+            "country" => $country,
+            "landmark" => "",
+            "firstname" => method_exists(WC()->customer, 'get_shipping_first_name') ?
+                WC()->customer->get_shipping_first_name() : $firstname,
+            "lastname" => method_exists(WC()->customer, 'get_shipping_last_name') ?
+                WC()->customer->get_shipping_last_name() : $lastname,
+        );
+    }
+    public static function sort_billing_address()
+    {
+        $billing_raw = self::sort_billing_address_raw();
+      
+        if (!$billing_raw['phone']) {
+            return null;
+        }
+
+   
+        if (!$billing_raw['country']) {
+            return null;
+        }
+        if (!$billing_raw['state']) {
+            return null;
+        }
+     
+        if (!$billing_raw['address1']) {
+            return null;
+        }
+
+      
+        if (!$billing_raw['city']) {
+            return null;
+        }
+
+       return $billing_raw;
+    }
     public static function get_posts($parsed_args)
     {
 
@@ -105,50 +252,7 @@ class Cart_Handler_Controller
 
         return $get_posts;
     }
-    public static function create_order_from_cache($cache_key)
-    {
-
-        $cache_data = get_transient($cache_key);
-
-        // $cache_data = [
-        /**
-         *products = ['id',quanty]
-         * shippings = [id,title,amount]
-         * billing_address
-         * shipping_address
-         */
-        // ]
-        $order = wc_create_order();
-
-        foreach ($cache_data['products'] as $value) {
-
-            $order->add_product(wc_get_product($value['id']), $value['quantity']);
-        }
-    
-        foreach ($cache_data['shippings'] as $value) {
-
-            $shipping = new \WC_Order_Item_Shipping();
-            $shipping->set_method_title($value['title']);
-            $shipping->set_method_id($value['id']); // set an existing Shipping method ID
-            $shipping->set_total($value['amount']); // optional
-
-            // add to order
-
-            $order->add_item($shipping);
-        }
-        if (isset($cache_data['shipping_address'])) {
-            $order->set_address($cache_data['shipping_address'], 'shipping');
-        }
-
-        if (isset($cache_data['billing_address'])) {
-            $order->set_address($cache_data['billing_address'], 'billing');
-        }
-        $order->set_customer_id( 1 );
-
-        $order->calculate_totals();
- 
-        $order->save();
-    }
+   
     public static function compare_cart_partial_tx($external_tx_info)
     {
 
@@ -203,11 +307,87 @@ class Cart_Handler_Controller
     {
         return 60 * 60 * 24 * (int)$days;
     }
+    public static function get_cart_products($cart)
+    {
+        $cache = [];
+        foreach ($cart as $cart_item) {
+            $cache[] = array(
+                'id' => (string)$cart_item['product_id'],
+                'quantity' => (string)$cart_item['quantity']
+            );
+        }
+        return $cache;
+    }
+    public static function get_cart_shippings($cart)
+    {
+
+        return [['id' => 'Shipping', 'amount' => WC()->cart->get_cart_shipping_total()]];
+    }
+    public static function get_billing_address_for_transcient()
+    {
+        $sorted_billing = self::sort_billing_address_raw();
+
+        return array(
+            'first_name' =>  $sorted_billing['firstname'],
+            'last_name'  => $sorted_billing['lastname'],
+            'email'  => $sorted_billing['email'],
+            'phone'      =>  $sorted_billing['phoneNo'],
+            'address_1'  =>  $sorted_billing['address1'],
+            'address_2'  =>  $sorted_billing['address2'],
+            'city'       =>  $sorted_billing['city'],
+            'state'      =>  $sorted_billing['state'],
+            'postcode'   => $sorted_billing[' $zipcode'],
+            'country'    =>  $sorted_billing['country']
+        );
+    }
+    public static function get_shipping_address_for_transcient()
+    {
+        $sorted_shipping = self::sort_shipping_address_raw();
+
+        $address = array(
+            'first_name' =>  $sorted_shipping['firstname'],
+            'last_name'  => $sorted_shipping['lastname'],
+            'email'  => $sorted_shipping['email'],
+            'phone'      =>  $sorted_shipping['phoneNo'],
+            'address_1'  =>  $sorted_shipping['address1'],
+            'address_2'  =>  $sorted_shipping['address2'],
+            'city'       =>  $sorted_shipping['city'],
+            'state'      =>  $sorted_shipping['state'],
+            'postcode'   => $sorted_shipping[' $zipcode'],
+            'country'    =>  $sorted_shipping['country']
+        );
+        return $address;
+    }
     public static function process_user_data()
     {
 
         $temporary_order_id = md5(microtime());
-        $transient_value = array();
+
+        // $cache_data = [
+        /**
+         *products = [['id',quanty]]
+         * shippings = [[id,title,amount]]
+         * billing_address
+         * shipping_address
+         * payment_method = > id,title
+         */
+        // ]
+        $gateway = new Rocketfuel_Gateway_Controller();
+
+        $transient_value = array(
+            'merchant_id'=>$gateway->merchant_id,
+            'products ' => self::get_cart_products(WC()->cart->get_cart()),
+            'shippings' => self::get_cart_shippings(WC()->cart->get_cart()),
+            'billing_address' => self::get_billing_address_for_transcient(),
+            'shipping_address' => self::get_shipping_address_for_transcient(),
+            'payment_method'=>array(
+                'id'=>$gateway ->id,'title'=>$gateway->method_title
+            ),
+            'customer_id'=>WC()->customer->get_id()
+        );
+        file_put_contents(__DIR__ . '/transcient.json', "
+        \n   " .
+ json_encode($transient_value), FILE_APPEND);
         \set_transient($temporary_order_id, $transient_value,  self::days_in_secs(2));
 
         $email = isset($_POST['rkfl_checkout_email']) ? sanitize_email(wp_unslash($_POST['rkfl_checkout_email'])) : '';
@@ -219,8 +399,7 @@ class Cart_Handler_Controller
         file_put_contents(__DIR__ . '/partial_log.json', "
                    \n      rkfl_partial_payment_cache" .
             json_encode($_rkfl_partial_payment_cache), FILE_APPEND);
-        $gateway = new Rocketfuel_Gateway_Controller();
-
+     
         $merchant_cred = array(
             'email' => $gateway->email,
             'password' => $gateway->password
