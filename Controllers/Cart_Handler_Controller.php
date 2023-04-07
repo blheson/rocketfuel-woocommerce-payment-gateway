@@ -332,7 +332,7 @@ class Cart_Handler_Controller {
 			'address_2'  => $sorted_billing['address2'],
 			'city'       => $sorted_billing['city'],
 			'state'      => $sorted_billing['state'],
-			'postcode'   => $sorted_billing[' $zipcode'],
+			'postcode'   => $sorted_billing['zipcode'],
 			'country'    => $sorted_billing['country'],
 		);
 	}
