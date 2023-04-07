@@ -348,7 +348,7 @@ class Cart_Handler_Controller {
 			'address_2'  => $sorted_shipping['address2'],
 			'city'       => $sorted_shipping['city'],
 			'state'      => $sorted_shipping['state'],
-			'postcode'   => $sorted_shipping[' $zipcode'],
+			'postcode'   => $sorted_shipping['zipcode'],
 			'country'    => $sorted_shipping['country'],
 		);
 		return $address;
