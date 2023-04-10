@@ -69,3 +69,4 @@ For help setting up and configuring Rocketfuel, please refer to [Getting Started
 3.2.1.11 FIX: Iframe drag 
 3.2.1.19 Feature: Add partial payment enhancement
 3.2.1.23 BUG FIX: Throw error when credentials is not fixed
+         BUG FIX: Create order when order flow is incomplete
