@@ -53,6 +53,9 @@ class Webhook_Controller
 
 			if (!$query->have_posts()) {
 				$order = self::create_order_from_cache($data['offerId']);
+	 
+				self::swap_order_id($data['offerId'], $order->get_id());
+	
 			}
 			if (!$order) {
 				if (count($query->get_posts()) > 1) {
@@ -111,6 +114,15 @@ class Webhook_Controller
 
 			return true;
 		}
+	}
+	/**
+	 * 
+	 */
+	public static function swap_order_id($temp,$new_order){
+	
+				$gateway = new Rocketfuel_Gateway_Controller();
+				$gateway->swap_order_id($temp, $new_order);
+				unset( $gateway );
 	}
 	/**
 	 * Undocumented function
