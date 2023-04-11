@@ -245,23 +245,13 @@ class Cart_Handler_Controller {
 
 		if ( $external_tx_info->nativeAmount < WC()->cart->total ) {
 
-			file_put_contents(
-				__DIR__ . '/partial_log.json',
-				"
-                        \n      compare result native amount is less than total",
-				FILE_APPEND
-			);
+		
 			return false;
 		}
 
 		if ( count( $external_cart_info ) !== count( WC()->cart->get_cart() ) ) {
 
-			file_put_contents(
-				__DIR__ . '/partial_log.json',
-				"
-                        \n      compare result native product count disparity",
-				FILE_APPEND
-			);
+
 			return false;
 		}
 
@@ -281,12 +271,7 @@ class Cart_Handler_Controller {
 
 			if ( $is_product_present === false ) {
 
-				file_put_contents(
-					__DIR__ . '/partial_log.json',
-					"
-                        \n      compare result product Id not fouind",
-					FILE_APPEND
-				);
+			 
 				$flag_incompatible_cart_product = true;
 			}
 		}
@@ -380,13 +365,7 @@ class Cart_Handler_Controller {
 			),
 			'customer_id'      => WC()->customer->get_id(),
 		);
-		file_put_contents(
-			__DIR__ . '/transcient.json',
-			"
-        \n   " .
-			json_encode( $transient_value ),
-			FILE_APPEND
-		);
+	 
 		\set_transient( $temporary_order_id, $transient_value, self::days_in_secs( 2 ) );
 
 		$email = isset( $_POST['rkfl_checkout_email'] ) ? sanitize_email( wp_unslash( $_POST['rkfl_checkout_email'] ) ) : '';
@@ -395,13 +374,7 @@ class Cart_Handler_Controller {
 
 		$_rkfl_partial_payment_cache = get_option( $partial_payment_cache_key );
 
-		file_put_contents(
-			__DIR__ . '/partial_log.json',
-			"
-                   \n      rkfl_partial_payment_cache" .
-			json_encode( $_rkfl_partial_payment_cache ),
-			FILE_APPEND
-		);
+	 
 
 		$merchant_cred = array(
 			'email'    => $gateway->email,
@@ -437,13 +410,7 @@ class Cart_Handler_Controller {
 					'meta_value'  => $_rkfl_partial_payment_cache['temporary_order_id'],
 				)
 			);
-			file_put_contents(
-				__DIR__ . '/partial_log.json',
-				"
-                \n      Howm= many was gotten" .
-				count( $query->posts ),
-				FILE_APPEND
-			);
+		 
 
 			if ( count( $query->posts ) > 0 ) {
 				// if order exists
@@ -491,13 +458,7 @@ class Cart_Handler_Controller {
 				);
 
 				$url = $gateway->get_configured_endpoint() . '/purchase/transaction/partials/' . $gateway->get_merchant_id() . '?offerId=' . $_rkfl_partial_payment_cache['temporary_order_id'] . '&hostedPageId=' . $_rkfl_partial_payment_cache['uuid'];
-				file_put_contents(
-					__DIR__ . '/partial_log.json',
-					"
-                    \n      What url for partial" .
-					$url,
-					FILE_APPEND
-				);
+			 
 				$result = wp_remote_get( $url, $args );
 
 				$response_code = wp_remote_retrieve_response_code( $result );
@@ -568,7 +529,7 @@ class Cart_Handler_Controller {
 			}
 
 			if ( ( isset( $payment_response->error ) && $payment_response->error === true ) ) {
-				// file_put_contents(__DIR__.'/log.json','the error',FILE_APPEND);
+			 
 				try {
 					wp_send_json_error(
 						array(

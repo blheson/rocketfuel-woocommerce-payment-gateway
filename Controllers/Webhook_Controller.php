@@ -26,8 +26,7 @@ class Webhook_Controller
 	{
 		$body = wc_clean($request_data->get_params());
 		$data = $body['data'];
-		file_put_contents(__DIR__ . '/webhook.json', "\n" . json_encode($body), FILE_APPEND);
-
+	
 		$signature = $body['signature'];
 
 		if (!self::verify_callback($data['data'], $signature)) {

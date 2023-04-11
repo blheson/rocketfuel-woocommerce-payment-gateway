@@ -126,12 +126,10 @@ class Woocommerce_Controller
 
             try {
                 
-                file_put_contents(__DIR__.'/log.json',"\n".'rkfl_partial_payment_cache_'.$email,FILE_APPEND);
-
+              
                 delete_option( 'rkfl_partial_payment_cache_'.$email);
                 
-                file_put_contents(__DIR__.'/log.json',json_encode($_POST)."\n\n",FILE_APPEND);
-
+              
                 $gateway = new Rocketfuel_Gateway_Controller();
 
                 $gateway->swap_order_id($temporary_order_id, $order_id);
