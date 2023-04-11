@@ -5,7 +5,9 @@ namespace Rocketfuel_Gateway;
 use Rocketfuel_Gateway\Controllers\Activation_Controller;
 use Rocketfuel_Gateway\Controllers\Rest_Controller;
 use Rocketfuel_Gateway\Controllers\Metabox_Controller;
+use Rocketfuel_Gateway\Controllers\Webhook_Controller;
 use Rocketfuel_Gateway\Controllers\Woocommerce_Controller;
+use WooCommerce\PayPalCommerce\ApiClient\Entity\Webhook;
 
 class Plugin
 {
@@ -62,6 +64,7 @@ class Plugin
     {
         Rest_Controller::register();
         Woocommerce_Controller::register();
+        Webhook_Controller::register();
       
     }
 }

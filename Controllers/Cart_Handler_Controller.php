@@ -185,24 +185,6 @@ class Cart_Handler_Controller {
 		}
 
 		return $shipping_raw;
-		return array(
-			'phoneNo'   => $phone ? $phone : ( method_exists( WC()->customer, 'get_billing_phone' ) ?
-				WC()->customer->get_billing_phone() : '' ),
-			'email'     => $email ? $email : ( method_exists( WC()->customer, 'get_billing_email' ) ?
-				WC()->customer->get_billing_email() : '' ),
-			'address1'  => $address1,
-			'address2'  => method_exists( WC()->customer, 'get_shipping_address_2' ) ?
-				WC()->customer->get_shipping_address_2() : '',
-			'state'     => $state,
-			'city'      => $city,
-			'zipcode'   => $zipcode,
-			'country'   => $country,
-			'landmark'  => '',
-			'firstname' => method_exists( WC()->customer, 'get_shipping_first_name' ) ?
-				WC()->customer->get_shipping_first_name() : $firstname,
-			'lastname'  => method_exists( WC()->customer, 'get_shipping_last_name' ) ?
-				WC()->customer->get_shipping_last_name() : $lastname,
-		);
 	}
 	public static function sort_billing_address() {
 		$billing_raw = self::sort_billing_address_raw();

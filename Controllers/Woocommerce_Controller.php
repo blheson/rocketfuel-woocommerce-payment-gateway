@@ -125,11 +125,12 @@ class Woocommerce_Controller
             $email = sanitize_text_field($_POST['billing_email']);
 
             try {
-                
-              
+
                 delete_option( 'rkfl_partial_payment_cache_'.$email);
-                
-              
+		
+                delete_transient($temporary_order_id);
+
+            
                 $gateway = new Rocketfuel_Gateway_Controller();
 
                 $gateway->swap_order_id($temporary_order_id, $order_id);

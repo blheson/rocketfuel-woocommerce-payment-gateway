@@ -10,6 +10,19 @@ use Rocketfuel_Gateway\Helpers\Common;
 class Webhook_Controller
 {
 
+	/**
+	 * Registers actions
+	 */
+	public static function register() {
+
+		add_action(
+			'rkfl_order_webhook_creation_hook',
+			array(
+				__CLASS__,
+				'rocketfuel_process_checkout',
+			)
+		);
+	}
 	public static function get_posts($parsed_args)
 	{
 
@@ -18,15 +31,49 @@ class Webhook_Controller
 		return $get_posts;
 	}
 	/**
+	* 
+	*/
+	public static function schedule_hook( $data ){
+$data = $data[0];
+		file_put_contents(__DIR__.'/data.json',json_encode($data ));
+
+		$order = self::create_order_from_cache($data['offerId']);
+
+		file_put_contents(__DIR__.'/log.json',json_encode($order));
+		
+		if( ! $order ){
+			
+			return error_log("Could not create an order");
+		}
+
+		self::swap_order_id( $data['offerId'], $order->get_id() );
+		
+		return self::sort_order_status( $order, $data );
+
+	}
+	/**
 	 * Payment method
 	 *
 	 * @param WP_REQUEST $request_data From wp request.
 	 */
 	public static function payment($request_data)
 	{
+
+		// $common_helper = self::get_helper();
+
+		// $query = $common_helper::get_posts(
+		// 	array(
+		// 		'post_type'   => 'shop_order',
+		// 		'post_status' => 'any',
+		// 		'meta_value'  => '48cfcc8b4a071e974d596f28c711e955',
+		// 	)
+		// );
+
+		// var_dump($query );
+		// var_dump($query->have_posts() );
 		$body = wc_clean($request_data->get_params());
 		$data = $body['data'];
-	
+
 		$signature = $body['signature'];
 
 		if (!self::verify_callback($data['data'], $signature)) {
@@ -50,11 +97,21 @@ class Webhook_Controller
 				)
 			);
 
-			if (!$query->have_posts()) {
-				$order = self::create_order_from_cache($data['offerId']);
-	 
-				self::swap_order_id($data['offerId'], $order->get_id());
-	
+
+			// array('Rocketfuel_Gateway\Controllers\Webhook_Controller', 'schedule_hook')
+
+			if ( ! $query->have_posts()) {
+		 
+				try{
+					wp_schedule_single_event(
+						time() + 120,
+						'rkfl_order_webhook_creation_hook',
+						array($data)
+					);
+				}catch(\Error $error){
+					var_dump($error , '$error');
+				}
+				return;
 			}
 			if (!$order) {
 				if (count($query->get_posts()) > 1) {
@@ -67,13 +124,17 @@ class Webhook_Controller
 				if (!isset($query->get_posts()[0]->ID)) {
 
 					$order = self::create_order_from_cache($data['offerId']);
+					self::swap_order_id($data['offerId'], $order->get_id());
 				} else {
 
 					$order = wc_get_order($query->get_posts()[0]->ID);
 				}
 			}
 		}
-
+		return self::sort_order_status($order, $data);
+	}
+	public static function sort_order_status($order, $data)
+	{
 		if (isset($data['transactionId'])) {
 			$order->set_transaction_id($data['transactionId']);
 		}
@@ -117,11 +178,12 @@ class Webhook_Controller
 	/**
 	 * 
 	 */
-	public static function swap_order_id($temp,$new_order){
-	
-				$gateway = new Rocketfuel_Gateway_Controller();
-				$gateway->swap_order_id($temp, $new_order);
-				unset( $gateway );
+	public static function swap_order_id($temp, $new_order)
+	{
+
+		$gateway = new Rocketfuel_Gateway_Controller();
+		$gateway->swap_order_id($temp, $new_order);
+		unset($gateway);
 	}
 	/**
 	 * Undocumented function
@@ -190,6 +252,8 @@ class Webhook_Controller
 		$order->add_order_note('New order created with temporary order Id ->' . $cache_key);
 
 		$order->save();
+		delete_transient($cache_key);
+
 		return $order;
 	}
 	/**
