@@ -5,15 +5,21 @@ namespace Rocketfuel_Gateway\Controllers;
 use Rocketfuel_Gateway\Plugin;
 use stdClass;
 
-class Process_Payment_Controller{
-
-	private static function create_error( $message, $data ){
+class Process_Payment_Controller {
+	/**
+	 * Create Error function
+	 *
+	 * @param [type] $message
+	 * @param [type] $data
+	 * @return void
+	 */
+	private static function create_error( $message, $data ) {
 
 			$errorObj = new stdClass();
-	
-			$errorObj->error = true;
+
+			$errorObj->error   = true;
 			$errorObj->message = $message;
-			$errorObj->data = $data;
+			$errorObj->data    = $data;
 			return $errorObj;
 	}
 	/**
@@ -38,22 +44,21 @@ class Process_Payment_Controller{
 		if ( $response_code != '200' ) {
 			$error_message = 'Authorization cannot be completed';
 
-			wc_add_notice( __($error_message, 'rocketfuel-payment-gateway' ), 'error' );
+			wc_add_notice( __( $error_message, 'rocketfuel-payment-gateway' ), 'error' );
 
-			return self::create_error($error_message,$response_body );
+			return self::create_error( $error_message, $response_body );
 		}
 
-		$charge_response = self::create_charge( $result->result->access, $data );
-		$charge_response_code = wp_remote_retrieve_response_code( $charge_response );
+		$charge_response         = self::create_charge( $result->result->access, $data );
+		$charge_response_code    = wp_remote_retrieve_response_code( $charge_response );
 		$wp_remote_retrieve_body = wp_remote_retrieve_body( $charge_response );
-		
+
 		if ( $charge_response_code != '200' ) {
 			$error_message = 'Could not establish an order';
 			wc_add_notice( __( $error_message, 'rocketfuel-payment-gateway' ), 'error' );
 
-			return self::create_error($error_message,$wp_remote_retrieve_body);
+			return self::create_error( $error_message, $wp_remote_retrieve_body );
 
-			 
 		}
 
 		$create_charge = json_decode( $wp_remote_retrieve_body );
@@ -65,15 +70,15 @@ class Process_Payment_Controller{
 	}
 	/**
 	 * Process authentication
-	 * 
+	 *
 	 * @param array $data
 	 */
 	public static function auth( $data ) {
 		$body = wp_json_encode( $data['cred'] );
 		$args = array(
-			'timeout'	 => 200,
+			'timeout' => 200,
 			'headers' => array( 'Content-Type' => 'application/json' ),
-			'body' => $body
+			'body'    => $body,
 		);
 
 		$response = wp_remote_post( $data['endpoint'] . '/auth/login', $args );
@@ -81,17 +86,18 @@ class Process_Payment_Controller{
 	}
 	/**
 	 * Get UUID of the customer
-	 * 
+	 *
 	 * @param array $data
 	 */
 	public static function create_charge( $access_token, $data ) {
-		$body = wp_json_encode( $data['body'] );
-		$args = array(
-			'timeout'	=> 45,
-			'headers' => array( 'authorization' => "Bearer  $access_token",
-			'Content-Type' => 'application/json'
-		),
-			'body' => $body
+		$body     = wp_json_encode( $data['body'] );
+		$args     = array(
+			'timeout' => 45,
+			'headers' => array(
+				'authorization' => "Bearer  $access_token",
+				'Content-Type'  => 'application/json',
+			),
+			'body'    => $body,
 		);
 		$response = wp_remote_post( $data['endpoint'] . '/hosted-page', $args );
 		return $response;
