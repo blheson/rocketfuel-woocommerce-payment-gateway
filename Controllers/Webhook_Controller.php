@@ -40,7 +40,7 @@ class Webhook_Controller {
 
 		if ( ! $order ) {
 
-			return error_log( 'Could not create an order' );
+			return error_log( '[RKFL_ERROR] Could not create an order' );
 		}
 
 		self::swap_order_id( $data['offerId'], $order->get_id() );
@@ -87,7 +87,7 @@ class Webhook_Controller {
 
 				try {
 					wp_schedule_single_event(
-						time() + 50,
+						time() + 120,
 						'rkfl_order_webhook_creation_hook',
 						$data
 					);
