@@ -44,7 +44,12 @@ class Webhook_Controller {
 					'meta_value'  => $data['offerId'],
 				)
 			);
-
+			if ( ! $query->have_posts() ) {
+			return array(
+				'error'   => 'true',
+			 
+			);
+			}
 		$order = self::create_order_from_cache( $data['offerId'] );
 
 		if ( ! $order ) {
