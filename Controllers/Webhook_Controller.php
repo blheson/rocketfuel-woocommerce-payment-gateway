@@ -35,6 +35,15 @@ class Webhook_Controller {
 	public static function schedule_hook( $data ) {
 
 		$data = json_decode( $data, true );
+	$common_helper = self::get_helper();
+
+			$query = $common_helper::get_posts(
+				array(
+					'post_type'   => 'shop_order',
+					'post_status' => 'any',
+					'meta_value'  => $data['offerId'],
+				)
+			);
 
 		$order = self::create_order_from_cache( $data['offerId'] );
 
@@ -114,9 +123,12 @@ class Webhook_Controller {
 				}
 
 				if ( ! isset( $query->get_posts()[0]->ID ) ) {
-
-					$order = self::create_order_from_cache( $data['offerId'] );
-					self::swap_order_id( $data['offerId'], $order->get_id() );
+	return array(
+					'error'   => true,
+					'message' => 'No order found after post found',
+				);
+// 					$order = self::create_order_from_cache( $data['offerId'] );
+// 					self::swap_order_id( $data['offerId'], $order->get_id() );
 				} else {
 
 					$order = wc_get_order( $query->get_posts()[0]->ID );
