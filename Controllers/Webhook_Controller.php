@@ -44,7 +44,7 @@ class Webhook_Controller {
 					'meta_value'  => $data['offerId'],
 				)
 			);
-			if ( ! $query->have_posts() ) {
+			if (  $query->have_posts() ) {
 			return array(
 				'error'   => 'true',
 			 
