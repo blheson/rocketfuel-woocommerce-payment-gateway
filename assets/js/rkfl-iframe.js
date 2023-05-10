@@ -107,7 +107,7 @@
             if (!result.success) {
 
                 // document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = document.getElementById('rocketfuel_retrigger_payment_button').dataset.rkflButtonText;
-                RocketfuelPaymentEngine.prepareRetrigger(); 
+                RocketfuelPaymentEngine.prepareRetrigger();
                 // Error messages may be preformatted in which case response structure will differ
                 var messages = result.data ? result.data.messages : result.messages;
 
@@ -178,7 +178,7 @@
         triggerPlaceOrder: function () {
             // document.getElementById('place_order').style.display = 'inherit';
             console.log('Trigger is calling');
-   
+
             $('form.checkout').trigger('submit');
 
             // document.getElementById('place_order').style.display = 'none';
@@ -242,7 +242,7 @@
             document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
 
             let checkIframe = setInterval(() => {
-console.log('retrying');
+                console.log('retrying');
                 if (RocketfuelPaymentEngine.rkfl.iframeInfo.iframe) {
 
                     RocketfuelPaymentEngine.rkfl.initPayment();
@@ -359,20 +359,20 @@ console.log('retrying');
                     rkflButtonAccept
                 }
             },
-            clearAppendedDom:(element)=>{
+            clearAppendedDom: (element) => {
                 element.remove();
             }
         },
         userAgreeToPartialPayment: function () {
-            return new Promise((resolve, reject) =>{
+            return new Promise((resolve, reject) => {
                 try {
-                    const {   
+                    const {
                         rkflPaymentPartialAlertModalUnderlay,
                         rkflPaymentPartialAlertModal,
                         rkflPaymentPartialAlertModalContent,
                         rkflPaymentPartialAlertModalContentButton,
                         rkflButtonReject,
-                        rkflButtonAccept 
+                        rkflButtonAccept
                     } = RocketfuelPaymentEngine.createElementAbstract.partialPaymentNotificationModal();
 
                     rkflButtonReject.addEventListener('click', () => {
@@ -408,41 +408,41 @@ console.log('retrying');
 
             return new Promise(async (resolve, reject) => {
 
-                if ( !RocketFuel ) {
+                if (!RocketFuel) {
 
                     location.reload();
                     reject();
 
                 }
-        
+
                 let { uuid, isPartial } = await this.getUUID(); //set uuid
 
-                if ( !uuid ) {
+                if (!uuid) {
 
                     reject();
 
                 }
-               
+
                 document.getElementById('rocketfuel_retrigger_payment_button').dataset.disable = true;
-             
-                if ( isPartial ) {
+
+                if (isPartial) {
 
                     const userAgreed = await this.userAgreeToPartialPayment();
-              
-                    if ( ! userAgreed ) {
+
+                    if (!userAgreed) {
 
                         const result = await this.getUUID(false); //set uuid
-                
+
                         uuid = result.uuid;
-                        console.log({uuid},'User did not agree');
+                        console.log({ uuid }, 'User did not agree');
 
                         // isPartial = result.isPartial;
 
-                    }else{
-                        console.log( {uuid}, 'User did agree' );
+                    } else {
+                        console.log({ uuid }, 'User did agree');
                     }
 
-                } 
+                }
 
 
                 let userData = RocketfuelPaymentEngine.getUserData();
