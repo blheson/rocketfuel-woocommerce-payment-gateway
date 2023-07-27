@@ -277,6 +277,9 @@ class Cart_Handler_Controller {
 	
 			$product = wc_get_product( $cart_item['product_id']);
 			
+
+			error_log($product->get_type() .'  === is type variable'.$product->is_type(self::$product_type_variant));
+		
 			$cache[] = array(
 				'id'       => (string) $cart_item['product_id'],
 				'quantity' => (string) $cart_item['quantity'],
@@ -288,9 +291,10 @@ class Cart_Handler_Controller {
 	}
 	public static function get_cart_shippings( $cart ) {
 
+		$shipping = WC()->session->get( 'chosen_shipping_methods' );
 		return array(
 			array(
-				'id'     => 'Shipping',
+				'id'     => is_array($shipping) ? $shipping[0] : 'Shipping',
 				'title'     => 'Shipping',
 				'amount' => WC()->cart->get_shipping_total(),
 			),
@@ -359,7 +363,16 @@ class Cart_Handler_Controller {
 		);
 
 		
+
+		error_log('WC()->cart->total : '.WC()->cart->total);
+
+		
+		error_log('Temporary order_id : '.$temporary_order_id);
+
 		\set_transient( $temporary_order_id, $transient_value, self::days_in_secs( 2 ) );
+
+		error_log('$transient_value : '.json_encode($transient_value));
+
 
 		$email = isset( $_POST['rkfl_checkout_email'] ) ? sanitize_email( wp_unslash( $_POST['rkfl_checkout_email'] ) ) : '';
 
