@@ -35,7 +35,7 @@ class Webhook_Controller {
 	public static function schedule_hook( $data ) {
 
 		$data = json_decode( $data, true );
-	$common_helper = self::get_helper();
+		$common_helper = self::get_helper();
 
 			$query = $common_helper::get_posts(
 				array(
@@ -44,17 +44,19 @@ class Webhook_Controller {
 					'meta_value'  => $data['offerId'],
 				)
 			);
+
 			if (  $query->have_posts() ) {
-			return array(
-				'error'   => 'true',
-			 
-			);
+
+				return array(
+					'error'   => 'true',
+				);
 			}
-		$order = self::create_order_from_cache( $data['offerId'] );
 
-		if ( ! $order ) {
+		$order = self::create_order_from_cache( $data['offerId'] , $data);
 
-			return error_log( '[RKFL_ERROR] Could not create an order' );
+		if ( ! $order || (is_array($order) && isset($order['error'])) ) {
+
+			return error_log( '[RKFL_ERROR] Could not create a manual order: '.json_encode($order) );
 		}
 
 		self::swap_order_id( $data['offerId'], $order->get_id() );
@@ -77,14 +79,21 @@ class Webhook_Controller {
 		if ( ! self::verify_callback( $data['data'], $signature ) ) {
 			return array(
 				'error'   => 'true',
-				'message' => 'Could not verify signature',
+				'message' => 'Could not verify signature. '. $data,
+			);
+		}
+		$compare_data =  json_decode($data['data'], true);
+		if($data['offerId'] !==$compare_data['offerId'] ){
+			return array(
+				'error'   => 'true',
+				'message' => 'Data has been tampered with',
 			);
 		}
 
 		$order = wc_get_order( $data['offerId'] );
 
-		if ( ! $order ) {
 
+		if ( ! $order ) {
 			$common_helper = self::get_helper();
 
 			$query = $common_helper::get_posts(
@@ -100,13 +109,25 @@ class Webhook_Controller {
 			if ( ! $query->have_posts() ) {
 
 				try {
+					$is_scheduled_order = \get_transient( 'rkfl_scheduled_order_'.$data['offerId'] );
+					if($is_scheduled_order){
+						
+						return array(
+							'error'   => true,
+							'message' => 'Order has been scheduled to be created',
+						);
+					}
 					wp_schedule_single_event(
 						time() + 120,
 						'rkfl_order_webhook_creation_hook',
 						$data
 					);
+					//Keep track of a scheduled hook
+					\set_transient( 'rkfl_scheduled_order_'.$data['offerId'], $data['offerId'], self::get_helper()::days_in_secs( 3 ) );
+
 					// self::schedule_hook( $data );
 				} catch ( \Error $error ) {
+
 					return array(
 						'error'   => true,
 						'message' => 'Schedule order not created',
@@ -128,26 +149,36 @@ class Webhook_Controller {
 				}
 
 				if ( ! isset( $query->get_posts()[0]->ID ) ) {
-	return array(
-					'error'   => true,
-					'message' => 'No order found after post found',
-				);
-// 					$order = self::create_order_from_cache( $data['offerId'] );
-// 					self::swap_order_id( $data['offerId'], $order->get_id() );
+					return array(
+								'error'   => true,
+								'message' => 'No order found after post found',
+							);
+				//$order = self::create_order_from_cache( $data['offerId'] );
+				//self::swap_order_id( $data['offerId'], $order->get_id() );
 				} else {
 
 					$order = wc_get_order( $query->get_posts()[0]->ID );
 				}
 			}
 		}
+
+		if(!$order ){
+			return array(
+				'error'   => 'true',
+				'message' => 'Could not find an order',
+			);
+		}
+
 		return self::sort_order_status( $order, $data );
 	}
 	public static function sort_order_status( $order, $data ) {
-		if ( isset( $data['transactionId'] ) ) {
-			$order->set_transaction_id( $data['transactionId'] );
+		$compare_data =  json_decode($data['data'], true);
+
+		if ( isset( $compare_data['transactionId'] ) ) {
+			$order->set_transaction_id( $compare_data['transactionId'] );
 		}
 
-		$status = (int) $data['paymentStatus'];
+		$status = (int) $compare_data ['paymentStatus'];
 		if ( 0 === $status ) {
 			return true;
 		}
@@ -198,14 +229,15 @@ class Webhook_Controller {
 	 * @param [type] $cache_key params
 	 * @return void|any
 	 */
-	public static function create_order_from_cache( $cache_key ) {
+	public static function create_order_from_cache( $cache_key, $data ) {
 
 		$cache_data = get_transient( $cache_key );
 		if ( ! $cache_data ) {
 			return array(
 				'error'   => true,
 				'message' => 'no cache found ' . $cache_key,
-			); }
+			); 
+		}
 		// $cache_data = [
 		/**
 		 *products = [['id',quanty]]
@@ -216,12 +248,22 @@ class Webhook_Controller {
 		 */
 		// ]
 		$order = wc_create_order();
+		$signature_data = json_decode($data['data'],true);
 
-		foreach ( $cache_data['products'] as $value ) {
-
-			$order->add_product( wc_get_product( $value['id'] ), $value['quantity'] );
+		if( (float)$cache_data['total'] !== (float)$signature_data['amount']){
+			return array(
+				'error'   => true,
+				'message' => 'error ',
+			); 
 		}
-		$order->calculate_totals();
+		foreach ( $cache_data['products'] as $value ) {
+			$product_id = $value['type'] === Cart_Handler_Controller::$product_type_variant ? $value['variant_id']: $value['id'];
+		
+			$product = wc_get_product( $product_id );
+			
+			$order->add_product( $product, $value['quantity'] );
+		}
+		// $order->calculate_totals();
 		if ( isset( $cache_data['shippings'] ) ) {
 			foreach ( $cache_data['shippings'] as $value ) {
 
@@ -256,7 +298,8 @@ class Webhook_Controller {
 			$order->set_payment_method_title( $cache_data['payment_method']['title'] );
 		}
 		// $order->set_status( $cache_data['order_status'] );
-		$order->calculate_totals();
+		// $order->calculate_totals();
+		$order->set_total($signature_data['amount']);
 		$order_id = method_exists( $order, 'get_id' ) ? $order->get_id() : $order->id;
 		update_post_meta( $order_id, 'rocketfuel_temp_orderid', $cache_key );
 		$order->add_order_note( 'New order created with temporary order Id ->' . $cache_key );
