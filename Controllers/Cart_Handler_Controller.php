@@ -9,6 +9,8 @@ use Rocketfuel_Gateway\Plugin;
 class Cart_Handler_Controller {
 
 
+	public static $product_type_variant = 'variable';
+
 	/**
 	 * Registers actions
 	 */
@@ -269,20 +271,31 @@ class Cart_Handler_Controller {
 		return 60 * 60 * 24 * (int) $days;
 	}
 	public static function get_cart_products( $cart ) {
+			
 		$cache = array();
 		foreach ( $cart as $cart_item ) {
+	
+			$product = wc_get_product( $cart_item['product_id']);
+			
+
+			error_log($product->get_type() .'  === is type variable'.$product->is_type(self::$product_type_variant));
+		
 			$cache[] = array(
 				'id'       => (string) $cart_item['product_id'],
 				'quantity' => (string) $cart_item['quantity'],
+				'type' => $product->get_type(),
+				'variant_id' =>$product->is_type(self::$product_type_variant) ? (string) $cart_item['variation_id'] : ''
 			);
 		}
 		return $cache;
 	}
 	public static function get_cart_shippings( $cart ) {
 
+		$shipping = WC()->session->get( 'chosen_shipping_methods' );
 		return array(
 			array(
-				'id'     => 'Shipping',
+				'id'     => is_array($shipping) ? $shipping[0] : 'Shipping',
+				'title'     => 'Shipping',
 				'amount' => WC()->cart->get_shipping_total(),
 			),
 		);
@@ -346,9 +359,20 @@ class Cart_Handler_Controller {
 				'title' => $gateway->method_title,
 			),
 			'customer_id'      => WC()->customer->get_id(),
+			'total'            => WC()->cart->total
 		);
-	 
+
+		
+
+		error_log('WC()->cart->total : '.WC()->cart->total);
+
+		
+		error_log('Temporary order_id : '.$temporary_order_id);
+
 		\set_transient( $temporary_order_id, $transient_value, self::days_in_secs( 2 ) );
+
+		error_log('$transient_value : '.json_encode($transient_value));
+
 
 		$email = isset( $_POST['rkfl_checkout_email'] ) ? sanitize_email( wp_unslash( $_POST['rkfl_checkout_email'] ) ) : '';
 

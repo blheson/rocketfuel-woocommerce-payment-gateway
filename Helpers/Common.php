@@ -14,4 +14,7 @@ class Common
         return $get_posts;
      
     }
+    public static function days_in_secs( $days ) {
+		return 60 * 60 * 24 * (int) $days;
+	}
 }?>
