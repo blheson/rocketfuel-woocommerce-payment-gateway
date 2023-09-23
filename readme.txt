@@ -71,3 +71,4 @@ For help setting up and configuring Rocketfuel, please refer to [Getting Started
 3.2.1.23 BUG FIX: Throw error when credentials is not fixed
          BUG FIX: Create order when order flow is incomplete
 3.2.1.24 BUG FIX: Double Order Creation
+3.2.1.30 FEATURE: Webhook for variant product
