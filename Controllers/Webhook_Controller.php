@@ -84,10 +84,11 @@ class Webhook_Controller {
 		}
 		$compare_data =  json_decode($data['data'], true);
 		if($data['offerId'] !==$compare_data['offerId'] ){
-			return array(
-				'error'   => 'true',
-				'message' => 'Data has been tampered with',
-			);
+			// return array(
+			// 	'error'   => 'true',
+			// 	'message' => 'Data has been tampered with',
+			// );
+			//shop alert does not sync this data
 		}
 
 		$order = wc_get_order( $data['offerId'] );
