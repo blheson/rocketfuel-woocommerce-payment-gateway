@@ -3,7 +3,7 @@ Contributors: rockectfuel
 Requires at least: 5.8
 Tested up to: 6.3
 Requires PHP: 7.2
-Stable tag: 3.2.1.30
+Stable tag: 3.2.1.32
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -72,3 +72,4 @@ For help setting up and configuring Rocketfuel, please refer to [Getting Started
          BUG FIX: Create order when order flow is incomplete
 3.2.1.24 BUG FIX: Double Order Creation
 3.2.1.30 FEATURE: Webhook for variant product
+3.2.1.30 BUG FIX: Amount changed to string

@@ -505,7 +505,7 @@ class Cart_Handler_Controller {
 			'cred'     => $merchant_cred,
 			'endpoint' => $gateway->endpoint,
 			'body'     => array(
-				'amount'          => WC()->cart->total,
+				'amount'          => (string) WC()->cart->total,
 				'cart'            => $cart,
 				'merchant_id'     => $gateway->merchant_id,
 				'shippingAddress' => $shipping_address,
