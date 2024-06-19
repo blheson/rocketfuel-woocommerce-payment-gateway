@@ -59,6 +59,11 @@ class Plugin
     {
         Activation_Controller::register($file);
         add_action('init', array(__CLASS__, 'boot'));
+        add_action( 'before_woocommerce_init', function() {
+            if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'rocketfuel-payment-gateway/rocketfuel-woo-gateway.php', true );
+            }
+        } );
     }
     public static function boot()
     {

@@ -53,7 +53,7 @@ class Woocommerce_Controller {
 	 *
 	 * @param
 	 */
-	public function cancel_subscription_order( $subscription ) {
+	public static function cancel_subscription_order( $subscription ) {
 
 		// wcs_get_subscriptions_for_order( $order );
 
