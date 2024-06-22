@@ -106,7 +106,7 @@
 
             if (!result.success) {
 
-                // document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = document.getElementById('rocketfuel_retrigger_payment_button').dataset.rkflButtonText;
+           
                 RocketfuelPaymentEngine.prepareRetrigger();
                 // Error messages may be preformatted in which case response structure will differ
                 var messages = result.data ? result.data.messages : result.messages;
@@ -128,7 +128,7 @@
 
             }
 
-            let uuid = result.data?.uuid?.result?.uuid;
+            let uuid = result.data?.ext?.result?.uuid;
             let isPartial = result.data?.is_partial;
 
             if (!uuid) {
@@ -139,7 +139,7 @@
 
 
             RocketfuelPaymentEngine.order_id = result.data.temporary_order_id;
-            RocketfuelPaymentEngine.access_token = result.data?.uuid?.access_token;
+            RocketfuelPaymentEngine.access_token = result.data?.ext?.access_token;
             // RocketfuelPaymentEngine.encryptedReq = result.data?.encrypted_req;
 
             document.querySelector('input[name=encrypted_req_rocketfuel]').value = result.data?.encrypted_req;
@@ -224,8 +224,7 @@
 
                 document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 0.5;
 
-                // document.getElementById('rocketfuel_retrigger_payment_button').style.display = 'none';
-
+     
             } catch (error) {
 
                 console.error('Error from update order method', error);
@@ -236,7 +235,7 @@
 
         startPayment: function (autoTriggerState = true) {
 
-            // document.getElementById('rocketfuel_retrigger_payment_button').innerText = "Preparing Payment window...";
+       
             this.watchIframeShow = true;
 
             document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
@@ -551,11 +550,12 @@
 
         }
     }
+    window.RocketfuelPaymentEngine = RocketfuelPaymentEngine;
 
 
     // document.querySelector("")
 
-    document.querySelector(".rocketfuel_retrigger_payment_button").addEventListener('click', (e) => {
+    document.querySelector(".rocketfuel_retrigger_payment_button")?.addEventListener('click', (e) => {
 
         e.preventDefault();
 
@@ -564,14 +564,20 @@
             return;
         }
 
-        document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = '<div class="loader_rocket"></div>';
+        const retrigger = document.getElementById('rocketfuel_retrigger_payment_button');
+        if (retrigger) {
+            retrigger.innerHTML = '<div class="loader_rocket"></div>';
+        }
+
 
         RocketfuelPaymentEngine.init();
 
     })
+    const statusRKFL = document.querySelector('input[name=payment_status_rocketfuel]');
+    if (statusRKFL) {
+        document.querySelector('input[name=payment_status_rocketfuel]').value = localStorage.getItem('payment_status_rocketfuel');
 
-    document.querySelector('input[name=payment_status_rocketfuel]').value = localStorage.getItem('payment_status_rocketfuel');
+    }
 
 
 })(jQuery, window, document);
-

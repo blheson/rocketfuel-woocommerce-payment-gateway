@@ -34,6 +34,13 @@ class Woocommerce_Controller {
 
 			add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_action' ) );
 		}
+		add_action(
+			'wc_ajax_rocketfuel_process_block_checkout',
+			array(
+				__CLASS__,
+				'process_user_data',
+			)
+		);
 
 		add_action( 'woocommerce_checkout_update_order_meta', array( __CLASS__, 'add_temp_id_to_order' ) );
 
@@ -144,23 +151,29 @@ class Woocommerce_Controller {
 	public static function rocketfuel_process_checkout() {
 		Cart_Handler_Controller::rocketfuel_process_checkout();
 	}
+	public static function process_user_data() {
+		Cart_Handler_Controller::process_user_data();
+	}
 
 	/**
 	 * Enqueue Rocketfuel scripts
 	 */
 	public static function enqueue_action() {
+		if ( is_page( 'checkout' ) ) {
+			wp_enqueue_script( 'wc-gateway-rkfl-script', Plugin::get_url( 'assets/js/rkfl.js' ), array(), time() );
+			wp_enqueue_style( 'wc-gateway-rkfl-frontend', Plugin::get_url( 'assets/css/rkfl-iframe.css' ), array(), Plugin::get_ver() );
+		}
 
-		wp_enqueue_script( 'wc-gateway-rkfl-script', Plugin::get_url( 'assets/js/rkfl.js' ), array(), time() );
 		// wp_register_script('wc-gateway-rkfl-script', 'https://d3rpjm0wf8u2co.cloudfront.net/static/rkfl.js', array(), Plugin::get_ver());
-		wp_register_script( 'wc-gateway-rkfl-iframe', Plugin::get_url( 'assets/js/rkfl-iframe.js' ), array(), Plugin::get_ver() );
-
-		wp_enqueue_style( 'wc-gateway-rkfl-frontend', Plugin::get_url( 'assets/css/rkfl-iframe.css' ), array(), Plugin::get_ver() );
+		// wp_register_script( 'wc-gateway-rkfl-iframe', Plugin::get_url( 'assets/js/rkfl-iframe.js' ), array(), Plugin::get_ver() );
+		// wp_enqueue_script( 'wc-gateway-rkfl-iframe' );
 
 		$data = array(
-			'start_checkout_nonce' => wp_create_nonce( '_wc_rkfl_start_checkout_nonce' ),
-			'start_checkout_url'   => \WC_AJAX::get_endpoint( 'rocketfuel_process_checkout' ),
-			'return_url'           => wc_get_checkout_url(),
-			'cancel_url'           => '',
+			'start_checkout_nonce'     => wp_create_nonce( '_wc_rkfl_start_checkout_nonce' ),
+			'start_checkout_url'       => \WC_AJAX::get_endpoint( 'rocketfuel_process_checkout' ),
+			'start_block_checkout_url' => \WC_AJAX::get_endpoint( 'rocketfuel_process_block_checkout' ),
+			'return_url'               => wc_get_checkout_url(),
+			'cancel_url'               => '',
 		);
 		wp_localize_script( 'wc-gateway-rkfl-script', 'wc_rkfl_context', $data );
 

@@ -6,7 +6,7 @@
  * Description: Pay with crypto using Rocketfuel
  * Author: Rocketfuel Team
  * Author URI: https://rocketfuelblockchain.com/integrations
- * Version: 3.2.1.35
+ * Version: 3.2.2
  * WC requires at least: 3.0.0
  * WC tested up to: 6.4.3
  * Text Domain: rocketfuel-payment-gateway
@@ -22,9 +22,11 @@ use Rocketfuel_Gateway\Services\Subscription_Service;
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'A cup does not drink what it holds?' );
 }
+define( 'WC_ROCKETFUEL_MAIN_FILE', __FILE__ );
+
 
 if ( rocketfuel_check_woocommerce_is_active() ) {
-	define( 'ROCKETFUEL_VER', '3.2.1.35' );
+	define( 'ROCKETFUEL_VER', '3.2.1.36' );
 
 	require_once plugin_dir_path( __FILE__ ) . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 	Plugin::init( __FILE__ );
@@ -47,3 +49,19 @@ function rocketfuel_check_woocommerce_is_active() {
 	}
 	return false;
 }
+
+/**
+ * Registers WooCommerce Blocks integration.
+ */
+function rocketfuel_gateway_woocommerce_block_support() {
+	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			static function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+				$payment_method_registry->register( new Rocketfuel_Gateway\Controllers\WC_Gateway_Rocketfuel_Blocks_Support() );
+			}
+		);
+	}
+}
+add_action( 'woocommerce_blocks_loaded', 'rocketfuel_gateway_woocommerce_block_support' );
