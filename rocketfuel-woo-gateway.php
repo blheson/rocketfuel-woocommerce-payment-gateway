@@ -6,7 +6,7 @@
  * Description: Pay with crypto using Rocketfuel
  * Author: Rocketfuel Team
  * Author URI: https://rocketfuelblockchain.com/integrations
- * Version: 3.2.2
+ * Version: 3.2.3
  * WC requires at least: 3.0.0
  * WC tested up to: 6.4.3
  * Text Domain: rocketfuel-payment-gateway
@@ -15,9 +15,7 @@
  * @package Rocketfuel
  */
 
-use Rocketfuel_Gateway\Controllers\Rocketfuel_Gateway_Subscription_Controller;
 use Rocketfuel_Gateway\Plugin;
-use Rocketfuel_Gateway\Services\Subscription_Service;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'A cup does not drink what it holds?' );
@@ -26,7 +24,7 @@ define( 'WC_ROCKETFUEL_MAIN_FILE', __FILE__ );
 
 
 if ( rocketfuel_check_woocommerce_is_active() ) {
-	define( 'ROCKETFUEL_VER', '3.2.1.36' );
+	define( 'ROCKETFUEL_VER', '3.2.3' );
 
 	require_once plugin_dir_path( __FILE__ ) . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 	Plugin::init( __FILE__ );

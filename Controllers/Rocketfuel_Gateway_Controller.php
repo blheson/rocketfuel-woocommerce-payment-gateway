@@ -259,8 +259,10 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway {
 	 * @return array
 	 */
 	public function sort_cart( $items, $temp_orderid ) {
-		$data = array();
+		$data  = array();
+		$total = 0;
 		foreach ( $items as $cart_item ) {
+			$total    += ( (int) $cart_item['data']->get_price() * (int) $cart_item['quantity'] );
 			$temp_data = array(
 				'name'     => $cart_item['data']->get_title(),
 				'id'       => (string) $cart_item['product_id'],
@@ -314,13 +316,24 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway {
 				( ! strpos( strtolower( WC()->cart->get_shipping_total() ), 'free' ) ) &&
 				(int) WC()->cart->get_shipping_total() > 0
 			) {
-
+				$total += WC()->cart->get_shipping_total();
 				$data[] = array(
 					'name'     => 'Shipping',
 					'id'       => microtime(),
 					'price'    => WC()->cart->get_shipping_total(),
 					'quantity' => '1',
 				);
+			}
+			if ( WC()->cart->total != $total ) {
+
+				if ( WC()->cart->total < $total ) {
+					$data[] = array(
+						'name'     => 'Discount',
+						'id'       => (string) microtime( true ),
+						'price'    => (string) WC()->cart->total - $total,
+						'quantity' => '1',
+					);
+				}
 			}
 		} catch ( \Throwable $th ) {
 			// silently ignore
