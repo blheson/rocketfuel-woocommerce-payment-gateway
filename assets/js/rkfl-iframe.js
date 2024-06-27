@@ -50,7 +50,7 @@
         }
         ,
         getUUID: async function (partial_tx_check = true) {
-
+            let engine = this;
 
             let firstname = document.getElementById('billing_first_name')?.value || document.getElementById('shipping_first_name')?.value;
             let lastname = document.getElementById('billing_last_name')?.value || document.getElementById('shipping_last_name')?.value;
@@ -100,13 +100,10 @@
                     result.messages = ['Error parsing request'];
                     console.error(' ERROR_PARSE_GUUID', { error });
                 }
-
             }
-
 
             if (!result.success) {
 
-           
                 RocketfuelPaymentEngine.prepareRetrigger();
                 // Error messages may be preformatted in which case response structure will differ
                 var messages = result.data ? result.data.messages : result.messages;
@@ -137,7 +134,6 @@
                 return false;
             }
 
-
             RocketfuelPaymentEngine.order_id = result.data.temporary_order_id;
             RocketfuelPaymentEngine.access_token = result.data?.ext?.access_token;
             // RocketfuelPaymentEngine.encryptedReq = result.data?.encrypted_req;
@@ -145,10 +141,17 @@
             document.querySelector('input[name=encrypted_req_rocketfuel]').value = result.data?.encrypted_req;
 
             document.querySelector('input[name=temp_orderid_rocketfuel]').value = result.data.temporary_order_id;
+            if (!engine.userData.encrypted_req && !result.data?.encrypted_req) {
+                engine.userData.encrypted_req = result.data?.encrypted_req;
+            }
+
+            if (!engine.userData.merchant_auth && result.data?.merchant_auth) {
+                engine.userData.merchant_auth = result.data?.merchant_auth
+            }
 
             console.log("res", uuid);
 
-            return { uuid, isPartial };
+            return { uuid, isPartial, ...result.data };
 
         },
         getEnvironment: function () {
@@ -156,23 +159,41 @@
 
             return environment || 'prod';
         },
+        userData: {},
         getUserData: function () {
+            let engine = this;
 
-            let user_data = {
-
-                first_name: document.getElementById('billing_first_name') ? document.getElementById('billing_first_name').value : null,
-
-                last_name: document.getElementById('billing_last_name') ? document.getElementById('billing_last_name').value : null,
-
-                email: document.getElementById('billing_email') ? document.getElementById('billing_email').value : null,
-
-                merchant_auth: document.querySelector('input[name=merchant_auth_rocketfuel]') ? document.querySelector('input[name=merchant_auth_rocketfuel]').value : null,
-                encrypted_req: document.querySelector('input[name=encrypted_req_rocketfuel]') ? document.querySelector('input[name=encrypted_req_rocketfuel]').value : null
+            if (!engine?.userData?.first_name) {
+                engine.userData.first_name = document.getElementById('billing_first_name') ? document.getElementById('billing_first_name').value : null
+            }
+            if (!engine?.userData?.last_name) {
+                engine.userData.last_name = document.getElementById('billing_last_name') ? document.getElementById('billing_last_name').value : null
+            }
+            if (!engine?.userData?.email) {
+                engine.userData.email = document.getElementById('billing_email') ? document.getElementById('billing_email').value : null
+            }
+            if (!engine?.userData?.merchant_auth) {
+                engine.userData.merchant_auth = document.querySelector('input[name=merchant_auth_rocketfuel]') ? document.querySelector('input[name=merchant_auth_rocketfuel]').value : null
             }
 
-            if (!user_data) return false;
+            if (!engine?.userData?.encrypted_req_rocketfuel) {
+                engine.userData.encrypted_req_rocketfuel = document.querySelector('input[name=encrypted_req_rocketfuel]') ? document.querySelector('input[name=encrypted_req_rocketfuel]').value : null
+            }
+            // let user_data = {
 
-            return user_data;
+            //     first_name: document.getElementById('billing_first_name') ? document.getElementById('billing_first_name').value : null,
+
+            //     last_name: document.getElementById('billing_last_name') ? document.getElementById('billing_last_name').value : null,
+
+            //     email: document.getElementById('billing_email') ? document.getElementById('billing_email').value : null,
+
+            //     merchant_auth: document.querySelector('input[name=merchant_auth_rocketfuel]') ? document.querySelector('input[name=merchant_auth_rocketfuel]').value : null,
+            //     encrypted_req: document.querySelector('input[name=encrypted_req_rocketfuel]') ? document.querySelector('input[name=encrypted_req_rocketfuel]').value : null
+            // }
+
+            // if (!user_data) return false;
+
+            return engine.userData
 
         },
         triggerPlaceOrder: function () {
@@ -224,28 +245,23 @@
 
                 document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 0.5;
 
-     
             } catch (error) {
-
                 console.error('Error from update order method', error);
-
             }
-
         },
 
         startPayment: function (autoTriggerState = true) {
 
-       
             this.watchIframeShow = true;
 
             document.getElementById('rocketfuel_retrigger_payment_button').disabled = true;
 
             let checkIframe = setInterval(() => {
                 console.log('retrying');
+               
                 if (RocketfuelPaymentEngine.rkfl.iframeInfo.iframe) {
 
                     RocketfuelPaymentEngine.rkfl.initPayment();
-
                     clearInterval(checkIframe);
                 }
 
@@ -256,30 +272,22 @@
 
             //show retrigger button
             document.getElementById('rocketfuel_retrigger_payment_button').dataset.disable = false;
-
-
             document.getElementById('rocketfuel_retrigger_payment_button').innerHTML = document.getElementById('rocketfuel_retrigger_payment_button').dataset.rkflButtonText;
 
         },
         prepareProgressMessage: function () {
 
             //revert trigger button message
-
             document.getElementById('rocketfuel_retrigger_payment_button').dataset.disable = true;
-
-
         },
 
         windowListener: function () {
             let engine = this;
-
             window.addEventListener('message', (event) => {
 
                 switch (event.data.type) {
                     case 'rocketfuel_iframe_close':
                         console.log('Event from rocketfuel_iframe_close', event.data);
-
-
                         // engine.prepareRetrigger();
                         document.getElementById('rocketfuel_retrigger_payment_button').style.opacity = 1;
 
@@ -414,10 +422,10 @@
 
                 }
 
-                let { uuid, isPartial } = await this.getUUID(); //set uuid
-
+                let uuidResult = await this.getUUID(); //set uuid
+                let uuid = uuidResult.uuid;
+                let isPartial = uuidResult.isPartial;
                 if (!uuid) {
-
                     reject();
 
                 }
@@ -430,9 +438,9 @@
 
                     if (!userAgreed) {
 
-                        const result = await this.getUUID(false); //set uuid
+                        uuidResult = await this.getUUID(false); //set uuid
 
-                        uuid = result.uuid;
+                        uuid = uuidResult.uuid;
                         console.log({ uuid }, 'User did not agree');
 
                         // isPartial = result.isPartial;
@@ -445,13 +453,18 @@
 
 
                 let userData = RocketfuelPaymentEngine.getUserData();
+                if (!userData.encrypted_req) {
+                    userData.encrypted_req = uuidResult.encrypted_req
+                }
+                if (!userData.merchant_auth) {
+                    userData.merchant_auth = uuidResult.merchant_auth
+                }
 
                 let payload, response, rkflToken;
-
+ 
                 RocketfuelPaymentEngine.rkfl = new RocketFuel({
                     environment: RocketfuelPaymentEngine.getEnvironment()
                 });
-
 
                 RocketfuelPaymentEngine.rkflConfig = {
                     uuid,
@@ -459,16 +472,7 @@
                     environment: RocketfuelPaymentEngine.getEnvironment()
                 }
                 if (userData.encrypted_req || (userData.first_name && userData.email)) {
-                    // payload = { //change this
-                    //     firstName: userData.first_name,
-                    //     lastName: userData.last_name,
-                    //     email: userData.email,
-                    //     merchantAuth: userData.merchant_auth,
-                    //     kycType: 'null',
-                    //     kycDetails: {
-                    //         'DOB': "01-01-1990"
-                    //     }
-                    // }
+            
                     payload = {
                         encryptedReq: userData.encrypted_req,
                         merchantAuth: userData.merchant_auth,
@@ -488,17 +492,12 @@
 
                             response = await RocketfuelPaymentEngine.rkfl.rkflAutoSignUp(payload, RocketfuelPaymentEngine.getEnvironment());
 
-
-
-
                             if (response) {
 
-                                rkflToken = response.result?.rkflToken;
+                                rkflToken = response?.result?.rkflToken;
 
                             }
-
                         }
-
 
                         if (rkflToken) {
                             RocketfuelPaymentEngine.rkflConfig.token = rkflToken;
@@ -506,6 +505,7 @@
 
                         resolve(true);
                     } catch (error) {
+                        console.error('There is an error in init',{error})
                         reject(error?.message);
                     }
 
@@ -581,3 +581,4 @@
 
 
 })(jQuery, window, document);
+//v3.2.3.3
