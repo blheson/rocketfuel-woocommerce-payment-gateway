@@ -499,4 +499,4 @@ function removeLocalStorage() {
 
 }
 removeLocalStorage();
-console.log('[ PLUGIN_VERSION ]', 'v3.2.1.35')
+console.log('[ PLUGIN_VERSION ]', 'v3.2.3.3')

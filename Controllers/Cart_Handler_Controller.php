@@ -23,6 +23,7 @@ class Cart_Handler_Controller {
 				'rocketfuel_process_checkout',
 			)
 		);
+
 	}
 	public static function sort_shipping_address_raw() {
 
@@ -229,12 +230,10 @@ class Cart_Handler_Controller {
 
 		if ( $external_tx_info->nativeAmount < WC()->cart->total ) {
 
-		
 			return false;
 		}
 
 		if ( count( $external_cart_info ) !== count( WC()->cart->get_cart() ) ) {
-
 
 			return false;
 		}
@@ -255,7 +254,6 @@ class Cart_Handler_Controller {
 
 			if ( $is_product_present === false ) {
 
-			 
 				$flag_incompatible_cart_product = true;
 			}
 		}
@@ -271,20 +269,19 @@ class Cart_Handler_Controller {
 		return 60 * 60 * 24 * (int) $days;
 	}
 	public static function get_cart_products( $cart ) {
-			
+
 		$cache = array();
 		foreach ( $cart as $cart_item ) {
-	
-			$product = wc_get_product( $cart_item['product_id']);
-			
 
-			error_log($product->get_type() .'  === is type variable'.$product->is_type(self::$product_type_variant));
-		
+			$product = wc_get_product( $cart_item['product_id'] );
+
+			error_log( $product->get_type() . '  === is type variable' . $product->is_type( self::$product_type_variant ) );
+
 			$cache[] = array(
-				'id'       => (string) $cart_item['product_id'],
-				'quantity' => (string) $cart_item['quantity'],
-				'type' => $product->get_type(),
-				'variant_id' =>$product->is_type(self::$product_type_variant) ? (string) $cart_item['variation_id'] : ''
+				'id'         => (string) $cart_item['product_id'],
+				'quantity'   => (string) $cart_item['quantity'],
+				'type'       => $product->get_type(),
+				'variant_id' => $product->is_type( self::$product_type_variant ) ? (string) $cart_item['variation_id'] : '',
 			);
 		}
 		return $cache;
@@ -294,8 +291,8 @@ class Cart_Handler_Controller {
 		$shipping = WC()->session->get( 'chosen_shipping_methods' );
 		return array(
 			array(
-				'id'     => is_array($shipping) ? $shipping[0] : 'Shipping',
-				'title'     => 'Shipping',
+				'id'     => is_array( $shipping ) ? $shipping[0] : 'Shipping',
+				'title'  => 'Shipping',
 				'amount' => WC()->cart->get_shipping_total(),
 			),
 		);
@@ -346,41 +343,35 @@ class Cart_Handler_Controller {
 		 * payment_method = > id,title
 		 */
 		// ]
-		$gateway = new Rocketfuel_Gateway_Controller();
-
+		$gateway         = new Rocketfuel_Gateway_Controller();
+		$billingData     = self::get_billing_address_for_transcient();
 		$transient_value = array(
 			'merchant_id'      => $gateway->merchant_id,
 			'products'         => self::get_cart_products( WC()->cart->get_cart() ),
 			'shippings'        => self::get_cart_shippings( WC()->cart->get_cart() ),
-			'billing_address'  => self::get_billing_address_for_transcient(),
+			'billing_address'  => $billingData,
 			'shipping_address' => self::get_shipping_address_for_transcient(),
 			'payment_method'   => array(
 				'id'    => $gateway->id,
 				'title' => $gateway->method_title,
 			),
 			'customer_id'      => WC()->customer->get_id(),
-			'total'            => WC()->cart->total
+			'total'            => WC()->cart->total,
 		);
 
-		
+		error_log( 'WC()->cart->total : ' . WC()->cart->total );
 
-		error_log('WC()->cart->total : '.WC()->cart->total);
-
-		
-		error_log('Temporary order_id : '.$temporary_order_id);
+		error_log( 'Temporary order_id : ' . $temporary_order_id );
 
 		\set_transient( $temporary_order_id, $transient_value, self::days_in_secs( 2 ) );
 
-		error_log('$transient_value : '.json_encode($transient_value));
-
+		error_log( '$transient_value : ' . json_encode( $transient_value ) );
 
 		$email = isset( $_POST['rkfl_checkout_email'] ) ? sanitize_email( wp_unslash( $_POST['rkfl_checkout_email'] ) ) : '';
 
 		$partial_payment_cache_key = 'rkfl_partial_payment_cache_' . $email;
 
 		$_rkfl_partial_payment_cache = get_option( $partial_payment_cache_key );
-
-	 
 
 		$merchant_cred = array(
 			'email'    => $gateway->email,
@@ -416,7 +407,6 @@ class Cart_Handler_Controller {
 					'meta_value'  => $_rkfl_partial_payment_cache['temporary_order_id'],
 				)
 			);
-		 
 
 			if ( count( $query->posts ) > 0 ) {
 				// if order exists
@@ -464,7 +454,7 @@ class Cart_Handler_Controller {
 				);
 
 				$url = $gateway->get_configured_endpoint() . '/purchase/transaction/partials/' . $gateway->get_merchant_id() . '?offerId=' . $_rkfl_partial_payment_cache['temporary_order_id'] . '&hostedPageId=' . $_rkfl_partial_payment_cache['uuid'];
-			 
+
 				$result = wp_remote_get( $url, $args );
 
 				$response_code = wp_remote_retrieve_response_code( $result );
@@ -486,7 +476,9 @@ class Cart_Handler_Controller {
 								'is_partial'         => true,
 								'encrypted_req'      => $encrypted_req,
 								'temporary_order_id' => $temporary_order_id,
-								'uuid'               => array(
+								'merchant_auth'      => $gateway->merchant_auth(),
+								'uuid'               => $response_body->result->tx->hostedPageId,
+								'ext'                => array(
 									'access_token' => $rkfl_access_token,
 									'result'       => array(
 										'uuid' => $response_body->result->tx->hostedPageId,
@@ -499,9 +491,9 @@ class Cart_Handler_Controller {
 			}
 		}
 
-		$cart = $gateway->sort_cart( WC()->cart->get_cart(), $temporary_order_id );
-
-		$data = array(
+		$cart          = $gateway->sort_cart( WC()->cart->get_cart(), $temporary_order_id );
+		$merchant_auth = $gateway->merchant_auth();
+		$data          = array(
 			'cred'     => $merchant_cred,
 			'endpoint' => $gateway->endpoint,
 			'body'     => array(
@@ -514,7 +506,6 @@ class Cart_Handler_Controller {
 				'redirectUrl'     => '',
 			),
 		);
-
 		unset( $gateway );
 
 		$error_message = 'Payment cannot be completed';
@@ -535,7 +526,7 @@ class Cart_Handler_Controller {
 			}
 
 			if ( ( isset( $payment_response->error ) && $payment_response->error === true ) ) {
-			 
+
 				try {
 					wp_send_json_error(
 						array(
@@ -549,7 +540,7 @@ class Cart_Handler_Controller {
 					wp_send_json_error(
 						array(
 							'error'    => true,
-							'messages' => array( 'Fatal Request Error' ),
+							'messages' => array( 'Fatal Request Error' . $th->getMessage() ),
 							'data'     => null,
 						)
 					);
@@ -574,8 +565,10 @@ class Cart_Handler_Controller {
 			wp_send_json_success(
 				array(
 					'encrypted_req'      => $encrypted_req,
+					'uuid'               => $payment_response->result->uuid,
 					'temporary_order_id' => $temporary_order_id,
-					'uuid'               => $payment_response,
+					'ext'                => $payment_response,
+					'merchant_auth'      => $merchant_auth,
 				)
 			);
 		} catch ( \Throwable $th ) {
@@ -583,7 +576,7 @@ class Cart_Handler_Controller {
 			return wp_send_json_error(
 				array(
 					'error'    => true,
-					'messages' => array( 'Fatal Request Error' ),
+					'messages' => array( 'Fatal Request Error' . $th->getMessage() ),
 					'data'     => null,
 				)
 			);
@@ -592,7 +585,7 @@ class Cart_Handler_Controller {
 	public static function rocketfuel_process_checkout() {
 
 		if ( empty( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], '_wc_rkfl_start_checkout_nonce' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			wp_die( __( 'Cheatin&#8217; huh?', 'woocommerce-gateway-paypal-express-checkout' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			wp_die( __( 'Cheatin&#8217; huh?', 'woocommerce-gateway-rkfls-checkout' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 
 		// Intercept process_checkout call to exit after validation.

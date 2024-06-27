@@ -3,7 +3,7 @@ Contributors: rockectfuel
 Requires at least: 5.8
 Tested up to: 6.4.3
 Requires PHP: 7.2
-Stable tag: 3.2.1.35
+Stable tag: 3.2.3.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -75,3 +75,5 @@ For help setting up and configuring Rocketfuel, please refer to [Getting Started
 3.2.1.30 BUG FIX: Amount changed to string
 3.2.1.34 COMPATIBILITY: Make plugin compatible with new Woocommerce High Performance Order Storage
 3.2.1.35 FIX: Static function call
+3.2.2 FEATURE: Added Support for checkout blocks
+3.2.3 FEATURE: Added Support for discount

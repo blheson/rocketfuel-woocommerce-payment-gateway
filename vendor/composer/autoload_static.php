@@ -23,13 +23,18 @@ class ComposerStaticInit75bc328f211181492efb60450ecb464c
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'Rocketfuel_Gateway\\Controllers\\Activation_Controller' => __DIR__ . '/../..' . '/Controllers/Activation_Controller.php',
+        'Rocketfuel_Gateway\\Controllers\\Cart_Handler_Controller' => __DIR__ . '/../..' . '/Controllers/Cart_Handler_Controller.php',
         'Rocketfuel_Gateway\\Controllers\\Process_Payment_Controller' => __DIR__ . '/../..' . '/Controllers/Process_Payment_Controller.php',
         'Rocketfuel_Gateway\\Controllers\\Rest_Controller' => __DIR__ . '/../..' . '/Controllers/Rest_Controller.php',
         'Rocketfuel_Gateway\\Controllers\\Rocketfuel_Gateway_Controller' => __DIR__ . '/../..' . '/Controllers/Rocketfuel_Gateway_Controller.php',
+        'Rocketfuel_Gateway\\Controllers\\Rocketfuel_Gateway_Subscription_Controller' => __DIR__ . '/../..' . '/Controllers/Rocketfuel_Gateway_Subscription_Controller.php',
+        'Rocketfuel_Gateway\\Controllers\\WC_Gateway_Rocketfuel_Blocks_Support' => __DIR__ . '/../..' . '/Controllers/WC_Gateway_Rocketfuel_Blocks_Support.php',
         'Rocketfuel_Gateway\\Controllers\\Webhook_Controller' => __DIR__ . '/../..' . '/Controllers/Webhook_Controller.php',
         'Rocketfuel_Gateway\\Controllers\\Woocommerce_Controller' => __DIR__ . '/../..' . '/Controllers/Woocommerce_Controller.php',
+        'Rocketfuel_Gateway\\Helpers\\Common' => __DIR__ . '/../..' . '/Helpers/Common.php',
         'Rocketfuel_Gateway\\Helpers\\View' => __DIR__ . '/../..' . '/Helpers/View.php',
         'Rocketfuel_Gateway\\Plugin' => __DIR__ . '/../..' . '/Plugin.php',
+        'Rocketfuel_Gateway\\Services\\Subscription_Service' => __DIR__ . '/../..' . '/Services/Subscription_Service.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
