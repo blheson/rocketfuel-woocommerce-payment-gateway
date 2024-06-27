@@ -30,9 +30,23 @@ final class WC_Gateway_Rocketfuel_Blocks_Support extends AbstractPaymentMethodTy
 	 * @return boolean
 	 */
 	public function is_active() {
-		$payment_gateways_class = WC()->payment_gateways();
-		$payment_gateways       = $payment_gateways_class->payment_gateways();
-		return $payment_gateways['rocketfuel_gateway']->is_available();
+		try {
+			$payment_gateways_class = WC()->payment_gateways();
+			$payment_gateways       = $payment_gateways_class->payment_gateways();
+			if ( ! isset( $payment_gateways['rocketfuel_gateway'] ) ) {
+				foreach ( $payment_gateways as $key => $value ) {
+					$is_available = str_contains( $key, 'rocketfuel' );
+					if ( $is_available ) {
+						return $payment_gateways[ $key ]->is_available();
+					}
+				}
+				return false;
+			}
+			return $payment_gateways['rocketfuel_gateway']->is_available();
+		} catch ( \Throwable $th ) {
+			return false;
+		}
+
 	}
 
 	/**
