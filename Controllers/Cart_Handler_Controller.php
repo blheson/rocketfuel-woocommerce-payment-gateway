@@ -506,7 +506,6 @@ class Cart_Handler_Controller {
 				'redirectUrl'     => '',
 			),
 		);
-
 		unset( $gateway );
 
 		$error_message = 'Payment cannot be completed';

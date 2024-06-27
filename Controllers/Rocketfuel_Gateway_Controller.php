@@ -262,7 +262,8 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway {
 		$data  = array();
 		$total = 0;
 		foreach ( $items as $cart_item ) {
-			$total    += ( (int) $cart_item['data']->get_price() * (int) $cart_item['quantity'] );
+			$sub_total = ( (float) $cart_item['data']->get_price() * (float) $cart_item['quantity'] );
+			$total    += $sub_total;
 			$temp_data = array(
 				'name'     => $cart_item['data']->get_title(),
 				'id'       => (string) $cart_item['product_id'],
@@ -314,7 +315,7 @@ class Rocketfuel_Gateway_Controller extends \WC_Payment_Gateway {
 			if (
 				( null !== WC()->cart->get_shipping_total() ) &&
 				( ! strpos( strtolower( WC()->cart->get_shipping_total() ), 'free' ) ) &&
-				(int) WC()->cart->get_shipping_total() > 0
+				(float) WC()->cart->get_shipping_total() > 0
 			) {
 				$total += WC()->cart->get_shipping_total();
 				$data[] = array(
